@@ -1,0 +1,19 @@
+package org.frangosInfinity.core.entity.module.usuario;
+
+import org.frangosInfinity.core.entity.module.fidelidade.RegrasFidelidade;
+import org.frangosInfinity.core.entity.module.mesa.Mesa;
+import org.frangosInfinity.core.entity.module.produto.Produto;
+import org.frangosInfinity.core.enums.NivelAcesso;
+import org.frangosInfinity.core.enums.TipoUsuario;
+
+import java.util.Date;
+
+public class Administrador extends Funcionario
+{
+    public Administrador(String nome, String email, String senha, TipoUsuario usuario ,  String matricula, NivelAcesso nivelAcesso)
+    {
+        super(nome, email, senha, usuario, matricula, nivelAcesso);
+    }
+
+    public Administrador() {}
+}
