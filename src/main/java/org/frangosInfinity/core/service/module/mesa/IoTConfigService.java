@@ -39,7 +39,6 @@ public class IoTConfigService
         }
         catch (SQLException e)
         {
-            System.err.println("Erro ao salvar configuração IoT: " + e.getMessage());
             return null;
         }
     }
@@ -53,7 +52,6 @@ public class IoTConfigService
         }
         catch (SQLException e)
         {
-            System.err.println("Erro ao buscar IoT config " + id + ": " + e.getMessage());
             return null;
         }
     }
@@ -67,7 +65,6 @@ public class IoTConfigService
         }
         catch (SQLException e)
         {
-            System.err.println("Erro ao buscar IoT config da mesa " + idMesa + ": " + e.getMessage());
             return null;
         }
     }
@@ -81,7 +78,6 @@ public class IoTConfigService
         }
         catch (SQLException e)
         {
-            System.err.println("Erro ao listar IoT configs: " + e.getMessage());
             return List.of();
         }
     }
@@ -95,7 +91,6 @@ public class IoTConfigService
         }
         catch (SQLException e)
         {
-            System.err.println("Erro ao listar IoT online: " + e.getMessage());
             return List.of();
         }
     }
@@ -116,7 +111,6 @@ public class IoTConfigService
 
             try
             {
-                System.out.println("Enviando comando '" + comando + "' para IoT da mesa " + iotConfig.getIdMesa() + "...");
                 Thread.sleep(1000);
             }
             catch (InterruptedException e)
@@ -138,7 +132,6 @@ public class IoTConfigService
         }
         catch (SQLException e)
         {
-            System.err.println("Erro na comunicação IoT: " + e.getMessage());
             return "Erro: " + e.getMessage();
         }
     }
@@ -162,7 +155,6 @@ public class IoTConfigService
         }
         catch (SQLException e)
         {
-            System.err.println("Erro ao atualizar firmware: " + e.getMessage());
             return false;
         }
     }
@@ -177,7 +169,6 @@ public class IoTConfigService
         }
         catch (SQLException e)
         {
-            System.err.println("Erro ao verificar status IoT: " + e.getMessage());
             return false;
         }
     }

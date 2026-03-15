@@ -126,10 +126,9 @@ public class QRCodeService
                 }
                 catch (SQLException ex)
                 {
-                    System.err.println("Erro no rollback: " + ex.getMessage());
+                    return QRCodeResponseDTO.erro("Erro no rollback: "+ex.getMessage());
                 }
             }
-            System.err.println("Erro ao gerar QR Code: " + e.getMessage());
             return QRCodeResponseDTO.erro("Erro ao gerar QR Code: " + e.getMessage());
         }
         finally
@@ -142,7 +141,7 @@ public class QRCodeService
                 }
                 catch (SQLException e)
                 {
-                    System.err.println("Erro ao fechar conexão: " + e.getMessage());
+                   return null;
                 }
             }
         }
@@ -163,7 +162,6 @@ public class QRCodeService
 
             if (qrCodeOpt.isEmpty())
             {
-                System.out.println("Token não encontrado: " + tokenSessao);
                 return false;
             }
 
@@ -171,24 +169,11 @@ public class QRCodeService
 
             if (qrCode.getIdMesa().equals(idMesa))
             {
-                System.out.println("Token pertence a outra mesa (esperado: " + idMesa + ", encontrado: " + qrCode.getIdMesa() + ")");
                 return false;
             }
 
             if (!qrCode.podeSerUtilizado())
             {
-                if (qrCode.isUtilizado())
-                {
-                    System.out.println("QR Code já foi utilizado");
-                }
-                else if (qrCode.isExpirado())
-                {
-                    System.out.println("QR Code expirado em " + formatador.formatarDataHora(qrCode.getDataExpiracao()));
-                }
-                else
-                {
-                    System.out.println("QR Code inválido");
-                }
                 return false;
             }
 
@@ -210,10 +195,9 @@ public class QRCodeService
                 }
                 catch (SQLException ex)
                 {
-                    System.err.println("Erro no rollback: " + ex.getMessage());
+                    return false;
                 }
             }
-            System.err.println("Erro ao validar QR Code: " + e.getMessage());
             return false;
         }
         finally
@@ -226,7 +210,7 @@ public class QRCodeService
                 }
                 catch (SQLException e)
                 {
-                    System.err.println("Erro ao fechar conexão: " + e.getMessage());
+                     return false;
                 }
             }
         }
@@ -240,7 +224,6 @@ public class QRCodeService
         }
         catch (SQLException e)
         {
-            System.err.println("Erro ao buscar QR Code " + id + ": " + e.getMessage());
             return null;
         }
     }
@@ -254,7 +237,6 @@ public class QRCodeService
         }
         catch (SQLException e)
         {
-            System.err.println("Erro ao listar QR Codes ativos: " + e.getMessage());
             return List.of();
         }
     }
@@ -268,7 +250,6 @@ public class QRCodeService
         }
         catch (SQLException e)
         {
-            System.err.println("Erro ao listar QR Codes da mesa " + idMesa + ": " + e.getMessage());
             return List.of();
         }
     }
@@ -282,7 +263,7 @@ public class QRCodeService
         }
         catch (SQLException e)
         {
-            System.err.println("Erro ao limpar QR Codes expirados: " + e.getMessage());
+            return;
         }
     }
 
@@ -295,7 +276,6 @@ public class QRCodeService
         }
         catch (SQLException e)
         {
-            System.err.println("Erro ao buscar QR Code ativo da mesa " + idMesa + ": " + e.getMessage());
             return null;
         }
     }

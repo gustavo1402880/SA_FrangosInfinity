@@ -84,6 +84,19 @@ public class Configuracao
         }
     }
 
+    public double getDoubleProperty(String key, double defaultValue)
+    {
+        try
+        {
+            String value = properties.getProperty(key);
+            return value != null ? Double.parseDouble(value) : defaultValue;
+        }
+        catch (NumberFormatException e)
+        {
+            return defaultValue;
+        }
+    }
+
     public boolean getBooleanProperty(String key, boolean defaultValue) {
         String value = properties.getProperty(key);
         return value != null ? Boolean.parseBoolean(value) : defaultValue;
@@ -91,7 +104,7 @@ public class Configuracao
 
     public void exibirTodasConfiguracoes()
     {
-        System.out.println("\n📋 CONFIGURAÇÕES ATUAIS:");
+        System.out.println("\nCONFIGURAÇÕES ATUAIS:");
         System.out.println("=".repeat(40));
         properties.forEach((key, value) ->
                 System.out.printf("%-30s: %s%n", key, value)

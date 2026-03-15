@@ -21,9 +21,8 @@ public class Geolocalizador
             return cacheLocalizacao.get(idMesa);
         }
 
-        // Mudar as coordenadas para a da Weg depois >:-(
-        double latitudeBase = -23.550520;
-        double longitudeBase = -46.633308;
+        double latitudeBase = config.getDoubleProperty("geo.latitude.base", -26.4911);
+        double longitudeBase = config.getDoubleProperty("geo.longitude.base", -49.0771);
 
         ThreadLocalRandom random = ThreadLocalRandom.current();
         double variacaoLat = random.nextDouble(-0.01, 0.01);

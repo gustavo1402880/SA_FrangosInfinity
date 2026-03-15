@@ -74,8 +74,6 @@ public class MesaService
 
             conn.commit();
 
-            System.out.println("Mesa " + mesa.getNumero() + " criada com sucesso! (ID: " + mesa.getId() + ")");
-
             MesaResponseDTO resposta = MesaResponseDTO.fromEntity(mesa);
             resposta.setMensagem("Mesa criada com sucesso");
             return resposta;
@@ -88,14 +86,12 @@ public class MesaService
                 try
                 {
                     conn.rollback();
-                    System.err.println("Rollback realizado devido a erro");
                 }
                 catch (SQLException ex)
                 {
-                    System.err.println("Erro no rollback: " + ex.getMessage());
+                    criarRespostaErro("Erro no rollback: " + ex.getMessage());
                 }
             }
-            System.err.println("Erro SQL: " + e.getMessage());
             return criarRespostaErro("Erro ao criar mesa: " + e.getMessage());
         }
         finally
@@ -108,7 +104,7 @@ public class MesaService
                 }
                 catch (SQLException e)
                 {
-                    System.err.println("Erro ao fechar conexão: " + e.getMessage());
+                    criarRespostaErro("Erro ao fechar conexão: " + e.getMessage());
                 }
             }
         }
@@ -125,7 +121,6 @@ public class MesaService
         }
         catch (SQLException e)
         {
-            System.err.println("Erro ao buscar mesa " + id + ": " + e.getMessage());
             return null;
         }
     }
@@ -140,7 +135,6 @@ public class MesaService
         }
         catch (SQLException e)
         {
-            System.err.println("Erro ao buscar mesa número " + numero + ": " + e.getMessage());
             return null;
         }
     }
@@ -155,8 +149,6 @@ public class MesaService
         }
         catch (SQLException e)
         {
-            System.err.println("Erro ao listar mesas: " + e.getMessage());
-
             return List.of();
         }
     }
@@ -171,8 +163,6 @@ public class MesaService
         }
         catch (SQLException e)
         {
-            System.err.println("Erro ao listar mesas disponíveis: " + e.getMessage());
-
             return List.of();
         }
     }
@@ -237,7 +227,6 @@ public class MesaService
         }
         catch (SQLException e)
         {
-            System.err.println("Erro ao atualizar mesa: " + e.getMessage());
             return criarRespostaErro("Erro ao atualizar mesa: " + e.getMessage());
         }
         finally
@@ -250,7 +239,7 @@ public class MesaService
                 }
                 catch (SQLException e)
                 {
-                    System.err.println("Erro ao fechar conexão: " + e.getMessage());
+                    return criarRespostaErro("Erro ao fechar conexão: " + e.getMessage());
                 }
             }
         }
@@ -272,7 +261,6 @@ public class MesaService
         }
         catch (SQLException e)
         {
-            System.err.println("Erro ao buscar IoT da mesa: " + e.getMessage());
             return null;
         }
     }
@@ -291,7 +279,6 @@ public class MesaService
             var mesaOpt = mesaDAO.buscarPorId(idMesa);
             if (mesaOpt.isEmpty())
             {
-                System.err.println("Mesa não encontrada");
                 return false;
             }
 
@@ -299,7 +286,6 @@ public class MesaService
 
             if (!mesa.isDisponivel())
             {
-                System.err.println("Não é possível deletar mesa ocupada");
                 return false;
             }
 
@@ -311,7 +297,6 @@ public class MesaService
             mesaDAO.deletar(idMesa);
 
             conn.commit();
-            System.out.println("Mesa " + mesa.getNumero() + " deletada com sucesso");
             return true;
 
         }
@@ -325,10 +310,9 @@ public class MesaService
                 }
                 catch (SQLException ex)
                 {
-                    System.err.println("Erro no rollback: " + ex.getMessage());
+                    return false;
                 }
             }
-            System.err.println("Erro ao deletar mesa: " + e.getMessage());
             return false;
         }
         finally
@@ -341,7 +325,7 @@ public class MesaService
                 }
                 catch (SQLException e)
                 {
-                    System.err.println("Erro ao fechar conexão: " + e.getMessage());
+                    return false;
                 }
             }
         }
