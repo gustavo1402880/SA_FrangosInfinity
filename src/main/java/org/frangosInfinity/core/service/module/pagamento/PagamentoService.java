@@ -46,7 +46,7 @@ public class PagamentoService
         Connection connection = null;
         try
         {
-            if (validarId(request.getSubPedidoId()))
+            if (!validarId(request.getSubPedidoId()))
             {
                 return criarRespostaErro("ID do subpedido inválido");
             }
@@ -130,7 +130,7 @@ public class PagamentoService
     {
         try(Connection connection = ConnectionFactory.getConnection())
         {
-            if(validarId(id))
+            if(!validarId(id))
             {
                 return null;
             }
@@ -148,7 +148,7 @@ public class PagamentoService
     {
         try(Connection connection = ConnectionFactory.getConnection())
         {
-            if(validarId(id))
+            if(!validarId(id))
             {
                 return null;
             }

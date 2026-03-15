@@ -40,7 +40,7 @@ public class TransacaoPIXService
         {
             if (!validarId(pagamentoId))
             {
-
+                return criarRespostaErro("ID do pagamento inválido");
             }
 
             connection = ConnectionFactory.getConnection();
@@ -52,14 +52,14 @@ public class TransacaoPIXService
             var pagamentoOpt = pagamentoDAO.buscarPorId(pagamentoId);
             if (pagamentoOpt.isEmpty())
             {
-
+                return criarRespostaErro("Pix não encontrado");
             }
 
             Pagamento pagamento = pagamentoOpt.get();
 
             if (pagamento.getTipoPagamento() != TipoPagamento.PIX)
             {
-
+                return criarRespostaErro("Tipo de pagamento não é PIX");
             }
 
             var pixExistente = transacaoDAO.buscarPorPagamentoId(pagamentoId);
