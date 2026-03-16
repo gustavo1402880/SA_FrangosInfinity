@@ -72,9 +72,4 @@ public abstract class Funcionario extends Usuario
     {
         this.salario = salario;
     }
-
-    public void baterPonto()
-    {
-        System.out.println("Ponto registrado para: " + this.getNome() + " - " + LocalDateTime.now());
-    }
 }
