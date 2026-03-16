@@ -3,6 +3,7 @@ package org.frangosInfinity.infrastructure.persistence.module.relatorio;
 import org.frangosInfinity.core.entity.module.relatorio.RelatorioVendas;
 
 import java.sql.*;
+import java.util.Optional;
 
 public class RelatorioDAO
 {
@@ -35,6 +36,19 @@ public class RelatorioDAO
 
             return relatorio;
         }
+    }
+    public Optional<RelatorioVendas> buscarPorId(Long id)
+    {
+        return Optional.empty();
+    }
+
+    public RelatorioVendas mapearRelatorioVendas(ResultSet rs) throws SQLException
+    {
+        RelatorioVendas relatorioVendas = new RelatorioVendas();
+
+        relatorioVendas.setId(rs.getLong("id"));
+
+        return relatorio;
     }
 
 }

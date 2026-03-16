@@ -12,7 +12,7 @@ public class RelatorioVendas {
     private int totalPedidos;
     private double ticketMedio;
 
-    RelatorioVendas(){}
+    public RelatorioVendas(){}
 
     public RelatorioVendas(Long id, LocalDateTime periodoInicio, LocalDateTime dataGeracao, LocalDateTime periodoFim, int totalPedidos, double totalVendas, double ticketMedio) {
         this.id = id;
