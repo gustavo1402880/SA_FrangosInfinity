@@ -2,7 +2,7 @@ package org.frangosInfinity.infrastructure.console.module.relatorio;
 
 import org.frangosInfinity.application.module.relatorio.request.RelatorioRequestDTO;
 import org.frangosInfinity.application.module.relatorio.response.RelatorioResponseDTO;
-import org.frangosInfinity.core.service.module.relatorio.RelatorioService;
+import org.frangosInfinity.core.service.module.relatorio.RelatorioVendasService;
 import org.frangosInfinity.core.service.module.relatorio.RelatorioVendasService;
 
 import java.time.LocalDateTime;
@@ -13,7 +13,7 @@ public class RelatorioController {
     private final RelatorioVendasService relatorioService;
 
     public RelatorioController() {
-        this.relatorioService = new RelatorioService();
+        this.relatorioService = new RelatorioVendasService();
     }
 
 
