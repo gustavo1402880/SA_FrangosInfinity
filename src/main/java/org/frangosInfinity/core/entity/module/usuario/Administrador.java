@@ -10,9 +10,9 @@ import java.util.Date;
 
 public class Administrador extends Funcionario
 {
-    public Administrador(String nome, String email, String senha, TipoUsuario usuario ,  String matricula, NivelAcesso nivelAcesso)
+    public Administrador(String nome, String email, String senha, TipoUsuario usuario ,  String matricula)
     {
-        super(nome, email, senha, usuario, matricula, nivelAcesso);
+        super(nome, email, senha, usuario, matricula, NivelAcesso.ADMINISTRADOR);
     }
 
     public Administrador() {}

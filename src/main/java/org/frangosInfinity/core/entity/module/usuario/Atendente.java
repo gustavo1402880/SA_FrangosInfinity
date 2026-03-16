@@ -10,27 +10,8 @@ public class Atendente extends Funcionario
         super(nome, email, senha, usuario, matricula, NivelAcesso.ATENDENTE);
     }
 
-    public Atendente() {
-
-    }
-
-    public String getTipoUsuario()
+    public Atendente()
     {
-        return "ATENDENTE";
-    }
 
-    public void registrarPedidoManual()
-    {
-        System.out.println("Atendente " + this.getNome() + " registrando pedido manual...");
-    }
-
-    public void visualizarPedidosApp()
-    {
-        System.out.println("Visualizando pedidos do app...");
-    }
-
-    public void modificarPedido()
-    {
-        System.out.println("Modificando pedido...");
     }
 }

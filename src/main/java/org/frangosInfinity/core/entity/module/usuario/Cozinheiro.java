@@ -9,8 +9,8 @@ import java.util.List;
 
 public class Cozinheiro extends Funcionario
 {
-    public Cozinheiro(String nome, String email, String senha, TipoUsuario usuario,  String matricula, NivelAcesso nivelAcesso) {
-        super(nome, email, senha, usuario,  matricula, nivelAcesso );
+    public Cozinheiro(String nome, String email, String senha, TipoUsuario usuario,  String matricula) {
+        super(nome, email, senha, usuario,  matricula, NivelAcesso.COZINHEIRO );
     }
 
     public Cozinheiro() {}
