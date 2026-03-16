@@ -7,16 +7,14 @@ import java.sql.Date;
 
 public class SubPedidoRequestDTO {
 
-    private Long id;
-    private Pedido pedidoHub;
-    private String clienteID;
-    private Date date;
-    private StatusPedido status;
-    private Double valorTotal;
-    private int tempo_em_minutos;
-    private String obsevacoes;
-
-    public SubPedidoRequestDTO() {}
+    private final Long id;
+    private final Pedido pedidoHub;
+    private final String clienteID;
+    private final Date date;
+    private final StatusPedido status;
+    private final Double valorTotal;
+    private final int tempo_em_minutos;
+    private final String obsevacoes;
 
     public SubPedidoRequestDTO(Long id, Pedido pedidoHub, String clienteID, Date date, StatusPedido status, Double valorTotal, int tempo_em_minutos, String obsevacoes) {
 
@@ -38,63 +36,31 @@ public class SubPedidoRequestDTO {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public Pedido getPedidoHub() {
         return pedidoHub;
-    }
-
-    public void setPedidoHub(Pedido pedidoHub) {
-        this.pedidoHub = pedidoHub;
     }
 
     public String getClienteID() {
         return clienteID;
     }
 
-    public void setClienteID(String clienteID) {
-        this.clienteID = clienteID;
-    }
-
     public Date getDate() {
         return date;
-    }
-
-    public void setDate(Date date) {
-        this.date = date;
     }
 
     public StatusPedido getStatus() {
         return status;
     }
 
-    public void setStatus(StatusPedido status) {
-        this.status = status;
-    }
-
     public Double getValorTotal() {
         return valorTotal;
-    }
-
-    public void setValorTotal(Double valorTotal) {
-        this.valorTotal = valorTotal;
     }
 
     public int getTempo_em_minutos() {
         return tempo_em_minutos;
     }
 
-    public void setTempo_em_minutos(int tempo_em_minutos) {
-        this.tempo_em_minutos = tempo_em_minutos;
-    }
-
     public String getObsevacoes() {
         return obsevacoes;
-    }
-
-    public void setObsevacoes(String obsevacoes) {
-        this.obsevacoes = obsevacoes;
     }
 }

@@ -4,15 +4,13 @@ import org.frangosInfinity.core.entity.module.pedido.ItemPedido;
 
 public class ItemPedidoRequestDTO {
 
-    private Long id_ItemPedido;
-    private Long subPedidoID;
-    private Long produtoid;
-    private Integer quantidade;
-    private Double precoUnitario;
-    private String Observacao;
-    private Double subTotal;
-
-    public ItemPedidoRequestDTO(){};
+    private final Long id_ItemPedido;
+    private final Long subPedidoID;
+    private final Long produtoid;
+    private final Integer quantidade;
+    private final Double precoUnitario;
+    private final String Observacao;
+    private final Double subTotal;
 
     public ItemPedidoRequestDTO(Long id_ItemPedido, Long subPedidoID, Long produtoid, Integer quantidade, Double precoUnitario, String observacao, Double subTotal) {
 
@@ -30,60 +28,31 @@ public class ItemPedidoRequestDTO {
 
     }
 
-
     public Long getId_ItemPedido() {
         return id_ItemPedido;
-    }
-
-    public void setId_ItemPedido(Long id_ItemPedido) {
-        this.id_ItemPedido = id_ItemPedido;
     }
 
     public Long getSubPedidoID() {
         return subPedidoID;
     }
 
-    public void setSubPedidoID(Long subPedidoID) {
-        this.subPedidoID = subPedidoID;
-    }
-
     public Long getProdutoid() {
         return produtoid;
-    }
-
-    public void setProdutoid(Long produtoid) {
-        this.produtoid = produtoid;
     }
 
     public Integer getQuantidade() {
         return quantidade;
     }
 
-    public void setQuantidade(Integer quantidade) {
-        this.quantidade = quantidade;
-    }
-
     public Double getPrecoUnitario() {
         return precoUnitario;
-    }
-
-    public void setPrecoUnitario(Double precoUnitario) {
-        this.precoUnitario = precoUnitario;
     }
 
     public String getObservacao() {
         return Observacao;
     }
 
-    public void setObservacao(String observacao) {
-        Observacao = observacao;
-    }
-
     public Double getSubTotal() {
         return subTotal;
-    }
-
-    public void setSubTotal(Double subTotal) {
-        this.subTotal = subTotal;
     }
 }

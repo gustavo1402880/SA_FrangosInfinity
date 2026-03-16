@@ -5,12 +5,10 @@ import java.util.ArrayList;
 
 public class CarrinhoRequestDTO {
 
-    private Long id_carrinho;
-    private String cliente_id;
-    private Date dataCriacao;
-    private ArrayList<ItemPedido> itens;
-
-    public CarrinhoRequestDTO() {};
+    private final Long id_carrinho;
+    private final String cliente_id;
+    private final Date dataCriacao;
+    private final ArrayList<ItemPedido> itens;
 
     public CarrinhoRequestDTO(Long id_carrinho, String cliente_id, Date dataCriacao, ArrayList<ItemPedido> itens){
 
@@ -28,31 +26,15 @@ public class CarrinhoRequestDTO {
         return id_carrinho;
     }
 
-    public void setId_carrinho(Long id_carrinho) {
-        this.id_carrinho = id_carrinho;
-    }
-
     public String getCliente_id() {
         return cliente_id;
-    }
-
-    public void setCliente_id(String cliente_id) {
-        this.cliente_id = cliente_id;
     }
 
     public Date getDataCriacao() {
         return dataCriacao;
     }
 
-    public void setDataCriacao(Date dataCriacao) {
-        this.dataCriacao = dataCriacao;
-    }
-
     public ArrayList<ItemPedido> getItens() {
         return itens;
-    }
-
-    public void setItens(ArrayList<ItemPedido> itens) {
-        this.itens = itens;
     }
 }
