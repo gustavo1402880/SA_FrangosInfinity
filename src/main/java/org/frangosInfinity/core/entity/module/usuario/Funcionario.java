@@ -1,17 +1,31 @@
 package org.frangosInfinity.core.entity.module.usuario;
 
+import jakarta.persistence.*;
 import org.frangosInfinity.core.enums.NivelAcesso;
 import org.frangosInfinity.core.enums.TipoUsuario;
 
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "funcionario")
+@PrimaryKeyJoinColumn(name = "id")
 public abstract class Funcionario extends Usuario
 {
+    @Column(unique = true, length = 20)
     protected String matricula;
+
+    @Column(name = "data_contratacao")
     protected LocalDateTime dataContratacao;
+
+    @Column(length = 20)
     protected String turno;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "nivel_acesso", length = 20)
     protected NivelAcesso nivelAcesso;
-    protected double salario;
+
+    @Column()
+    protected Double salario;
 
     public Funcionario() {}
 
@@ -63,12 +77,12 @@ public abstract class Funcionario extends Usuario
         this.nivelAcesso = nivelAcesso;
     }
 
-    public double getSalario()
+    public Double getSalario()
     {
         return salario;
     }
 
-    public void setSalario(double salario)
+    public void setSalario(Double salario)
     {
         this.salario = salario;
     }

@@ -1,20 +1,15 @@
 package org.frangosInfinity.infrastructure.persistence.module.usuario;
 
-import com.mysql.cj.x.protobuf.MysqlxPrepare;
-import org.frangosInfinity.core.entity.module.mesa.IotConfig;
 import org.frangosInfinity.core.entity.module.usuario.*;
 import org.frangosInfinity.core.enums.NivelAcesso;
 import org.frangosInfinity.core.enums.TipoUsuario;
 
-import javax.swing.text.html.Option;
-import javax.xml.transform.Result;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.LongFunction;
 
 public class UsuarioDAO {
     private final Connection connection;
@@ -456,7 +451,7 @@ public class UsuarioDAO {
         cliente.setSenha(rs.getString(" senha"));
         cliente.setDataCadastro(rs.getTimestamp("data_cadastro").toLocalDateTime());
         cliente.setAtivo(rs.getBoolean("ativo"));
-        cliente.setUsuario(TipoUsuario.CLIENTE);
+        cliente.setTipo(TipoUsuario.CLIENTE);
         cliente.setIdSessao(rs.getString("id_sessao"));
         cliente.setDataNascimento(LocalDate.from(rs.getTimestamp("data_nascimento").toLocalDateTime()));
         cliente.setTotalGasto(rs.getDouble("total_gasto"));
@@ -477,7 +472,7 @@ public class UsuarioDAO {
         administrador.setSenha(rs.getString(" senha"));
         administrador.setDataCadastro(rs.getTimestamp("data_cadastro").toLocalDateTime());
         administrador.setAtivo(rs.getBoolean("ativo"));
-        administrador.setUsuario(TipoUsuario.FUNCIONARIO);
+        administrador.setTipo(TipoUsuario.FUNCIONARIO);
         administrador.setMatricula(rs.getString("matricula"));
         administrador.setDataContratacao(rs.getTimestamp("data_contratacao") != null ? rs.getTimestamp("data_contratacao").toLocalDateTime() : LocalDateTime.now());
         administrador.setTurno(rs.getString("turno"));
@@ -498,7 +493,7 @@ public class UsuarioDAO {
         cozinheiro.setSenha(rs.getString(" senha"));
         cozinheiro.setDataCadastro(rs.getTimestamp("data_cadastro").toLocalDateTime());
         cozinheiro.setAtivo(rs.getBoolean("ativo"));
-        cozinheiro.setUsuario(TipoUsuario.FUNCIONARIO);
+        cozinheiro.setTipo(TipoUsuario.FUNCIONARIO);
         cozinheiro.setMatricula(rs.getString("matricula"));
         cozinheiro.setDataContratacao(rs.getTimestamp("data_contratacao") != null ? rs.getTimestamp("data_contratacao").toLocalDateTime() : LocalDateTime.now());
         cozinheiro.setTurno(rs.getString("turno"));
@@ -520,7 +515,7 @@ public class UsuarioDAO {
         caixa.setSenha(rs.getString(" senha"));
         caixa.setDataCadastro(rs.getTimestamp("data_cadastro").toLocalDateTime());
         caixa.setAtivo(rs.getBoolean("ativo"));
-        caixa.setUsuario(TipoUsuario.FUNCIONARIO);
+        caixa.setTipo(TipoUsuario.FUNCIONARIO);
         caixa.setMatricula(rs.getString("matricula"));
         caixa.setDataContratacao(rs.getTimestamp("data_contratacao") != null ? rs.getTimestamp("data_contratacao").toLocalDateTime() : LocalDateTime.now());
         caixa.setTurno(rs.getString("turno"));
@@ -542,7 +537,7 @@ public class UsuarioDAO {
         atendente.setSenha(rs.getString(" senha"));
         atendente.setDataCadastro(rs.getTimestamp("data_cadastro").toLocalDateTime());
         atendente.setAtivo(rs.getBoolean("ativo"));
-        atendente.setUsuario(TipoUsuario.FUNCIONARIO);
+        atendente.setTipo(TipoUsuario.FUNCIONARIO);
         atendente.setMatricula(rs.getString("matricula"));
         atendente.setDataContratacao(rs.getTimestamp("data_contratacao") != null ? rs.getTimestamp("data_contratacao").toLocalDateTime() : LocalDateTime.now());
         atendente.setTurno(rs.getString("turno"));

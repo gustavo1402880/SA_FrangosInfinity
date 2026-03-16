@@ -1,40 +1,60 @@
 package org.frangosInfinity.core.entity.module.usuario;
 
+import jakarta.persistence.*;
 import org.frangosInfinity.core.enums.TipoUsuario;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "usuario")
+@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "tipo_usuario")
 public abstract class Usuario
 {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String nome;
-    private String email;
-    private String telefone;
-    private String senha;
-    private LocalDateTime dataCadastro;
-    private boolean ativo;
-    private TipoUsuario usuario;
 
+    @Column(nullable = false, length = 100)
+    private String nome;
+
+    @Column(nullable = false, unique = true, length = 100)
+    private String email;
+
+    @Column(nullable = false, unique = true, length = 20)
+    private String telefone;
+
+    @Column(nullable = false)
+    private String senha;
+
+    @Column(name = "data_cadastro", nullable = false)
+    private LocalDateTime dataCadastro;
+
+    @Column(nullable = false)
+    private boolean ativo;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo", nullable = false)
+    private TipoUsuario tipo;
 
     public Usuario() {}
 
-    public Usuario(String nome, String email, String senha, TipoUsuario usuario)
+    public Usuario(String nome, String email, String senha, TipoUsuario tipo)
     {
         this.nome = nome;
         this.email = email;
         this.senha = senha;
         this.dataCadastro = LocalDateTime.now();
         this.ativo = true;
-        this.usuario = usuario;
+        this.tipo = tipo;
     }
 
-    public TipoUsuario getUsuario() {
-        return usuario;
+    public TipoUsuario getTipo() {
+        return tipo;
     }
 
-    public void setUsuario(TipoUsuario usuario) {
-        this.usuario = usuario;
+    public void setTipo(TipoUsuario usuario) {
+        this.tipo = usuario;
     }
 
     public Long getId()
