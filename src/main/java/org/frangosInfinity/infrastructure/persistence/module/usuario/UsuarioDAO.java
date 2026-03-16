@@ -128,7 +128,7 @@ public class UsuarioDAO {
         }
     }
 
-    public List<Usuario> ListarTodos() throws SQLException
+    public List<Usuario> listarTodos() throws SQLException
     {
         List<Usuario> usuarios = new ArrayList<>();
 
@@ -208,6 +208,18 @@ public class UsuarioDAO {
         try(PreparedStatement stmt = connection.prepareStatement(sql))
         {
             stmt.setString(1, novaSenha);
+            stmt.setLong(2, id);
+            stmt.executeUpdate();
+        }
+    }
+
+    public void atualizarEmail(Long id, String novoEmail) throws SQLException
+    {
+        String sql = "UPDATE usuario SET email = ? WHERE id = ?";
+
+        try(PreparedStatement stmt = connection.prepareStatement(sql))
+        {
+            stmt.setString(1, novoEmail);
             stmt.setLong(2, id);
             stmt.executeUpdate();
         }
