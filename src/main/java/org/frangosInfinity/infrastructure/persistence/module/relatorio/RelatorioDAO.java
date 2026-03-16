@@ -37,8 +37,22 @@ public class RelatorioDAO
             return relatorio;
         }
     }
-    public Optional<RelatorioVendas> buscarPorId(Long id)
+    public Optional<RelatorioVendas> buscarPorId(Long id) throws SQLException
     {
+        String sql = "SELECT * FROM relatorio_vendas WHERE id = ?";
+
+        try(PreparedStatement stmt = connection.prepareStatement(sql))
+        {
+            stmt.setLong(1, id);
+
+            ResultSet rs = stmt.executeQuery();
+
+            if(rs.next())
+            {
+                return Optional.of(mapearRelatorioVendas(rs));
+            }
+        }
+
         return Optional.empty();
     }
 
@@ -47,8 +61,21 @@ public class RelatorioDAO
         RelatorioVendas relatorioVendas = new RelatorioVendas();
 
         relatorioVendas.setId(rs.getLong("id"));
+        relatorioVendas.setPeriodoInicio(rs.getTimestamp("periodo inicio").toLocalDateTime());
+        relatorioVendas.setPeriodoFim(rs.getTimestamp("periodo fim").toLocalDateTime());
+        relatorioVendas.setDataGeracao(rs.getTimestamp("data geração").toLocalDateTime());
+        relatorioVendas.setTotalVendas(rs.getDouble("total vendas"));
+        relatorioVendas.setTotalPedidos(rs.getInt("total pedidos"));
+        relatorioVendas.setTicketMedio(rs.getDouble("ticket medio"));
 
-        return relatorio;
+        Long idRelatorio = rs.getLong("idRelatorio");
+
+        if (!rs.wasNull())
+        {
+            relatorioVendas.setId(idRelatorio);
+        }
+
+        return relatorioVendas;
     }
 
 }
