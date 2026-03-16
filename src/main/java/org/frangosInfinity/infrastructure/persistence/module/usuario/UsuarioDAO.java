@@ -7,6 +7,7 @@ import org.frangosInfinity.core.enums.NivelAcesso;
 import org.frangosInfinity.core.enums.TipoUsuario;
 
 import javax.swing.text.html.Option;
+import javax.xml.transform.Result;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -214,7 +215,7 @@ public class UsuarioDAO {
 
     public void deletar(Long id) throws SQLException
     {
-        String sql = "UPDATE ativo = 0 FROM cliente WHERE id = ?";
+        String sql = "UPDATE ativo = false FROM cliente WHERE id = ?";
 
         try(PreparedStatement stmt = connection.prepareStatement(sql))
         {
@@ -266,6 +267,141 @@ public class UsuarioDAO {
             }
         }
         return funcionarios;
+    }
+
+    public List<Usuario> buscarAtivos() throws SQLException
+    {
+        List<Usuario> usuarios = new ArrayList<>();
+        String sql = "SELECT u.*, " +
+                "c.*, " +
+                "f.* " +
+                "FROM usuario u " +
+                "LEFT JOIN cliente ON u.id = c.id " +
+                "LEFT JOIN funcionario ON u.id = f.id " +
+                "WHERE u.ativo = true";
+
+        try(Statement stmt = connection.createStatement())
+        {
+            ResultSet rs = stmt.executeQuery(sql);
+
+            while (rs.next())
+            {
+                usuarios.add(mapearUsuario(rs));
+            }
+        }
+        return usuarios;
+    }
+
+    public List<Usuario> buscarInvativos() throws SQLException
+    {
+        List<Usuario> usuarios = new ArrayList<>();
+        String sql = "SELECT u.*, " +
+                "c.*, " +
+                "f.* " +
+                "FROM usuario u " +
+                "LEFT JOIN cliente ON u.id = c.id " +
+                "LEFT JOIN funcionario ON u.id = f.id " +
+                "WHERE u.ativo = true";
+
+        try(Statement stmt = connection.createStatement())
+        {
+            ResultSet rs = stmt.executeQuery(sql);
+
+            while (rs.next())
+            {
+                usuarios.add(mapearUsuario(rs));
+            }
+        }
+        return usuarios;
+    }
+
+    public Optional<Cliente> buscarPorIdSessao(String idSessao) throws SQLException
+    {
+        String sql = "SELECT u.*, c.* FROM usuario u " +
+                "INNER JOIN cliente c ON u.id = c.id " +
+                "WHERE c.id_sessao = ?";
+
+        try(PreparedStatement stmt = connection.prepareStatement(sql))
+        {
+            stmt.setString(1, idSessao);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next())
+            {
+                return Optional.of((Cliente) mapearUsuario(rs));
+            }
+            return Optional.empty();
+        }
+    }
+
+    public Optional<Funcionario> buscarPorMatricula(String matricula) throws SQLException
+    {
+        String sql = "SELECT u.*, f.* FROM usuario u " +
+                "INNER JOIN funcionario f ON u.id = f.id " +
+                "WHERE f.matricula = ?";
+
+        try(PreparedStatement stmt = connection.prepareStatement(sql))
+        {
+            stmt.setString(1, matricula);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next())
+            {
+                return Optional.of((Funcionario) mapearUsuario(rs));
+            }
+            return Optional.empty();
+        }
+    }
+
+    public Boolean existeEmail(String email) throws SQLException
+    {
+        String sql = "SELECT COUNT(*) FROM usuario WHERE email = ?";
+
+        try(PreparedStatement stmt = connection.prepareStatement(sql))
+        {
+            stmt.setString(1, email);
+            ResultSet rs = stmt.executeQuery();
+
+            if(rs.next())
+            {
+                return rs.getInt(1) > 0;
+            }
+            return false;
+        }
+    }
+
+    public Boolean existeMatricula(String matricula) throws SQLException
+    {
+        String sql = "SELECT COUNT(*) FROM funcionario WHERE matricula = ?";
+
+        try(PreparedStatement stmt = connection.prepareStatement(sql))
+        {
+            stmt.setString(1,matricula);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next())
+            {
+                return rs.getInt(1) > 0;
+            }
+            return false;
+        }
+    }
+
+    public Boolean existeIdSessao(String idSessao) throws SQLException
+    {
+        String sql = "SELECT COUNT(*) FROM cliente WHERE id_sessao = ?";
+
+        try(PreparedStatement stmt = connection.prepareStatement(sql))
+        {
+            stmt.setString(1, idSessao);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next())
+            {
+                return rs.getInt(1) > 0;
+            }
+            return false;
+        }
     }
 
     private Usuario mapearUsuario(ResultSet rs) throws SQLException
