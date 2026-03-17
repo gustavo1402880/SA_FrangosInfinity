@@ -1,6 +1,17 @@
 package org.frangosInfinity.infrastructure.console.module.main;
 
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+
+@SpringBootApplication(scanBasePackages = "org.frangosInfinity")
+@EntityScan(basePackages = "org.frangosInfinity.core.entity")
+@EnableJpaRepositories(basePackages = "org.frangosInfinity.infrastructure.persistence")
 public class Main
 {
-
+    public static void main(String[] args)
+    {
+        SpringApplication.run(Main.class, args);
+    }
 }
