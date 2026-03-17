@@ -21,6 +21,12 @@ public class RelatorioVendasService
             conn = ConnectionFactory.getConnection();
 
             conn.setAutoCommit(false);
+
+            RelatorioDAO relatorioDAO = new RelatorioDAO(conn);
+
+            var relatorioExistente = relatorioDAO.buscarPorDataGeracao(request.getDataGeracao());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
 
         return null;

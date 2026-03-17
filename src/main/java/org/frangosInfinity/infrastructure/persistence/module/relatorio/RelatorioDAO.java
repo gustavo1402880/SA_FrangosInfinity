@@ -3,6 +3,7 @@ package org.frangosInfinity.infrastructure.persistence.module.relatorio;
 import org.frangosInfinity.core.entity.module.relatorio.RelatorioVendas;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 public class RelatorioDAO
@@ -44,6 +45,25 @@ public class RelatorioDAO
         try(PreparedStatement stmt = connection.prepareStatement(sql))
         {
             stmt.setLong(1, id);
+
+            ResultSet rs = stmt.executeQuery();
+
+            if(rs.next())
+            {
+                return Optional.of(mapearRelatorioVendas(rs));
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    public Optional<RelatorioVendas> buscarPorDataGeracao(LocalDateTime dataGeracao) throws SQLException
+    {
+        String sql = "SELECT * FROM relatorio_vendas WHERE data_geracao = ?";
+
+        try(PreparedStatement stmt = connection.prepareStatement(sql))
+        {
+            stmt.setTimestamp(1, Timestamp.valueOf(dataGeracao));
 
             ResultSet rs = stmt.executeQuery();
 
