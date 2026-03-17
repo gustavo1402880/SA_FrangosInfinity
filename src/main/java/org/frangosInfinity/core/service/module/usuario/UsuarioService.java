@@ -6,7 +6,7 @@ import org.frangosInfinity.core.entity.module.usuario.*;
 import org.frangosInfinity.core.enums.NivelAcesso;
 import org.frangosInfinity.core.enums.TipoUsuario;
 import org.frangosInfinity.infrastructure.persistence.connection.ConnectionFactory;
-import org.frangosInfinity.infrastructure.persistence.module.usuario.UsuarioDAO;
+import org.frangosInfinity.infrastructure.persistence.module.usuario.UsuarioRepository;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -86,9 +86,9 @@ public class UsuarioService
             connection = ConnectionFactory.getConnection();
             connection.setAutoCommit(false);
 
-            UsuarioDAO usuarioDAO = new UsuarioDAO(connection);
+            UsuarioRepository usuarioRepository = new UsuarioRepository(connection);
 
-            if (usuarioDAO.existeEmail(request.getEmail()))
+            if (usuarioRepository.existeEmail(request.getEmail()))
             {
                 return UsuarioResponseDTO.erro("Email já existe");
             }
@@ -97,7 +97,7 @@ public class UsuarioService
 
             if (request.getTipoUsuario() == TipoUsuario.CLIENTE)
             {
-                if (!validarIdSessao(request.getIdSessao()) || usuarioDAO.existeIdSessao(request.getIdSessao()))
+                if (!validarIdSessao(request.getIdSessao()) || usuarioRepository.existeIdSessao(request.getIdSessao()))
                 {
                     return UsuarioResponseDTO.erro("ID de sessão inválido ou já existente");
                 }
@@ -114,7 +114,7 @@ public class UsuarioService
             }
             else if (request.getTipoUsuario() == TipoUsuario.FUNCIONARIO)
             {
-                if (!validarMatricula(request.getMatricula()) || usuarioDAO.existeMatricula(request.getMatricula()))
+                if (!validarMatricula(request.getMatricula()) || usuarioRepository.existeMatricula(request.getMatricula()))
                 {
                     return UsuarioResponseDTO.erro("Matrícula inválida ou já existente");
                 }
@@ -180,7 +180,7 @@ public class UsuarioService
                 return UsuarioResponseDTO.erro("Tipo de usuário inválido");
             }
 
-            Usuario usuarioSalvar = usuarioDAO.salvar(usuario);
+            Usuario usuarioSalvar = usuarioRepository.salvar(usuario);
 
             connection.commit();
 
@@ -226,9 +226,9 @@ public class UsuarioService
                 return UsuarioResponseDTO.erro("ID inválido");
             }
 
-            UsuarioDAO usuarioDAO = new UsuarioDAO(connection);
+            UsuarioRepository usuarioRepository = new UsuarioRepository(connection);
 
-            var usuarioOpt = usuarioDAO.BuscarPorId(id);
+            var usuarioOpt = usuarioRepository.BuscarPorId(id);
             if (usuarioOpt.isEmpty())
             {
                 return UsuarioResponseDTO.erro("Usuário com ID: "+id+" não encontrado");
@@ -251,8 +251,8 @@ public class UsuarioService
                 return UsuarioResponseDTO.erro("Email inválido");
             }
 
-            UsuarioDAO usuarioDAO = new UsuarioDAO(connection);
-            var usuarioOpt = usuarioDAO.buscarPorEmail(email);
+            UsuarioRepository usuarioRepository = new UsuarioRepository(connection);
+            var usuarioOpt = usuarioRepository.buscarPorEmail(email);
 
             if (usuarioOpt.isEmpty())
             {
@@ -271,8 +271,8 @@ public class UsuarioService
     {
         try(Connection connection = ConnectionFactory.getConnection())
         {
-            UsuarioDAO usuarioDAO = new UsuarioDAO(connection);
-            List<Usuario> usuarios = usuarioDAO.listarTodos();
+            UsuarioRepository usuarioRepository = new UsuarioRepository(connection);
+            List<Usuario> usuarios = usuarioRepository.listarTodos();
 
             return usuarios.stream()
                     .map(UsuarioResponseDTO::fromEntity)
@@ -288,8 +288,8 @@ public class UsuarioService
     {
         try(Connection connection = ConnectionFactory.getConnection())
         {
-            UsuarioDAO usuarioDAO = new UsuarioDAO(connection);
-            List<Usuario> usuarios = usuarioDAO.buscarAtivos();
+            UsuarioRepository usuarioRepository = new UsuarioRepository(connection);
+            List<Usuario> usuarios = usuarioRepository.buscarAtivos();
 
             return usuarios.stream()
                     .map(UsuarioResponseDTO::fromEntity)
@@ -305,8 +305,8 @@ public class UsuarioService
     {
         try(Connection connection = ConnectionFactory.getConnection())
         {
-            UsuarioDAO usuarioDAO = new UsuarioDAO(connection);
-            List<Usuario> usuarios = usuarioDAO.buscarInvativos();
+            UsuarioRepository usuarioRepository = new UsuarioRepository(connection);
+            List<Usuario> usuarios = usuarioRepository.buscarInvativos();
 
             return usuarios.stream()
                     .map(UsuarioResponseDTO::fromEntity)
@@ -322,8 +322,8 @@ public class UsuarioService
     {
         try(Connection connection = ConnectionFactory.getConnection())
         {
-            UsuarioDAO usuarioDAO = new UsuarioDAO(connection);
-            List<Usuario> usuarios = usuarioDAO.buscarPorTipo(tipoUsuario);
+            UsuarioRepository usuarioRepository = new UsuarioRepository(connection);
+            List<Usuario> usuarios = usuarioRepository.buscarPorTipo(tipoUsuario);
 
             return usuarios.stream()
                     .map(UsuarioResponseDTO::fromEntity)
@@ -339,8 +339,8 @@ public class UsuarioService
     {
         try(Connection connection = ConnectionFactory.getConnection())
         {
-            UsuarioDAO usuarioDAO = new UsuarioDAO(connection);
-            List<Funcionario> usuarios = usuarioDAO.buscarPorNivelAcesso(nivelAcesso);
+            UsuarioRepository usuarioRepository = new UsuarioRepository(connection);
+            List<Funcionario> usuarios = usuarioRepository.buscarPorNivelAcesso(nivelAcesso);
 
             return usuarios.stream()
                     .map(UsuarioResponseDTO::fromEntity)
@@ -357,9 +357,9 @@ public class UsuarioService
     {
         try(Connection connection = ConnectionFactory.getConnection())
         {
-            UsuarioDAO usuarioDAO = new UsuarioDAO(connection);
+            UsuarioRepository usuarioRepository = new UsuarioRepository(connection);
 
-            var usuarioOpt = usuarioDAO.buscarPorIdSessao(idSessao);
+            var usuarioOpt = usuarioRepository.buscarPorIdSessao(idSessao);
             if (usuarioOpt.isEmpty())
             {
                 return UsuarioResponseDTO.erro("Cliente com id de sessão: "+idSessao+" não encontrado");
@@ -377,9 +377,9 @@ public class UsuarioService
     {
         try(Connection connection = ConnectionFactory.getConnection())
         {
-            UsuarioDAO usuarioDAO = new UsuarioDAO(connection);
+            UsuarioRepository usuarioRepository = new UsuarioRepository(connection);
 
-            var usuarioOpt = usuarioDAO.buscarPorMatricula(matricula);
+            var usuarioOpt = usuarioRepository.buscarPorMatricula(matricula);
             if (usuarioOpt.isEmpty())
             {
                 return UsuarioResponseDTO.erro("Funcionário com matrícula: "+matricula+" não encontrado");
@@ -406,8 +406,8 @@ public class UsuarioService
             connection = ConnectionFactory.getConnection();
             connection.setAutoCommit(false);
 
-            UsuarioDAO usuarioDAO = new UsuarioDAO(connection);
-            var usuarioOpt = usuarioDAO.BuscarPorId(id);
+            UsuarioRepository usuarioRepository = new UsuarioRepository(connection);
+            var usuarioOpt = usuarioRepository.BuscarPorId(id);
 
             if (usuarioOpt.isEmpty())
             {
@@ -431,7 +431,7 @@ public class UsuarioService
                 ((Funcionario) usuario).setTurno(request.getTurno());
             }
 
-            usuarioDAO.atualizar(usuario);
+            usuarioRepository.atualizar(usuario);
 
             connection.commit();
 
@@ -486,8 +486,8 @@ public class UsuarioService
             connection = ConnectionFactory.getConnection();
             connection.setAutoCommit(false);
 
-            UsuarioDAO usuarioDAO = new UsuarioDAO(connection);
-            var usuarioOpt = usuarioDAO.BuscarPorId(id);
+            UsuarioRepository usuarioRepository = new UsuarioRepository(connection);
+            var usuarioOpt = usuarioRepository.BuscarPorId(id);
 
             if (usuarioOpt.isEmpty())
             {
@@ -497,7 +497,7 @@ public class UsuarioService
             Usuario usuario = usuarioOpt.get();
             usuario.setSenha(senhaNova);
 
-            usuarioDAO.atualizarSenha(id, senhaNova);
+            usuarioRepository.atualizarSenha(id, senhaNova);
 
             return UsuarioResponseDTO.fromEntity(usuario);
         }
@@ -545,14 +545,14 @@ public class UsuarioService
             connection = ConnectionFactory.getConnection();
             connection.setAutoCommit(false);
 
-            UsuarioDAO usuarioDAO = new UsuarioDAO(connection);
+            UsuarioRepository usuarioRepository = new UsuarioRepository(connection);
 
-            if (usuarioDAO.existeEmail(emailNovo))
+            if (usuarioRepository.existeEmail(emailNovo))
             {
                 return UsuarioResponseDTO.erro("Email já cadastrado");
             }
 
-            var usuarioOpt = usuarioDAO.buscarPorEmail(emailAntigo);
+            var usuarioOpt = usuarioRepository.buscarPorEmail(emailAntigo);
 
             if (usuarioOpt.isEmpty())
             {
@@ -562,7 +562,7 @@ public class UsuarioService
             Usuario usuario = usuarioOpt.get();
             usuario.setEmail(emailNovo);
 
-            usuarioDAO.atualizarEmail(usuario.getId(), emailNovo);
+            usuarioRepository.atualizarEmail(usuario.getId(), emailNovo);
 
             return UsuarioResponseDTO.fromEntity(usuario);
         }
@@ -611,8 +611,8 @@ public class UsuarioService
                 return UsuarioResponseDTO.erro("Senha inválida");
             }
 
-            UsuarioDAO usuarioDAO = new UsuarioDAO(connection);
-            var usuarioOpt = usuarioDAO.buscarPorEmail(email);
+            UsuarioRepository usuarioRepository = new UsuarioRepository(connection);
+            var usuarioOpt = usuarioRepository.buscarPorEmail(email);
 
             if (usuarioOpt.isEmpty())
             {
@@ -652,15 +652,15 @@ public class UsuarioService
             connection = ConnectionFactory.getConnection();
             connection.setAutoCommit(false);
 
-            UsuarioDAO usuarioDAO = new UsuarioDAO(connection);
-            var usuarioOpt = usuarioDAO.BuscarPorId(id);
+            UsuarioRepository usuarioRepository = new UsuarioRepository(connection);
+            var usuarioOpt = usuarioRepository.BuscarPorId(id);
 
             if (usuarioOpt.isEmpty())
             {
                 return UsuarioResponseDTO.erro("Usuário não encontrado");
             }
 
-            usuarioDAO.deletar(id);
+            usuarioRepository.deletar(id);
 
             connection.commit();
 
@@ -713,8 +713,8 @@ public class UsuarioService
             connection = ConnectionFactory.getConnection();
             connection.setAutoCommit(false);
 
-            UsuarioDAO usuarioDAO = new UsuarioDAO(connection);
-            var usuarioOpt = usuarioDAO.BuscarPorId(id);
+            UsuarioRepository usuarioRepository = new UsuarioRepository(connection);
+            var usuarioOpt = usuarioRepository.BuscarPorId(id);
 
             if (usuarioOpt.isEmpty())
             {
