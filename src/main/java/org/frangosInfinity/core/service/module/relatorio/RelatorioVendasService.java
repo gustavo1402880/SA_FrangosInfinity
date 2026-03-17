@@ -25,6 +25,8 @@ public class RelatorioVendasService
             RelatorioDAO relatorioDAO = new RelatorioDAO(conn);
 
             var relatorioExistente = relatorioDAO.buscarPorDataGeracao(request.getDataGeracao());
+
+            //finalizar
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -32,13 +34,13 @@ public class RelatorioVendasService
         return null;
     }
 
-    public List<RelatorioResponseDTO> ProcessarListarTodos()
+    public List<RelatorioResponseDTO> processarListarTodos()
     {
         try(Connection conn = ConnectionFactory.getConnection())
         {
             RelatorioDAO relatorioDAO = new RelatorioDAO(conn);
 
-            List<RelatorioVendas> lista = relatorioDAO.ListarTodos();
+            List<RelatorioVendas> lista = relatorioDAO.listarTodos();
 
             return lista.stream().map(RelatorioResponseDTO::fromEntity())
         }

@@ -4,6 +4,8 @@ import org.frangosInfinity.core.entity.module.relatorio.RelatorioVendas;
 
 import java.sql.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class RelatorioDAO
@@ -74,6 +76,23 @@ public class RelatorioDAO
         }
 
         return Optional.empty();
+    }
+
+    public List<RelatorioVendas> listarTodos() throws SQLException
+    {
+        List<RelatorioVendas> relatorios = new ArrayList<>();
+
+        String sql = "SELECT * FROM relatorio_vendas ORDER BY data_geracao";
+
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next())
+            {
+                relatorios.add(mapearRelatorioVendas(rs));
+            }
+        }
+        return relatorios;
     }
 
     public RelatorioVendas mapearRelatorioVendas(ResultSet rs) throws SQLException
