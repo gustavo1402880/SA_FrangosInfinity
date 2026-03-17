@@ -2,26 +2,28 @@ package org.frangosInfinity.core.service.module.usuario;
 
 import org.frangosInfinity.application.module.usuario.request.UsuarioRequestDTO;
 import org.frangosInfinity.application.module.usuario.response.UsuarioResponseDTO;
+import org.frangosInfinity.core.entity.exception.BusinessException;
 import org.frangosInfinity.core.entity.exception.ResourceNotFoundException;
 import org.frangosInfinity.core.entity.module.usuario.*;
 import org.frangosInfinity.core.enums.NivelAcesso;
 import org.frangosInfinity.core.enums.TipoUsuario;
-import org.frangosInfinity.infrastructure.persistence.connection.ConnectionFactory;
 import org.frangosInfinity.infrastructure.persistence.module.usuario.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.config.ConfigDataResourceNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class UsuarioService {
+public class UsuarioService
+{
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     private Boolean validarId(Long id) {
         return id != null && id > 0;
@@ -202,503 +204,220 @@ public class UsuarioService {
             return UsuarioResponseDTO.erro("Email inválido");
         }
 
-        Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Usuário com email " + email + " não encontrado"))
+        Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Usuário com email " + email + " não encontrado"));
 
         return UsuarioResponseDTO.fromEntity(usuario);
     }
 
+    @Transactional(readOnly = true)
     public List<UsuarioResponseDTO> listarTodos()
     {
-        try(Connection connection = ConnectionFactory.getConnection())
-        {
-            UsuarioRepository usuarioRepository = new UsuarioRepository(connection);
-            List<Usuario> usuarios = usuarioRepository.listarTodos();
-
-            return usuarios.stream()
-                    .map(UsuarioResponseDTO::fromEntity)
-                    .collect(Collectors.toList());
-        }
-        catch (SQLException e)
-        {
-            return List.of();
-        }
+        return usuarioRepository.findAll().stream()
+                .map(UsuarioResponseDTO::fromEntity)
+                .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<UsuarioResponseDTO> listarTodosAtivos()
     {
-        try(Connection connection = ConnectionFactory.getConnection())
-        {
-            UsuarioRepository usuarioRepository = new UsuarioRepository(connection);
-            List<Usuario> usuarios = usuarioRepository.buscarAtivos();
-
-            return usuarios.stream()
-                    .map(UsuarioResponseDTO::fromEntity)
-                    .collect(Collectors.toList());
-        }
-        catch (SQLException e)
-        {
-            return List.of();
-        }
+        return usuarioRepository.findByAtivoTrue().stream()
+                .map(UsuarioResponseDTO::fromEntity)
+                .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<UsuarioResponseDTO> listarTodosInativos()
     {
-        try(Connection connection = ConnectionFactory.getConnection())
-        {
-            UsuarioRepository usuarioRepository = new UsuarioRepository(connection);
-            List<Usuario> usuarios = usuarioRepository.buscarInvativos();
-
-            return usuarios.stream()
-                    .map(UsuarioResponseDTO::fromEntity)
-                    .collect(Collectors.toList());
-        }
-        catch (SQLException e)
-        {
-            return List.of();
-        }
+        return usuarioRepository.findByAtivoFalse().stream()
+                .map(UsuarioResponseDTO::fromEntity)
+                .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<UsuarioResponseDTO> listarPorTipoUsuario(TipoUsuario tipoUsuario)
     {
-        try(Connection connection = ConnectionFactory.getConnection())
-        {
-            UsuarioRepository usuarioRepository = new UsuarioRepository(connection);
-            List<Usuario> usuarios = usuarioRepository.buscarPorTipo(tipoUsuario);
-
-            return usuarios.stream()
-                    .map(UsuarioResponseDTO::fromEntity)
-                    .collect(Collectors.toList());
-        }
-        catch (SQLException e)
-        {
-            return List.of();
-        }
+        return usuarioRepository.findByTipo(tipoUsuario).stream()
+                .map(UsuarioResponseDTO::fromEntity)
+                .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public  List<UsuarioResponseDTO> listarPorNivelAcesso(NivelAcesso nivelAcesso)
     {
-        try(Connection connection = ConnectionFactory.getConnection())
-        {
-            UsuarioRepository usuarioRepository = new UsuarioRepository(connection);
-            List<Funcionario> usuarios = usuarioRepository.buscarPorNivelAcesso(nivelAcesso);
-
-            return usuarios.stream()
-                    .map(UsuarioResponseDTO::fromEntity)
-                    .collect(Collectors.toList());
-
-        }
-        catch (SQLException e)
-        {
-            return List.of();
-        }
+        return usuarioRepository.buscarFuncionarioPorNivelAcesso(nivelAcesso).stream()
+                .map(UsuarioResponseDTO::fromEntity)
+                .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public UsuarioResponseDTO buscarPorIdSessao(String idSessao)
     {
-        try(Connection connection = ConnectionFactory.getConnection())
+        if (!validarIdSessao(idSessao))
         {
-            UsuarioRepository usuarioRepository = new UsuarioRepository(connection);
-
-            var usuarioOpt = usuarioRepository.buscarPorIdSessao(idSessao);
-            if (usuarioOpt.isEmpty())
-            {
-                return UsuarioResponseDTO.erro("Cliente com id de sessão: "+idSessao+" não encontrado");
-            }
-
-            return UsuarioResponseDTO.fromEntity(usuarioOpt.get());
+            return UsuarioResponseDTO.erro("ID de sessão inválido");
         }
-        catch (SQLException e)
-        {
-            return UsuarioResponseDTO.erro("Erro ao buscar usuário: "+e.getMessage());
-        }
+
+        Cliente cliente = usuarioRepository.buscarClientePorIdSessao(idSessao).orElseThrow(() -> new ResourceNotFoundException("Cliente com id de sessão: " + idSessao + " não encontrado"));
+
+        return UsuarioResponseDTO.fromEntity(cliente);
     }
 
+    @Transactional(readOnly = true)
     public UsuarioResponseDTO buscarPorMatricula(String matricula)
     {
-        try(Connection connection = ConnectionFactory.getConnection())
+        if (!validarMatricula(matricula))
         {
-            UsuarioRepository usuarioRepository = new UsuarioRepository(connection);
-
-            var usuarioOpt = usuarioRepository.buscarPorMatricula(matricula);
-            if (usuarioOpt.isEmpty())
-            {
-                return UsuarioResponseDTO.erro("Funcionário com matrícula: "+matricula+" não encontrado");
-            }
-
-            return UsuarioResponseDTO.fromEntity(usuarioOpt.get());
+            return UsuarioResponseDTO.erro("Matrícula inválida");
         }
-        catch (SQLException e)
-        {
-            return UsuarioResponseDTO.erro("Erro ao buscar usuário: "+e.getMessage());
-        }
+
+        Funcionario funcionario = usuarioRepository.buscarFuncionarioPorMatricula(matricula).orElseThrow(() ->  new ResourceNotFoundException("Funcionário com matrícula: " + matricula + " não encontrado"));
+
+        return UsuarioResponseDTO.fromEntity(funcionario);
     }
 
+    @Transactional
     public UsuarioResponseDTO atualizarUsuario(Long id, UsuarioRequestDTO request)
     {
-        Connection connection = null;
-        try
+        if (!validarId(id))
         {
-            if (!validarId(id))
-            {
-                return UsuarioResponseDTO.erro("ID inválido");
-            }
-
-            connection = ConnectionFactory.getConnection();
-            connection.setAutoCommit(false);
-
-            UsuarioRepository usuarioRepository = new UsuarioRepository(connection);
-            var usuarioOpt = usuarioRepository.BuscarPorId(id);
-
-            if (usuarioOpt.isEmpty())
-            {
-                return UsuarioResponseDTO.erro("Usuário não encontrado");
-            }
-
-            Usuario usuario = usuarioOpt.get();
-
-            if (validarNome(request.getNome()) && !request.getNome().equals(usuario.getNome()))
-            {
-                usuario.setNome(request.getNome());
-            }
-
-            if (validarTelefone(request.getTelefone()) && !request.getTelefone().equals(usuario.getTelefone()))
-            {
-                usuario.setTelefone(request.getTelefone());
-            }
-
-            if (usuario instanceof Funcionario && request.getTurno() != null)
-            {
-                ((Funcionario) usuario).setTurno(request.getTurno());
-            }
-
-            usuarioRepository.atualizar(usuario);
-
-            connection.commit();
-
-            return UsuarioResponseDTO.fromEntity(usuario);
+            return UsuarioResponseDTO.erro("ID inválido");
         }
-        catch (SQLException e)
+
+        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+
+        if (validarNome(request.getNome()) && !request.getNome().equals(usuario.getNome()))
         {
-            if (connection != null)
-            {
-                try
-                {
-                    connection.rollback();
-                }
-                catch (SQLException ex)
-                {
-                    return UsuarioResponseDTO.erro("Erro no rollback: "+ex.getMessage());
-                }
-            }
-            return UsuarioResponseDTO.erro("Erro ao atualizar usuário: "+e.getMessage());
+            usuario.setNome(request.getNome());
         }
-        finally
+
+        if (validarTelefone(request.getTelefone()) && !request.getTelefone().equals(usuario.getTelefone()))
         {
-            if (connection != null)
-            {
-                try
-                {
-                    connection.close();
-                }
-                catch (SQLException e)
-                {
-                    return UsuarioResponseDTO.erro("Erro ao fechar conexão: "+e.getMessage());
-                }
-            }
+            usuario.setTelefone(request.getTelefone());
         }
+
+        if (usuario instanceof Funcionario && request.getTurno() != null)
+        {
+            ((Funcionario) usuario).setTurno(request.getTurno());
+        }
+
+        usuarioRepository.save(usuario);
+
+        return UsuarioResponseDTO.fromEntity(usuario);
     }
 
+    @Transactional
     public UsuarioResponseDTO atualizarSenha(Long id, String senhaAntiga, String senhaNova)
     {
-        Connection connection = null;
-        try
+        if (!validarId(id))
         {
-            if (!validarId(id))
-            {
-                return UsuarioResponseDTO.erro("ID inválido");
-            }
-
-            if (!validarSenha(senhaNova) || senhaAntiga.equals(senhaNova))
-            {
-                return UsuarioResponseDTO.erro("Senha inválida ou muito fraca");
-            }
-
-            connection = ConnectionFactory.getConnection();
-            connection.setAutoCommit(false);
-
-            UsuarioRepository usuarioRepository = new UsuarioRepository(connection);
-            var usuarioOpt = usuarioRepository.BuscarPorId(id);
-
-            if (usuarioOpt.isEmpty())
-            {
-                return UsuarioResponseDTO.erro("Usuário não encontrado");
-            }
-
-            Usuario usuario = usuarioOpt.get();
-            usuario.setSenha(senhaNova);
-
-            usuarioRepository.atualizarSenha(id, senhaNova);
-
-            return UsuarioResponseDTO.fromEntity(usuario);
+            return UsuarioResponseDTO.erro("ID inválido");
         }
-        catch (SQLException e)
+
+        if (!validarSenha(senhaNova) || senhaAntiga.equals(senhaNova))
         {
-            if (connection != null)
-            {
-                try
-                {
-                    connection.rollback();
-                }
-                catch (SQLException ex)
-                {
-                    return UsuarioResponseDTO.erro("Erro no rollback: "+ex.getMessage());
-                }
-            }
-            return UsuarioResponseDTO.erro("Erro ao atualizar usuário: "+e.getMessage());
+            return UsuarioResponseDTO.erro("Senha inválida ou muito fraca");
         }
-        finally
+
+        Usuario usuario = usuarioRepository.findById(id) .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+
+        if (!passwordEncoder.matches(senhaAntiga, usuario.getSenha()))
         {
-            if (connection != null)
-            {
-                try
-                {
-                    connection.close();
-                }
-                catch (SQLException e)
-                {
-                    return UsuarioResponseDTO.erro("Erro ao fechar conexão");
-                }
-            }
+            return UsuarioResponseDTO.erro("Senha antiga incorreta");
         }
+
+        usuario.setSenha(passwordEncoder.encode(senhaNova));
+        usuarioRepository.save(usuario);
+
+        return UsuarioResponseDTO.fromEntity(usuario);
     }
 
+    @Transactional
     public UsuarioResponseDTO atualizarEmail(String emailAntigo, String emailNovo)
     {
-        Connection connection = null;
-        try
+        if (!validarEmail(emailNovo) || emailAntigo.equals(emailNovo))
         {
-            if (!validarEmail(emailNovo) || emailAntigo.equals(emailNovo))
-            {
-                return UsuarioResponseDTO.erro("Email inválido ou iguais");
-            }
-
-            connection = ConnectionFactory.getConnection();
-            connection.setAutoCommit(false);
-
-            UsuarioRepository usuarioRepository = new UsuarioRepository(connection);
-
-            if (usuarioRepository.existeEmail(emailNovo))
-            {
-                return UsuarioResponseDTO.erro("Email já cadastrado");
-            }
-
-            var usuarioOpt = usuarioRepository.buscarPorEmail(emailAntigo);
-
-            if (usuarioOpt.isEmpty())
-            {
-                return UsuarioResponseDTO.erro("Usuário não encontrado");
-            }
-
-            Usuario usuario = usuarioOpt.get();
-            usuario.setEmail(emailNovo);
-
-            usuarioRepository.atualizarEmail(usuario.getId(), emailNovo);
-
-            return UsuarioResponseDTO.fromEntity(usuario);
+            return UsuarioResponseDTO.erro("Email inválido ou iguais");
         }
-        catch (SQLException e)
+
+        if (usuarioRepository.existsByEmail(emailNovo))
         {
-            if (connection != null)
-            {
-                try
-                {
-                    connection.rollback();
-                }
-                catch (SQLException ex)
-                {
-                    return UsuarioResponseDTO.erro("Erro no rollback: "+ex.getMessage());
-                }
-            }
-            return UsuarioResponseDTO.erro("Erro ao atualizar usuário: "+e.getMessage());
+            return UsuarioResponseDTO.erro("Email já cadastrado");
         }
-        finally
-        {
-            if (connection != null)
-            {
-                try
-                {
-                    connection.close();
-                }
-                catch (SQLException e)
-                {
-                    return UsuarioResponseDTO.erro("Erro ao fechar conexão");
-                }
-            }
-        }
+
+        Usuario usuario = usuarioRepository.findByEmail(emailAntigo).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+
+        usuario.setEmail(emailNovo);
+        usuarioRepository.save(usuario);
+
+        return UsuarioResponseDTO.fromEntity(usuario);
     }
 
+    @Transactional
     public UsuarioResponseDTO login(String email, String senha)
     {
-        try(Connection connection = ConnectionFactory.getConnection())
+        if (!validarEmail(email))
         {
-            if (!validarEmail(email))
-            {
-                return UsuarioResponseDTO.erro("Email inválido");
-            }
-
-            if (!validarSenha(senha))
-            {
-                return UsuarioResponseDTO.erro("Senha inválida");
-            }
-
-            UsuarioRepository usuarioRepository = new UsuarioRepository(connection);
-            var usuarioOpt = usuarioRepository.buscarPorEmail(email);
-
-            if (usuarioOpt.isEmpty())
-            {
-                return UsuarioResponseDTO.erro("Não encontrado usuário com email: "+email);
-            }
-
-            Usuario usuario = usuarioOpt.get();
-
-            if (!usuario.getSenha().equals(senha))
-            {
-                return UsuarioResponseDTO.erro("Email ou senha inválidos");
-            }
-
-            if (!usuario.isAtivo())
-            {
-                return UsuarioResponseDTO.erro("Usuário invativo");
-            }
-
-            return UsuarioResponseDTO.fromEntity(usuario);
+            return UsuarioResponseDTO.erro("Email inválido");
         }
-        catch (SQLException e)
+
+        if (!validarSenha(senha))
         {
-            return UsuarioResponseDTO.erro("Erro ao tentar fazer login: "+e.getMessage());
+            return UsuarioResponseDTO.erro("Senha inválida");
         }
+
+        Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow(() -> new BusinessException("Email ou senha inválido"));
+
+        if (!passwordEncoder.matches(senha, usuario.getSenha()))
+        {
+            return UsuarioResponseDTO.erro("Email ou senha inválidos");
+        }
+
+        if (!usuario.isAtivo())
+        {
+            return UsuarioResponseDTO.erro("Usuário invativo");
+        }
+
+        return UsuarioResponseDTO.fromEntity(usuario);
     }
 
+    @Transactional
     public UsuarioResponseDTO deletarUsuario(Long id)
     {
-        Connection connection = null;
-        try
+
+        if (!validarId(id))
         {
-            if (!validarId(id))
-            {
-                return UsuarioResponseDTO.erro("ID inválido");
-            }
-
-            connection = ConnectionFactory.getConnection();
-            connection.setAutoCommit(false);
-
-            UsuarioRepository usuarioRepository = new UsuarioRepository(connection);
-            var usuarioOpt = usuarioRepository.BuscarPorId(id);
-
-            if (usuarioOpt.isEmpty())
-            {
-                return UsuarioResponseDTO.erro("Usuário não encontrado");
-            }
-
-            usuarioRepository.deletar(id);
-
-            connection.commit();
-
-            UsuarioResponseDTO response = new UsuarioResponseDTO();
-            response.setSucesso(true);
-            response.setMensagem("Usuário desativado com sucesso");
-            return response;
+            return UsuarioResponseDTO.erro("ID inválido");
         }
-        catch (SQLException e)
+
+        if (!usuarioRepository.existsById(id))
         {
-            if (connection != null)
-            {
-                try
-                {
-                    connection.rollback();
-                }
-                catch (SQLException ex)
-                {
-                    return UsuarioResponseDTO.erro("Erro no rollback: "+ex.getMessage());
-                }
-            }
-            return UsuarioResponseDTO.erro("Erro ao desativar usuário: "+e.getMessage());
+            return UsuarioResponseDTO.erro("Usuário não encontrado");
         }
-        finally
-        {
-            if (connection != null)
-            {
-                try
-                {
-                    connection.close();
-                }
-                catch (SQLException e)
-                {
-                    return UsuarioResponseDTO.erro("Erro ao fechar conexão");
-                }
-            }
-        }
+
+        usuarioRepository.deleteById(id);
+
+        UsuarioResponseDTO response = new UsuarioResponseDTO();
+        response.setSucesso(true);
+        response.setMensagem("Usuário desativado com sucesso");
+        return response;
     }
 
+    @Transactional
     public UsuarioResponseDTO ativarUsuario(Long id)
     {
-        Connection connection = null;
-        try
+        if (!validarId(id))
         {
-            if (!validarId(id))
-            {
-                return UsuarioResponseDTO.erro("ID inválido");
-            }
-
-            connection = ConnectionFactory.getConnection();
-            connection.setAutoCommit(false);
-
-            UsuarioRepository usuarioRepository = new UsuarioRepository(connection);
-            var usuarioOpt = usuarioRepository.BuscarPorId(id);
-
-            if (usuarioOpt.isEmpty())
-            {
-                return UsuarioResponseDTO.erro("Usuário não encontrado");
-            }
-
-            Usuario usuario = usuarioOpt.get();
-            usuario.ativar();
-
-            connection.commit();
-
-            UsuarioResponseDTO response = new UsuarioResponseDTO();
-            response.setMensagem("Usuário ativado com sucesso");
-            response.setSucesso(true);
-            return response;
+            return UsuarioResponseDTO.erro("ID inválido");
         }
-        catch (SQLException e)
-        {
-            if (connection != null)
-            {
-                try
-                {
-                    connection.rollback();
-                }
-                catch (SQLException ex)
-                {
-                    return UsuarioResponseDTO.erro("Erro no rollback: "+ex.getMessage());
-                }
-            }
-            return UsuarioResponseDTO.erro("Erro ao ativar usuário: "+e.getMessage());
-        }
-        finally
-        {
-            if (connection != null)
-            {
-                try
-                {
-                    connection.close();
-                }
-                catch (SQLException e)
-                {
-                    return UsuarioResponseDTO.erro("Erro ao fechar conexão");
-                }
-            }
-        }
+
+        Usuario usuario = usuarioRepository.findById(id) .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+
+        usuario.ativar();
+        usuarioRepository.save(usuario);
+
+        UsuarioResponseDTO response = new UsuarioResponseDTO();
+        response.setMensagem("Usuário ativado com sucesso");
+        response.setSucesso(true);
+        return response;
     }
 }
