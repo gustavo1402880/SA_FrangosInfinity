@@ -1,239 +1,294 @@
 package org.frangosInfinity.infrastructure.console.module.usuario;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.frangosInfinity.application.module.usuario.request.UsuarioRequestDTO;
 import org.frangosInfinity.application.module.usuario.response.UsuarioResponseDTO;
+import org.frangosInfinity.core.entity.exception.ResourceNotFoundException;
 import org.frangosInfinity.core.entity.module.usuario.Usuario;
 import org.frangosInfinity.core.enums.NivelAcesso;
 import org.frangosInfinity.core.enums.TipoUsuario;
 import org.frangosInfinity.core.service.module.usuario.UsuarioService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RestController
+@RequestMapping("/usuarios")
+@Tag(name = "Usuários", description = "Endpoints para gerenciamento de usuários")
 public class UsuarioController
 {
-    private final UsuarioService usuarioService;
+    @Autowired
+    private UsuarioService usuarioService;
 
-    public UsuarioController()
+    @PostMapping("/clientes")
+    @Operation(summary = "Criar um novo cliente")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Cliente criado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+    })
+    public ResponseEntity<UsuarioResponseDTO> processarAdicionarCliente(@Valid @RequestBody UsuarioRequestDTO request)
     {
-        this.usuarioService = new UsuarioService();
-    }
+        request.setTipoUsuario(TipoUsuario.CLIENTE);
 
-    public UsuarioResponseDTO processarAdicionarUsuario(UsuarioRequestDTO request)
-    {
-        if (request == null)
+        UsuarioResponseDTO response = usuarioService.adicionarUsuario(request);
+
+        if (!response.getSucesso())
         {
-            throw new IllegalArgumentException("Request de usuário não pode ser nulo");
+            return ResponseEntity.badRequest().body(response);
         }
 
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/funcionarios")
+    @Operation(summary = "Criar um novo funcionário")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Funcionario criado"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+    })
+    public ResponseEntity<UsuarioResponseDTO> processarAdicionarFuncionario(@Valid @RequestBody UsuarioRequestDTO request)
+    {
+        request.setTipoUsuario(TipoUsuario.FUNCIONARIO);
+
+        UsuarioResponseDTO response = usuarioService.adicionarUsuario(request);
+
+        if (!response.getSucesso())
+        {
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Buscar usuário por ID")
+    public ResponseEntity<UsuarioResponseDTO> processarBuscarPorId(@PathVariable Long id)
+    {
         try
         {
-            UsuarioResponseDTO responseDTO = usuarioService.adicionarUsuario(request);
+            UsuarioResponseDTO response = usuarioService.buscarPorId(id);
 
-            if (!responseDTO.getSucesso())
+            if (!response.getSucesso())
             {
-                throw new RuntimeException(responseDTO.getMensagem());
+                return ResponseEntity.badRequest().body(response);
             }
 
-            return responseDTO;
+            return ResponseEntity.ok(response);
         }
-        catch (Exception e)
+        catch (ResourceNotFoundException e)
         {
-            throw new RuntimeException("Erro ao processar criação de usuário: "+ e.getMessage());
+            return ResponseEntity.notFound().build();
         }
     }
 
-    public UsuarioResponseDTO processarBuscarPorId(Long id)
+    @GetMapping("/email/{email}")
+    @Operation(summary = "Buscar usuário por email")
+    public ResponseEntity<UsuarioResponseDTO> processarBuscarPorEmail(@PathVariable String email)
     {
-        UsuarioResponseDTO response = usuarioService.buscarPorId(id);
-
-        if (!response.getSucesso())
+        try
         {
-            throw new RuntimeException(response.getMensagem());
-        }
+            UsuarioResponseDTO response = usuarioService.buscarPorEmail(email);
 
-        return response;
+            if (!response.getSucesso())
+            {
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            return ResponseEntity.ok(response);
+        }
+        catch (ResourceNotFoundException e)
+        {
+            return ResponseEntity.notFound().build();
+        }
     }
 
-    public UsuarioResponseDTO processarBuscarPorEmail(String email)
+    @GetMapping("/sessao/{idSessao}")
+    @Operation(summary = "Buscar cliente por ID de sessão")
+    public ResponseEntity<UsuarioResponseDTO> processarBuscarPorIdSessao(@PathVariable String idSessao)
     {
-        UsuarioResponseDTO response = usuarioService.buscarPorEmail(email);
-
-        if (!response.getSucesso())
+        try
         {
-            throw new RuntimeException(response.getMensagem());
-        }
+            UsuarioResponseDTO response = usuarioService.buscarPorIdSessao(idSessao);
 
-        return response;
+            if (!response.getSucesso())
+            {
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            return ResponseEntity.ok(response);
+        }
+        catch (ResourceNotFoundException e)
+        {
+            return ResponseEntity.notFound().build();
+        }
     }
 
-    public UsuarioResponseDTO processarBuscarPorIdSessao(String idSessao)
+    @GetMapping("/matricula/{matricula}")
+    @Operation(summary = "Buscar funcionário pela matrícula")
+    public ResponseEntity<UsuarioResponseDTO> processarBuscarPorMatricula(String matricula)
     {
-        UsuarioResponseDTO response = usuarioService.buscarPorIdSessao(idSessao);
-
-        if (!response.getSucesso())
+        try
         {
-            throw new RuntimeException(response.getMensagem());
-        }
+            UsuarioResponseDTO response = usuarioService.buscarPorMatricula(matricula);
 
-        return response;
+            if (!response.getSucesso())
+            {
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            return ResponseEntity.ok(response);
+        }
+        catch (ResourceNotFoundException e)
+        {
+            return ResponseEntity.notFound().build();
+        }
     }
 
-    public UsuarioResponseDTO processarBuscarPorMatricula(String matricula)
-    {
-        UsuarioResponseDTO response = usuarioService.buscarPorMatricula(matricula);
-
-        if (!response.getSucesso())
-        {
-            throw new RuntimeException(response.getMensagem());
-        }
-
-        return response;
-    }
-
-    public List<UsuarioResponseDTO> processarListarTodos()
+    @GetMapping
+    @Operation(summary = "Listar todos os usuários")
+    public ResponseEntity<List<UsuarioResponseDTO>> processarListarTodos()
     {
         List<UsuarioResponseDTO> usuarios = usuarioService.listarTodos();
 
         if (usuarios.isEmpty())
         {
-            throw new RuntimeException("Nenhum usuário encontrado");
+            ResponseEntity.noContent().build();
         }
 
-        return usuarios;
+        return ResponseEntity.ok(usuarios);
+
     }
 
-    public List<UsuarioResponseDTO> processarListarAtivos()
+    @GetMapping("/ativos")
+    @Operation(summary = "Listar uauários ativos")
+    public ResponseEntity<List<UsuarioResponseDTO>> processarListarAtivos()
     {
         List<UsuarioResponseDTO> usuarios = usuarioService.listarTodosAtivos();
 
         if (usuarios.isEmpty())
         {
-            throw new RuntimeException("Nenhum usuário encontrado");
+            return ResponseEntity.noContent().build();
         }
 
-        return usuarios;
+        return ResponseEntity.ok(usuarios);
     }
 
-    public List<UsuarioResponseDTO> processarListarInativos()
+    @GetMapping("/inativos")
+    @Operation(summary = "Listar usuários invativos")
+    public ResponseEntity<List<UsuarioResponseDTO>> processarListarInativos()
     {
         List<UsuarioResponseDTO> usuarios = usuarioService.listarTodosInativos();
 
         if (usuarios.isEmpty())
         {
-            throw new RuntimeException("Nenhum usuário encontrado");
+            return ResponseEntity.noContent().build();
         }
 
-        return usuarios;
+        return ResponseEntity.ok(usuarios);
     }
 
-    public List<UsuarioResponseDTO> processarListarPorTipo(TipoUsuario tipo)
+    @GetMapping("/tipo/{tipo}")
+    @Operation(summary = "Listar usuários por tipo (CLIENTE/FUNCIONÁRIO)")
+    public ResponseEntity<List<UsuarioResponseDTO>> processarListarPorTipo(@PathVariable TipoUsuario tipo)
     {
-        if (tipo == null)
-        {
-            throw new IllegalArgumentException("Tipo de usuário inválido");
-        }
-
         List<UsuarioResponseDTO> usuarios = usuarioService.listarPorTipoUsuario(tipo);
 
         if (usuarios.isEmpty())
         {
-            throw new RuntimeException("Nenhum usuário encontrado");
+            return ResponseEntity.noContent().build();
         }
 
-        return usuarios;
+        return ResponseEntity.ok(usuarios);
     }
 
-    public List<UsuarioResponseDTO> processarListarPorNivelAcesso(NivelAcesso nivelAcesso)
+    @GetMapping("/nivel-acesso/{nivel}")
+    @Operation(summary = "Listar funcionários por nível de acesso")
+    public ResponseEntity<List<UsuarioResponseDTO>> processarListarPorNivelAcesso(@PathVariable NivelAcesso nivelAcesso)
     {
-        if (nivelAcesso == null)
-        {
-            throw new IllegalArgumentException("Nível de acesso inválido");
-        }
-
         List<UsuarioResponseDTO> usuarios = usuarioService.listarPorNivelAcesso(nivelAcesso);
 
         if (usuarios.isEmpty())
         {
-            throw new RuntimeException("Nenhum funcionário com nível "+nivelAcesso+" encontrado");
+            return ResponseEntity.noContent().build();
         }
 
-        return usuarios;
+        return ResponseEntity.ok(usuarios);
     }
 
-    public UsuarioResponseDTO processarAtualizarUsuario(Long id, UsuarioRequestDTO request)
+    @PutMapping("/{id}")
+    @Operation(summary = "Atualizar dados do usuário")
+    public ResponseEntity<UsuarioResponseDTO> processarAtualizarUsuario(@PathVariable Long id, @Valid @RequestBody UsuarioRequestDTO request)
     {
-        if (!request.isValid())
-        {
-            throw new IllegalArgumentException("Dados de atualização não podem ser nulos");
-        }
-
         UsuarioResponseDTO response = usuarioService.atualizarUsuario(id, request);
 
         if (!response.getSucesso())
         {
-            throw new RuntimeException(response.getMensagem());
+            return ResponseEntity.badRequest().body(response);
         }
 
-        return response;
+        return ResponseEntity.ok(response);
     }
 
-    public UsuarioResponseDTO processarAtualizarSenha(Long id, String senhaAntiga, String senhaNova)
+    @PatchMapping("/senha")
+    @Operation(summary = "Atualizar senha do usuário")
+    public ResponseEntity<UsuarioResponseDTO> processarAtualizarSenha(@PathVariable Long id, @RequestParam String senhaAntiga, @RequestParam String senhaNova)
     {
         UsuarioResponseDTO response = usuarioService.atualizarSenha(id, senhaAntiga, senhaNova);
 
         if (!response.getSucesso())
         {
-            throw new RuntimeException(response.getMensagem());
+            return ResponseEntity.badRequest().body(response);
         }
 
-        return response;
+        return ResponseEntity.ok(response);
     }
 
-    public UsuarioResponseDTO processarAtualizarEmail(String emailAntigo, String emailNovo)
+    @PatchMapping("/email")
+    @Operation(summary = "Atualizar email do usuário")
+    public ResponseEntity<UsuarioResponseDTO> processarAtualizarEmail(@RequestParam String emailAntigo, @RequestParam String emailNovo)
     {
         UsuarioResponseDTO response = usuarioService.atualizarEmail(emailAntigo, emailNovo);
 
         if (!response.getSucesso())
         {
-            throw new RuntimeException(response.getMensagem());
+            return ResponseEntity.badRequest().body(response);
         }
 
-        return response;
+        return ResponseEntity.ok(response);
     }
 
-    public UsuarioResponseDTO processarDesativarUsuario(Long id)
+    @PatchMapping("/{id}/desativar")
+    @Operation(summary = "Desativar usuário")
+    public ResponseEntity<UsuarioResponseDTO> processarDesativarUsuario(Long id)
     {
         UsuarioResponseDTO response = usuarioService.deletarUsuario(id);
 
         if (!response.getSucesso())
         {
-            throw new RuntimeException(response.getMensagem());
+            return ResponseEntity.badRequest().body(response);
         }
 
-        return response;
+        return ResponseEntity.ok(response);
     }
 
-    public UsuarioResponseDTO processarAtivarUsuario(Long id)
+    @PatchMapping("/{id}/ativar")
+    @Operation(summary = "Ativar usuário")
+    public ResponseEntity<UsuarioResponseDTO> processarAtivarUsuario(Long id)
     {
         UsuarioResponseDTO response = usuarioService.ativarUsuario(id);
 
         if (!response.getSucesso())
         {
-            throw new RuntimeException(response.getMensagem());
+            return ResponseEntity.badRequest().body(response);
         }
 
-        return response;
-    }
-
-    public UsuarioResponseDTO processarLogin(String email, String senha)
-    {
-        UsuarioResponseDTO response = usuarioService.login(email, senha);
-
-        if (!response.getSucesso())
-        {
-            throw new RuntimeException(response.getMensagem());
-        }
-
-        return response;
+        return ResponseEntity.ok(response);
     }
 }

@@ -58,7 +58,7 @@ public class UsuarioService
     }
 
     @Transactional
-    public UsuarioResponseDTO adicionarUsuario(UsuarioRequestDTO request) throws Exception
+    public UsuarioResponseDTO adicionarUsuario(UsuarioRequestDTO request)
     {
         if (!request.isValid())
         {
