@@ -2,6 +2,7 @@ package org.frangosInfinity.application.module.relatorio.response;
 
 import org.frangosInfinity.application.module.mesa.response.MesaResponseDTO;
 import org.frangosInfinity.application.module.relatorio.request.RelatorioRequestDTO;
+import org.frangosInfinity.core.entity.module.relatorio.RelatorioVendas;
 
 import java.time.LocalDateTime;
 
@@ -82,16 +83,16 @@ public class RelatorioResponseDTO
         this.sucesso = sucesso;
     }
 
-    public static RelatorioResponseDTO fromEntity()
+    public static RelatorioResponseDTO fromEntity(RelatorioVendas relatorioVendas)
     {
         RelatorioResponseDTO dto = new RelatorioResponseDTO();
 
-        dto.setPeriodoInicio(dto.getPeriodoInicio());
-        dto.setPeriodoFim(dto.getPeriodoFim());
-        dto.setDataGeracao(dto.getDataGeracao());
-        dto.setTotalVendas(dto.getTotalVendas());
-        dto.setTotalPedidor(dto.getTotalPedidor());
-        dto.setTicketMedio(dto.getTicketMedio());
+        dto.setPeriodoInicio(relatorioVendas.getPeriodoInicio());
+        dto.setPeriodoFim(relatorioVendas.getPeriodoFim());
+        dto.setDataGeracao(relatorioVendas.getDataGeracao());
+        dto.setTotalVendas(relatorioVendas.getTotalVendas());
+        dto.setTotalPedidor(relatorioVendas.getTotalPedidos());
+        dto.setTicketMedio(relatorioVendas.getTicketMedio());
         dto.setSucesso(true);
         dto.setMensagem("Operação realizada com sucesso");
 

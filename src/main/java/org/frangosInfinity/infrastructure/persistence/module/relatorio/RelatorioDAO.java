@@ -4,6 +4,9 @@ import org.frangosInfinity.core.entity.module.relatorio.RelatorioVendas;
 
 import java.sql.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 public class RelatorioDAO
@@ -57,9 +60,32 @@ public class RelatorioDAO
         return Optional.empty();
     }
 
-    public Optional<RelatorioVendas> buscarPorDataGeracao(LocalDateTime dataGeracao) throws SQLException
+    public List<RelatorioVendas> buscarPorPeriodo(LocalDateTime inicio, LocalDateTime fim) throws SQLException
+    {
+        String sql = "SELECT * FROM relatorio_vendas WHERE periodoInicio >= ? AND periodoFim <= ?";
+
+        List<RelatorioVendas> relatorioVendas = new ArrayList<>();
+
+        try(PreparedStatement stmt = connection.prepareStatement(sql))
+        {
+            stmt.setTimestamp(1, Timestamp.valueOf(inicio));
+            stmt.setTimestamp(2, Timestamp.valueOf(fim));
+            ResultSet rs = stmt.executeQuery();
+
+            while(rs.next())
+            {
+                relatorioVendas.add(mapearRelatorioVendas(rs));
+            }
+        }
+
+        return relatorioVendas;
+    }
+
+    public List<RelatorioVendas> buscarPorDataGeracao(LocalDateTime dataGeracao) throws SQLException
     {
         String sql = "SELECT * FROM relatorio_vendas WHERE data_geracao = ?";
+
+        List<RelatorioVendas> relatorioVendas = new ArrayList<>();
 
         try(PreparedStatement stmt = connection.prepareStatement(sql))
         {
@@ -67,13 +93,41 @@ public class RelatorioDAO
 
             ResultSet rs = stmt.executeQuery();
 
-            if(rs.next())
+            while(rs.next())
             {
-                return Optional.of(mapearRelatorioVendas(rs));
+                relatorioVendas.add(mapearRelatorioVendas(rs));
             }
         }
 
-        return Optional.empty();
+        return relatorioVendas;
+    }
+
+    public List<RelatorioVendas> listarTodos() throws SQLException
+    {
+        List<RelatorioVendas> relatorios = new ArrayList<>();
+
+        String sql = "SELECT * FROM relatorio_vendas ORDER BY data_geracao";
+
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next())
+            {
+                relatorios.add(mapearRelatorioVendas(rs));
+            }
+        }
+        return relatorios;
+    }
+
+    public void deletar(Long id) throws SQLException
+    {
+        String sql = "DELETE FROM relatorio_vendas WHERE id = ?";
+
+        try(PreparedStatement stmt = connection.prepareStatement(sql))
+        {
+            stmt.setLong(1, id);
+            stmt.executeUpdate();
+        }
     }
 
     public RelatorioVendas mapearRelatorioVendas(ResultSet rs) throws SQLException
