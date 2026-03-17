@@ -25,7 +25,7 @@ public class RelatorioController {
         try {
             RelatorioResponseDTO responseDTO = relatorioService.gerarRelatorio(request);
 
-            if (!responseDTO.getSucesso()) {
+            if (!responseDTO.isSucesso()) {
                 throw new RuntimeException(responseDTO.getMensagem());
             }
 
@@ -38,7 +38,7 @@ public class RelatorioController {
     public RelatorioResponseDTO processarBuscarPorId(Long id) {
         RelatorioResponseDTO response = relatorioService.buscarPorId(id);
 
-        if (!response.getSucesso()) {
+        if (!response.isSucesso()) {
             throw new RuntimeException(response.getMensagem());
         }
 
@@ -73,7 +73,7 @@ public class RelatorioController {
     public RelatorioResponseDTO processarExcluirRelatorio(Long id) {
         RelatorioResponseDTO response = relatorioService.excluirRelatorio(id);
 
-        if (!response.getSucesso()) {
+        if (!response.isSucesso()) {
             throw new RuntimeException(response.getMensagem());
         }
 

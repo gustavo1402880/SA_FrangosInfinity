@@ -12,9 +12,20 @@ import java.util.List;
 
 public class RelatorioVendasService
 {
-    public RelatorioResponseDTO gerarRelatorio(RelatorioRequestDTO request) {
+    public RelatorioResponseDTO gerarRelatorio(RelatorioRequestDTO request)
+    {
+        Connection conn = null;
+
+        try
+        {
+            conn = ConnectionFactory.getConnection();
+
+            conn.setAutoCommit(false);
+        }
+
         return null;
     }
+
     public List<RelatorioResponseDTO> ProcessarListarTodos()
     {
         try(Connection conn = ConnectionFactory.getConnection())
@@ -23,8 +34,7 @@ public class RelatorioVendasService
 
             List<RelatorioVendas> lista = relatorioDAO.ListarTodos();
 
-            return lista.stream()
-                    .map(RelatorioResponseDTO)
+            return lista.stream().map(RelatorioResponseDTO::fromEntity())
         }
         catch (SQLException e)
         {
