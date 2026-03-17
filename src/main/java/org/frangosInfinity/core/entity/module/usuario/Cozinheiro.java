@@ -1,5 +1,6 @@
 package org.frangosInfinity.core.entity.module.usuario;
 
+import jakarta.persistence.Entity;
 import org.frangosInfinity.core.enums.NivelAcesso;
 import org.frangosInfinity.core.enums.TipoUsuario;
 
@@ -7,6 +8,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
 public class Cozinheiro extends Funcionario
 {
     public Cozinheiro(String nome, String email, String senha, TipoUsuario usuario,  String matricula) {

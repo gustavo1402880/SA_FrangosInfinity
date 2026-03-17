@@ -29,7 +29,7 @@ public class UsuarioResponseDTO
         response.setTelefone(usuario.getTelefone());
         response.setDataCadastro(usuario.getDataCadastro().toString());
         response.setAtivo(usuario.isAtivo());
-        response.setTipoUsuario(usuario.getUsuario());
+        response.setTipoUsuario(usuario.getTipo());
 
         if (usuario instanceof Funcionario)
         {
