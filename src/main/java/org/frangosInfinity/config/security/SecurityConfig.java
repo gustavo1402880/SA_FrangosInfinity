@@ -30,7 +30,7 @@ public class SecurityConfig
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/login", "/css/**", "/js/**", "/images/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/usuarios/clientes").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/usuario/funcionarios").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/usuarios/funcionarios").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
                         .requestMatchers("/dashboard").authenticated()

@@ -38,7 +38,7 @@ public class UsuarioService
     }
 
     private Boolean validarSenha(String senha) {
-        return senha != null && senha.matches("^(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%^&+=!])");
+        return senha != null && senha.length() >= 6;
     }
 
     private Boolean validarIdSessao(String idSessao) {
@@ -103,7 +103,7 @@ public class UsuarioService
             usuario = new Cliente(
                     request.getNome(),
                     request.getEmail(),
-                    request.getSenha(),
+                    passwordEncoder.encode(request.getSenha()),
                     TipoUsuario.CLIENTE,
                     request.getIdSessao()
             );
@@ -133,7 +133,7 @@ public class UsuarioService
                     usuario = new Atendente(
                             request.getNome(),
                             request.getEmail(),
-                            request.getSenha(),
+                            passwordEncoder.encode(request.getSenha()),
                             TipoUsuario.FUNCIONARIO,
                             request.getMatricula()
                     );
@@ -142,7 +142,7 @@ public class UsuarioService
                     usuario = new Caixa(
                             request.getNome(),
                             request.getEmail(),
-                            request.getSenha(),
+                            passwordEncoder.encode(request.getSenha()),
                             TipoUsuario.FUNCIONARIO,
                             request.getMatricula()
                     );
@@ -151,7 +151,7 @@ public class UsuarioService
                     usuario = new Cozinheiro(
                             request.getNome(),
                             request.getEmail(),
-                            request.getSenha(),
+                            passwordEncoder.encode(request.getSenha()),
                             TipoUsuario.FUNCIONARIO,
                             request.getMatricula()
                     );
@@ -160,7 +160,7 @@ public class UsuarioService
                     usuario = new Administrador(
                             request.getNome(),
                             request.getEmail(),
-                            request.getSenha(),
+                            passwordEncoder.encode(request.getSenha()),
                             TipoUsuario.FUNCIONARIO,
                             request.getMatricula()
                     );
