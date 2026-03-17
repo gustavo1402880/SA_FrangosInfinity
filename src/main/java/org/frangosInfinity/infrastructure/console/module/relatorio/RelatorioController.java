@@ -1,11 +1,15 @@
 package org.frangosInfinity.infrastructure.console.module.relatorio;
 
+import org.frangosInfinity.application.module.mesa.response.MesaResponseDTO;
 import org.frangosInfinity.application.module.relatorio.request.RelatorioRequestDTO;
 import org.frangosInfinity.application.module.relatorio.response.RelatorioResponseDTO;
+import org.frangosInfinity.core.entity.module.mesa.Mesa;
+import org.frangosInfinity.core.entity.module.relatorio.RelatorioVendas;
 import org.frangosInfinity.core.service.module.relatorio.RelatorioVendasService;
 import org.frangosInfinity.core.service.module.relatorio.RelatorioVendasService;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public class RelatorioController {
@@ -45,14 +49,22 @@ public class RelatorioController {
         return response;
     }
 
-    public List<RelatorioResponseDTO> processarListarTodos() {
-        List<RelatorioResponseDTO> relatorios = relatorioService.listarTodos();
+    public List<RelatorioResponseDTO> processarListarTodos()
+    {
+        List<RelatorioVendas> relatorios = relatorioService.listarTodos();
+        List<RelatorioResponseDTO> relatoriosDTO = new ArrayList<>();
 
-        if (relatorios.isEmpty()) {
+        if (relatoriosDTO.isEmpty()) {
             throw new RuntimeException("Nenhum relatório encontrado");
         }
 
-        return relatorios;
+        for (RelatorioVendas relatorioVendas : relatorios)
+        {
+            RelatorioResponseDTO response = RelatorioResponseDTO.fromEntity(relatorioVendas);
+            relatoriosDTO.add(response);
+        }
+
+        return relatoriosDTO;
     }
 
 

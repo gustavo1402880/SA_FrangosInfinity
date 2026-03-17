@@ -34,21 +34,17 @@ public class RelatorioVendasService
         return null;
     }
 
-    public List<RelatorioResponseDTO> processarListarTodos()
+    public List<RelatorioVendas> listarTodos()
     {
         try(Connection conn = ConnectionFactory.getConnection())
         {
             RelatorioDAO relatorioDAO = new RelatorioDAO(conn);
 
-            List<RelatorioVendas> lista = relatorioDAO.listarTodos();
-
-            return lista.stream().map(RelatorioResponseDTO::fromEntity())
+            return relatorioDAO.listarTodos();
         }
         catch (SQLException e)
         {
-
-            throw new RuntimeException(e);
+            return List.of();
         }
-
     }
 }
