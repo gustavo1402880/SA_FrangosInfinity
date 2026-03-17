@@ -111,10 +111,12 @@ public class RelatorioVendasService
         }
     }
 
-    public RelatorioResponseDTO excluirRelatorio(Long id)
+    public boolean excluirRelatorio(Long id)
     {
-        try(Connection conn = ConnectionFactory.getConnection())
+        Connection conn = null;
+        try
         {
+            conn = ConnectionFactory.getConnection();
             conn.setAutoCommit(false);
 
             RelatorioDAO relatorioDAO = new RelatorioDAO(conn);
@@ -123,16 +125,28 @@ public class RelatorioVendasService
 
             if(relatorioVendas.isEmpty())
             {
-
+                return false;
             }
 
             relatorioDAO.deletar(id);
 
             conn.commit();
+            return true;
         }
         catch(SQLException e)
         {
-            throw new  RuntimeException("Erro ao excluir relatório" + e);
+            if (conn != null)
+            {
+                try
+                {
+                    conn.rollback();
+                }
+                catch (SQLException ex)
+                {
+                    return false;
+                }
+            }
+            return false;
         }
     }
 }

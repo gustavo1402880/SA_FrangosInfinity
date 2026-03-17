@@ -122,19 +122,19 @@ public class RelatorioController {
         return relatorios.stream().map(RelatorioResponseDTO::fromEntity).toList();
     }
 
-    public RelatorioResponseDTO processarExcluirRelatorio(Long id)
+    public boolean processarExcluirRelatorio(Long id)
     {
         if(id == null)
         {
             throw new IllegalArgumentException("O id do relatório não pode ser nula");
         }
 
-        RelatorioResponseDTO response = relatorioService.excluirRelatorio(id);
+        boolean removido = relatorioService.excluirRelatorio(id);
 
-        if (!response.isSucesso()) {
-            throw new RuntimeException(response.getMensagem());
+        if (!removido) {
+            throw new RuntimeException("Erro ao excluir relatório");
         }
 
-        return response;
+        return removido;
     }
 }
