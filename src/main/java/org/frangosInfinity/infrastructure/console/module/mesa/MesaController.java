@@ -1,420 +1,258 @@
 package org.frangosInfinity.infrastructure.console.module.mesa;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.frangosInfinity.application.module.mesa.request.MesaRequestDTO;
 import org.frangosInfinity.application.module.mesa.request.QRCodeRequestDTO;
 import org.frangosInfinity.application.module.mesa.response.MesaResponseDTO;
 import org.frangosInfinity.application.module.mesa.response.QRCodeResponseDTO;
+import org.frangosInfinity.core.entity.exception.BusinessException;
 import org.frangosInfinity.core.entity.module.mesa.IotConfig;
-import org.frangosInfinity.core.entity.module.mesa.Mesa;
-import org.frangosInfinity.core.entity.module.mesa.QRCode;
 import org.frangosInfinity.core.service.module.mesa.IoTConfigService;
 import org.frangosInfinity.core.service.module.mesa.MesaService;
 import org.frangosInfinity.core.service.module.mesa.QRCodeService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
+@RestController
+@RequestMapping("/mesas")
+@Tag(name = "Mesas", description = "Endpoints para gerenciamento de mesas")
 public class MesaController
 {
-    private final MesaService mesaService;
-    private final QRCodeService qrCodeService;
-    private final IoTConfigService ioTConfigService;
+    @Autowired
+    private MesaService mesaService;
 
-    public MesaController()
+    @Autowired
+    private QRCodeService qrCodeService;
+
+    @Autowired
+    private IoTConfigService ioTConfigService;
+
+    @PostMapping
+    @Operation(summary = "Cadastrar uma nova mesa")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Mesa cadastrada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+    })
+    public ResponseEntity<MesaResponseDTO> processarCadastroMesa(@Valid @RequestBody MesaRequestDTO request)
     {
-        this.mesaService = new MesaService();
-        this.qrCodeService = new QRCodeService();
-        this.ioTConfigService = new IoTConfigService();
-    }
-
-    public MesaResponseDTO processarCadastroMesa(MesaRequestDTO request)
-    {
-        if(request.getNumero() <= 0)
-        {
-            throw new RuntimeException("Número da mesa deve ser positivo");
-        }
-
-        if(request.getCapacidade() <= 0 || request.getCapacidade() > 20)
-        {
-            throw new RuntimeException("Capacidade deve ser entre 1 e 20 pessoas");
-        }
-
         MesaResponseDTO response = mesaService.criarmesa(request);
 
         if(!response.getSucesso())
         {
-            throw new RuntimeException("Erro ao tentar criar mesa");
+            return  ResponseEntity.badRequest().body(response);
         }
 
-        return response;
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    public List<MesaResponseDTO> processarListagensTodasMesas()
+    @GetMapping
+    @Operation(summary = "Listar todas as mesas")
+    public ResponseEntity<List<MesaResponseDTO>> processarListagensTodasMesas()
     {
-        List<Mesa> mesas = mesaService.listarTodas();
-        List<MesaResponseDTO> mesasRespose = new ArrayList<>();
+        List<MesaResponseDTO> mesas = mesaService.listarTodas();
 
         if(mesas.isEmpty())
         {
-            throw new RuntimeException("Nenhuma mesa cadastrada");
+            return ResponseEntity.badRequest().body(mesas);
         }
 
-        for (Mesa mesa : mesas)
-        {
-            MesaResponseDTO response = MesaResponseDTO.fromEntity(mesa);
-            mesasRespose.add(response);
-        }
-
-        return mesasRespose;
+        return ResponseEntity.ok(mesas);
     }
 
-    public List<MesaResponseDTO> processarListagemMesasDisponiveis() {
-        List<Mesa> mesas = mesaService.listarDisponiveis();
-        List<MesaResponseDTO> mesasResponse = new ArrayList<>();
-
-        if (mesas.isEmpty()) {
-            throw new RuntimeException("Nenhuma mesa disponível no momento");
-        }
-
-        for (Mesa mesa : mesas) {
-            MesaResponseDTO response = MesaResponseDTO.fromEntity(mesa);
-            mesasResponse.add(response);
-        }
-
-        return mesasResponse;
-    }
-
-    public MesaResponseDTO processarBuscaMesaPorId(Long id)
+    @GetMapping("/disponiveis")
+    @Operation(summary = "Listar mesas disponíveis")
+    public ResponseEntity<List<MesaResponseDTO>> processarListagemMesasDisponiveis()
     {
-        if (id == null || id <= 0)
+        List<MesaResponseDTO> mesas = mesaService.listarDisponiveis();
+
+        if (mesas.isEmpty())
         {
-            throw new IllegalArgumentException("ID inválido");
+            return ResponseEntity.badRequest().body(mesas);
         }
 
-        Mesa mesa = mesaService.buscarPorId(id);
-
-        if (mesa == null)
-        {
-            throw new RuntimeException("Mesa com ID " + id + " não encontrada");
-        }
-
-        return MesaResponseDTO.fromEntity(mesa);
+        return ResponseEntity.ok(mesas);
     }
 
-    public MesaResponseDTO processarBuscaMesaPorNumero(Integer numero)
+    @GetMapping("/{id}")
+    @Operation(summary = "Buscar mesa por ID")
+    public ResponseEntity<MesaResponseDTO> processarBuscaMesaPorId(@PathVariable Long id)
+    {
+        MesaResponseDTO mesa = mesaService.buscarPorId(id);
+
+        if (!mesa.getSucesso())
+        {
+            ResponseEntity.badRequest().body(mesa);
+        }
+
+        return ResponseEntity.ok(mesa);
+    }
+
+    @GetMapping("/numero/{numero}")
+    @Operation(summary = "Buscar mesa pelo número")
+    public ResponseEntity<MesaResponseDTO> processarBuscaMesaPorNumero(@PathVariable Integer numero)
     {
         if (numero == null || numero <= 0)
         {
-            throw new IllegalArgumentException("Número inválido");
+            throw new BusinessException("Número inválido");
         }
 
-        Mesa mesa = mesaService.buscarPorNumero(numero);
+        MesaResponseDTO mesa = mesaService.buscarPorNumero(numero);
 
-        if (mesa == null)
+        if (!mesa.getSucesso())
         {
-            throw new RuntimeException("Mesa número " + numero + " não encontrada");
+            return ResponseEntity.badRequest().body(mesa);
         }
 
-        return MesaResponseDTO.fromEntity(mesa);
+        return ResponseEntity.ok(mesa);
     }
 
-    public MesaResponseDTO processarAtualizarStatusMesa(Long idMesa, String acao)
+    @PatchMapping("/{id}/status")
+    @Operation(summary = "Atualizar status da mesa")
+    public ResponseEntity<MesaResponseDTO> processarAtualizarStatusMesa(@PathVariable Long idMesa, @RequestParam String acao)
     {
-        if (idMesa == null || idMesa <= 0)
-        {
-            throw new IllegalArgumentException("ID da mesa inválido");
-        }
-
-        if (acao == null || acao.trim().isEmpty())
-        {
-            throw new IllegalArgumentException("Ação não pode ser vazia");
-        }
-
-        String acaoUpper = acao.toUpperCase();
-        if (!acaoUpper.equals("OCUPAR") && !acaoUpper.equals("LIBERAR") && !acaoUpper.equals("ATIVAR") && !acaoUpper.equals("DESATIVAR"))
-        {
-            throw new IllegalArgumentException("Ação inválida. Use: OCUPAR, LIBERAR, ATIVAR ou DESATIVAR");
-        }
-
-        MesaResponseDTO response = mesaService.atualizarStatus(idMesa, acaoUpper);
+        MesaResponseDTO response = mesaService.atualizarStatus(idMesa, acao);
 
         if (!response.getSucesso())
         {
-            throw new RuntimeException("Erro ao atualizar status: " + response.getMensagem());
+            return ResponseEntity.badRequest().body(response);
         }
 
-        return response;
+        return ResponseEntity.ok(response);
     }
 
-    public boolean processarRemoverMesa(Long idMesa)
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Remover mesa")
+    @ApiResponses(value ={
+            @ApiResponse(responseCode = "204", description = "Mesa removida com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Não é possível remover mesa ocupada"),
+            @ApiResponse(responseCode = "404", description = "Mesa não encontrada")
+    })
+    public ResponseEntity<Void> processarRemoverMesa(@PathVariable Long idMesa)
     {
-        if (idMesa == null || idMesa <= 0)
-        {
-            throw new IllegalArgumentException("ID da mesa inválido");
-        }
+       mesaService.deletarMesa(idMesa);
 
-        Mesa mesa = mesaService.buscarPorId(idMesa);
-        if (mesa == null)
-        {
-            throw new RuntimeException("Mesa não encontrada");
-        }
-
-        if (!mesa.isDisponivel())
-        {
-            throw new RuntimeException("Não é possível remover uma mesa ocupada");
-        }
-
-        boolean removido = mesaService.deletarMesa(idMesa);
-
-        if (!removido)
-        {
-            throw new RuntimeException("Erro ao remover mesa");
-        }
-
-        return true;
+       return ResponseEntity.noContent().build();
     }
 
-    public QRCodeResponseDTO processarGerarQRCode(QRCodeRequestDTO request)
+    @PostMapping("/{id}/qrcode")
+    @Operation(summary = "Gerar QR Code para uma mesa")
+    public ResponseEntity<QRCodeResponseDTO> processarGerarQRCode(@PathVariable Long id, @Valid @RequestBody QRCodeRequestDTO request)
     {
-        if (request == null)
-        {
-            throw new IllegalArgumentException("Request não pode ser nulo");
-        }
-
-        if (request.getIdMesa() <= 0)
-        {
-            throw new IllegalArgumentException("ID da mesa inválido");
-        }
-
-        Mesa mesa = mesaService.buscarPorId(request.getIdMesa());
-        if (mesa == null)
-        {
-            throw new RuntimeException("Mesa não encontrada");
-        }
-
-        if (!mesa.isAtiva())
-        {
-            throw new RuntimeException("Mesa está desativada");
-        }
+        request.setIdMesa(id);
 
         QRCodeResponseDTO response = qrCodeService.gerarQRCode(request);
 
         if (!response.getSucesso())
         {
-            throw new RuntimeException("Erro ao gerar QR Code: " + response.getMensagem());
+            return ResponseEntity.badRequest().body(response);
         }
 
-        return response;
+        return ResponseEntity.ok(response);
     }
 
-    public boolean processarValidarQRCode(Long idMesa, String tokenSessao)
+    @PostMapping("/{id}/qrcode/validar")
+    @Operation(summary = "Validar QR Code de uma mesa")
+    public ResponseEntity<Boolean> processarValidarQRCode(@PathVariable Long idMesa, @RequestParam String tokenSessao)
     {
-        if (idMesa == null || idMesa <= 0)
-        {
-            throw new IllegalArgumentException("ID da mesa inválido");
-        }
+        Boolean valido = qrCodeService.validarQRCode(idMesa, tokenSessao);
 
-        if (tokenSessao == null || tokenSessao.trim().isEmpty())
-        {
-            throw new IllegalArgumentException("Token de sessão não pode ser vazio");
-        }
-
-        Mesa mesa = mesaService.buscarPorId(idMesa);
-        if (mesa == null)
-        {
-            throw new RuntimeException("Mesa não encontrada");
-        }
-
-        boolean valido = qrCodeService.validarQRCode(idMesa, tokenSessao);
-
-        return valido;
+        return ResponseEntity.ok(valido);
     }
 
-    public QRCodeResponseDTO processarBuscarQRCodePorId(Long id)
+    @PostMapping("/qrcode/{id}")
+    @Operation(summary = "Buscar QRCode por ID")
+    public ResponseEntity<QRCodeResponseDTO> processarBuscarQRCodePorId(@PathVariable Long id)
     {
-        if (id == null || id <= 0)
-        {
-            throw new IllegalArgumentException("ID inválido");
-        }
+        QRCodeResponseDTO response = qrCodeService.buscarPorId(id);
 
-        QRCode qrCode = qrCodeService.buscarPorId(id);
-
-        if (qrCode == null)
-        {
-            throw new RuntimeException("QR Code não encontrado");
-        }
-
-        QRCodeResponseDTO response = new QRCodeResponseDTO();
-        response.setId(qrCode.getId());
-        response.setCodigo(qrCode.getCodigo());
-        response.setUrlAutenticacao(qrCode.getUrlAutenticacao());
-        response.setDataCriacao(qrCode.getDataCriacao());
-        response.setDataExpiracao(qrCode.getDataExpiracao());
-        response.setIdMesa(qrCode.getIdMesa());
-        response.setSucesso(true);
-
-        return response;
+        return ResponseEntity.ok(response);
     }
 
-    public List<QRCodeResponseDTO> processarListarQRCodesAtivos()
+    @GetMapping("/qrcodes/ativos")
+    @Operation(summary = "Listar QR Codes por ID")
+    public ResponseEntity<List<QRCodeResponseDTO>> processarListarQRCodesAtivos()
     {
-        List<QRCode> qrCodes = qrCodeService.listarAtivos();
-        List<QRCodeResponseDTO> responseList = new ArrayList<>();
+        List<QRCodeResponseDTO> responses = qrCodeService.listarAtivos();
 
-        if (qrCodes.isEmpty())
-        {
-            throw new RuntimeException("Nenhum QR Code ativo encontrado");
-        }
-
-        for (QRCode qrCode : qrCodes)
-        {
-            QRCodeResponseDTO response = new QRCodeResponseDTO();
-            response.setId(qrCode.getId());
-            response.setCodigo(qrCode.getCodigo());
-            response.setUrlAutenticacao(qrCode.getUrlAutenticacao());
-            response.setDataCriacao(qrCode.getDataCriacao());
-            response.setDataExpiracao(qrCode.getDataExpiracao());
-            response.setIdMesa(qrCode.getIdMesa());
-            response.setSucesso(true);
-            responseList.add(response);
-        }
-
-        return responseList;
+        return ResponseEntity.ok(responses);
     }
 
-    public List<QRCodeResponseDTO> processarListarQRCodesPorMesa(Long idMesa)
+    @GetMapping("/{id}/qrcode")
+    @Operation(summary = "Listar QR Code Ativos da Mesa")
+    public ResponseEntity<List<QRCodeResponseDTO>> processarListarQRCodesPorMesa(@PathVariable Long idMesa)
     {
-        if (idMesa == null || idMesa <= 0)
-        {
-            throw new IllegalArgumentException("ID da mesa inválido");
-        }
+        List<QRCodeResponseDTO> qrCodes = qrCodeService.buscarAtivoPorMesa(idMesa);
 
-        Mesa mesa = mesaService.buscarPorId(idMesa);
-        if (mesa == null)
-        {
-            throw new RuntimeException("Mesa não encontrada");
-        }
-
-        List<QRCode> qrCodes = qrCodeService.listarPorMesa(idMesa);
-        List<QRCodeResponseDTO> responseList = new ArrayList<>();
-
-        if (qrCodes.isEmpty())
-        {
-            throw new RuntimeException("Nenhum QR Code encontrado para esta mesa");
-        }
-
-        for (QRCode qrCode : qrCodes)
-        {
-            QRCodeResponseDTO response = new QRCodeResponseDTO();
-            response.setId(qrCode.getId());
-            response.setCodigo(qrCode.getCodigo());
-            response.setUrlAutenticacao(qrCode.getUrlAutenticacao());
-            response.setDataCriacao(qrCode.getDataCriacao());
-            response.setDataExpiracao(qrCode.getDataExpiracao());
-            response.setIdMesa(qrCode.getIdMesa());
-            response.setSucesso(true);
-            responseList.add(response);
-        }
-
-        return responseList;
+        return ResponseEntity.ok(qrCodes);
     }
 
-    public void processarLimparQRCodesExpirados()
+    @PostMapping("/qrcode/limpar-expirados")
+    @Operation(summary = "Limpar QR Codes expirados")
+    public ResponseEntity<Void> processarLimparQRCodesExpirados()
     {
         qrCodeService.limparExpirados();
+
+        return ResponseEntity.noContent().build();
     }
 
-    public IotConfig processarBuscarIoTConfigPorMesa(Long idMesa)
+    @GetMapping("/{id}/iot")
+    @Operation(summary = "Buscar Configuração IoT pelo ID da mesa")
+    public ResponseEntity<IotConfig> processarBuscarIoTConfigPorMesa(@PathVariable Long idMesa)
     {
-        if (idMesa == null || idMesa <= 0)
-        {
-            throw new IllegalArgumentException("ID da mesa inválido");
-        }
-
-        Mesa mesa = mesaService.buscarPorId(idMesa);
-        if (mesa == null)
-        {
-            throw new RuntimeException("Mesa não encontrada");
-        }
-
         IotConfig iotConfig = mesaService.getConfiguracaoIoT(idMesa);
 
-        if (iotConfig == null)
-        {
-            throw new RuntimeException("Mesa não possui configuração IoT");
-        }
-
-        return iotConfig;
+        return ResponseEntity.ok(iotConfig);
     }
 
-    public String processarComunicarComIoT(Long idConfig, String comando)
+    @PostMapping("/iot/{idConfig}/comunicar")
+    @Operation(summary = "Comunicar com dispositivo IoT")
+    public ResponseEntity<String> processarComunicarComIoT(@PathVariable Long idConfig, @RequestParam String comando)
     {
-        if (idConfig == null || idConfig <= 0)
-        {
-            throw new IllegalArgumentException("ID da configuração IoT inválido");
-        }
-
-        if (comando == null || comando.trim().isEmpty())
-        {
-            throw new IllegalArgumentException("Comando não pode ser vazio");
-        }
-
         String resposta = ioTConfigService.comunicarComIoT(idConfig, comando);
 
-        if (resposta.startsWith("ERRO"))
-        {
-            throw new RuntimeException(resposta);
-        }
-
-        return resposta;
+        return ResponseEntity.ok(resposta);
     }
 
-    public boolean processarVerificarStatusIoT(Long idConfig)
+    @GetMapping("/iot/{idConfig}/status")
+    @Operation(summary = "Listar todos os dispositivos IoT")
+    public ResponseEntity<Boolean> processarVerificarStatusIoT(Long idConfig)
     {
-        if (idConfig == null || idConfig <= 0)
-        {
-            throw new IllegalArgumentException("ID da configuração IoT inválido");
-        }
+        Boolean online = ioTConfigService.isOnline(idConfig);
 
-        return ioTConfigService.isOnline(idConfig);
+        return ResponseEntity.ok(online);
     }
 
-    public List<IotConfig> processarListarTodosIoT()
+    @GetMapping("/iot")
+    @Operation(summary = "Listar todos dispositivos IoT")
+    public ResponseEntity<List<IotConfig>> processarListarTodosIoT()
     {
         List<IotConfig> dispositivos = ioTConfigService.listarTodos();
 
-        if (dispositivos.isEmpty())
-        {
-            throw new RuntimeException("Nenhum dispositivo IoT configurado");
-        }
-
-        return dispositivos;
+        return ResponseEntity.ok(dispositivos);
     }
 
-    public List<IotConfig> processarListarIoTOnline()
+    @GetMapping("/iot/online")
+    @Operation(summary = "Listar dipositivos IoT online")
+    public ResponseEntity<List<IotConfig>> processarListarIoTOnline()
     {
         List<IotConfig> dispositivos = ioTConfigService.listarOnline();
 
-        if (dispositivos.isEmpty())
-        {
-            throw new RuntimeException("Nenhum dispositivo IoT online");
-        }
-
-        return dispositivos;
+        return ResponseEntity.ok(dispositivos);
     }
 
-    public boolean processarAtualizarFirmware(Long idConfig, String versao)
+    @PatchMapping("/iot/{idConfig}/firmware")
+    public ResponseEntity<Boolean> processarAtualizarFirmware(@PathVariable Long idConfig, @RequestParam String versao)
     {
-        if (idConfig == null || idConfig <= 0)
-        {
-            throw new IllegalArgumentException("ID da configuração IoT inválido");
-        }
+        Boolean atualizado = ioTConfigService.atualizarFirmware(idConfig, versao);
 
-        if (versao == null || versao.trim().isEmpty())
-        {
-            throw new IllegalArgumentException("Versão do firmware não pode ser vazia");
-        }
-
-        return ioTConfigService.atualizarFirmware(idConfig, versao);
+        return ResponseEntity.ok(atualizado);
     }
 }

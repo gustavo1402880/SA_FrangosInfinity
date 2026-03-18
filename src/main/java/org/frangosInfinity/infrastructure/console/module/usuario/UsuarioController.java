@@ -132,7 +132,7 @@ public class UsuarioController
 
     @GetMapping("/matricula/{matricula}")
     @Operation(summary = "Buscar funcionário pela matrícula")
-    public ResponseEntity<UsuarioResponseDTO> processarBuscarPorMatricula(String matricula)
+    public ResponseEntity<UsuarioResponseDTO> processarBuscarPorMatricula(@PathVariable String matricula)
     {
         try
         {
