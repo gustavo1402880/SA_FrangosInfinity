@@ -22,7 +22,9 @@ public class CacheConfig
                 "produtos",
                 "categorias",
                 "pedidos",
-                "mesas"
+                "mesas",
+                "iotConfigs",
+                "qrCodes"
         ));
         return cacheManager;
     }

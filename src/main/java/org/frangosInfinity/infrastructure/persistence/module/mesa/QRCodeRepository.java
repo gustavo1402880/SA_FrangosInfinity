@@ -30,7 +30,7 @@ public interface QRCodeRepository extends JpaRepository<QRCode, Long>
     @Query("SELECT q FROM QRCode q WHERE q.ativo = true AND q.utilizado = false AND q.dataExpiracao > CURRENT_TIMESTAMP")
     List<QRCode> findAllAtivos();
 
-    List<QRCode> findByMesaIdAndAtivoTrue();
+    List<QRCode> findByMesaIdAndAtivoTrue(Long idMesa);
 
     List<QRCode> findByMesaIdAndUtilizadoFalse();
 

@@ -1,175 +1,119 @@
 package org.frangosInfinity.core.service.module.mesa;
 
+import org.frangosInfinity.core.entity.exception.ResourceNotFoundException;
 import org.frangosInfinity.core.entity.module.mesa.IotConfig;
-import org.frangosInfinity.infrastructure.persistence.connection.ConnectionFactory;
+import org.frangosInfinity.core.entity.module.mesa.Mesa;
 import org.frangosInfinity.infrastructure.persistence.module.mesa.IoTConfigRepository;
+import org.frangosInfinity.infrastructure.persistence.module.mesa.MesaRepository;
 import org.frangosInfinity.infrastructure.util.Configuracao;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
 
-public class IoTConfigService
-{
-    private final Configuracao config;
+@Service
+public class IoTConfigService {
+    @Autowired
+    private IoTConfigRepository ioTConfigRepository;
 
-    public IoTConfigService()
-    {
-        this.config = Configuracao.getInstance();
-    }
+    @Autowired
+    private MesaRepository mesaRepository;
 
-    public IotConfig criarConfiguracaoPadrao(Long idMesa)
-    {
+    @Autowired
+    private Configuracao config;
+
+    @Transactional
+    public IotConfig criarConfiguracaoPadrao(Mesa mesa) {
         String ipBase = config.getProperty("iot.ip.base", "192.168.1");
         int portaBase = config.getIntProperty("iot.porta.base", 9000);
 
-        int numeroMesa = (idMesa.intValue() % 100) + 10;
+        int numeroMesa = (mesa.getNumero() % 100) + 10;
         String ip = ipBase + "." + numeroMesa;
-        int porta = portaBase + (idMesa.intValue() % 100);
+        int porta = portaBase + (mesa.getNumero() % 100);
 
-        return new IotConfig(idMesa, ip, porta);
+        IotConfig iotConfig = new IotConfig(mesa, ip, porta);
+
+        IotConfig iotSalvo = ioTConfigRepository.save(iotConfig);
+
+        return iotSalvo;
     }
 
-    public IotConfig salvarConfiguracao(IotConfig config)
-    {
-        try (Connection conn = ConnectionFactory.getConnection())
-        {
-            IoTConfigRepository dao = new IoTConfigRepository(conn);
-            return dao.salvar(config);
-        }
-        catch (SQLException e)
-        {
-            return null;
-        }
+    @Transactional(readOnly = true)
+    @Cacheable(value = "iotConfigs", key = "#id")
+    public IotConfig buscarPorId(Long id) {
+        return ioTConfigRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Configuração IoT não encontrada: " + id));
     }
 
-    public IotConfig buscarPorId(Long id)
-    {
-        try (Connection conn = ConnectionFactory.getConnection())
-        {
-            IoTConfigRepository dao = new IoTConfigRepository(conn);
-            return dao.buscarPorId(id).orElse(null);
-        }
-        catch (SQLException e)
-        {
-            return null;
-        }
+    @Transactional(readOnly = true)
+    @Cacheable(value = "iotConfigs", key = "#id")
+    public IotConfig buscarPorMesa(Long idMesa) {
+        return ioTConfigRepository.findByMesaId(idMesa).orElseThrow(() -> new ResourceNotFoundException("Configuração IoT não encontrada para a mesa: " + idMesa));
     }
 
-    public IotConfig buscarPorMesa(Long idMesa)
-    {
-        try (Connection conn = ConnectionFactory.getConnection())
-        {
-            IoTConfigRepository dao = new IoTConfigRepository(conn);
-            return dao.buscarPorMesa(idMesa).orElse(null);
-        }
-        catch (SQLException e)
-        {
-            return null;
-        }
+    @Transactional(readOnly = true)
+    @Cacheable(value = "iotConfigs")
+    public List<IotConfig> listarTodos() {
+        return ioTConfigRepository.findAll();
     }
 
-    public List<IotConfig> listarTodos()
-    {
-        try (Connection conn = ConnectionFactory.getConnection())
-        {
-            IoTConfigRepository dao = new IoTConfigRepository(conn);
-            return dao.listarTodos();
-        }
-        catch (SQLException e)
-        {
-            return List.of();
-        }
+    @Transactional(readOnly = true)
+    @Cacheable(value = "iotConfigs")
+    public List<IotConfig> listarOnline() {
+        return ioTConfigRepository.findByOnlineTrue();
     }
 
-    public List<IotConfig> listarOnline()
-    {
-        try (Connection conn = ConnectionFactory.getConnection())
-        {
-            IoTConfigRepository dao = new IoTConfigRepository(conn);
-            return dao.listarOnline();
+    @Transactional
+    @Cacheable(value = "iotConfigs")
+    public String comunicarComIoT(Long idConfig, String comando) {
+
+        IotConfig iotConfig = ioTConfigRepository.findById(idConfig).orElseThrow(() -> new ResourceNotFoundException("Configuração IoT não encontrada: " + idConfig));
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
-        catch (SQLException e)
-        {
-            return List.of();
+
+        String resposta = iotConfig.enviarComando(comando);
+
+        if (comando.equals("STATUS")) {
+            boolean online = resposta.startsWith("ONLINE");
+            iotConfig.setOnline(online);
+            ioTConfigRepository.save(iotConfig);
         }
+
+        return resposta;
     }
 
-    public String comunicarComIoT(Long idConfig, String comando)
-    {
-        try (Connection conn = ConnectionFactory.getConnection())
-        {
-            IoTConfigRepository dao = new IoTConfigRepository(conn);
+    @Transactional
+    @Cacheable(value = "iotConfigs")
+    public boolean atualizarFirmware(Long idConfig, String versao) {
+        IotConfig iotConfig = ioTConfigRepository.findById(idConfig).orElseThrow(() -> new ResourceNotFoundException("Configuração IoT não encontrada: " + idConfig));
 
-            var configOpt = dao.buscarPorId(idConfig);
-            if (configOpt.isEmpty())
-            {
-                return "Erro IoT não encontrada";
-            }
+        iotConfig.setVersaoFirmware(versao);
+        ioTConfigRepository.save(iotConfig);
 
-            IotConfig iotConfig = configOpt.get();
-
-            try
-            {
-                Thread.sleep(1000);
-            }
-            catch (InterruptedException e)
-            {
-                Thread.currentThread().interrupt();
-            }
-
-            String resposta = iotConfig.enviarComando(comando);
-
-            if (comando.equals("STATUS"))
-            {
-                boolean online = resposta.startsWith("ONLINE");
-
-                dao.atualizarStatus(idConfig, online);
-            }
-
-            return resposta;
-
-        }
-        catch (SQLException e)
-        {
-            return "Erro: " + e.getMessage();
-        }
+        return true;
     }
 
-    public boolean atualizarFirmware(Long idConfig, String versao)
-    {
-        try (Connection conn = ConnectionFactory.getConnection())
-        {
-            IoTConfigRepository dao = new IoTConfigRepository(conn);
-
-            var configOpt = dao.buscarPorId(idConfig);
-            if (configOpt.isEmpty())
-            {
-                return false;
-            }
-
-            dao.atualizarFirmware(idConfig, versao);
-
-            return true;
-
-        }
-        catch (SQLException e)
-        {
-            return false;
-        }
-    }
-
+    @Transactional(readOnly = true)
     public boolean isOnline(Long idConfig)
     {
-        try (Connection conn = ConnectionFactory.getConnection())
+        return ioTConfigRepository.findById(idConfig).map(IotConfig::isOnline).orElse(false);
+    }
+
+    @Transactional
+    @CacheEvict(value = "iotConfigs")
+    public void deletarCOnfiguracao(Long id)
+    {
+        if (!ioTConfigRepository.existsByMesaId(id))
         {
-            IoTConfigRepository dao = new IoTConfigRepository(conn);
-            var configOpt = dao.buscarPorId(idConfig);
-            return configOpt.isPresent() && configOpt.get().isOnline();
+            throw new ResourceNotFoundException("Configuração IoT não encontrada");
         }
-        catch (SQLException e)
-        {
-            return false;
-        }
+
+        ioTConfigRepository.deleteById(id);
     }
 }

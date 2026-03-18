@@ -12,7 +12,6 @@ public class QRCodeResponseDTO
     private LocalDateTime dataCriacao;
     private LocalDateTime dataExpiracao;
     private Long idMesa;
-    private String caminhoImagem;
     private String mensagem;
     private Boolean sucesso;
 
@@ -78,16 +77,6 @@ public class QRCodeResponseDTO
         this.idMesa = idMesa;
     }
 
-    public String getCaminhoImagem()
-    {
-        return caminhoImagem;
-    }
-
-    public void setCaminhoImagem(String caminhoImagem)
-    {
-        this.caminhoImagem = caminhoImagem;
-    }
-
     public String getMensagem()
     {
         return mensagem;
@@ -108,7 +97,7 @@ public class QRCodeResponseDTO
         this.sucesso = sucesso;
     }
 
-    public static QRCodeResponseDTO sucesso(QRCode qrCode, String caminhoImagem)
+    public static QRCodeResponseDTO fromEntity(QRCode qrCode)
     {
         QRCodeResponseDTO dto = new QRCodeResponseDTO();
         dto.setId(qrCode.getId());
@@ -116,8 +105,7 @@ public class QRCodeResponseDTO
         dto.setUrlAutenticacao(qrCode.getUrlAutenticacao());
         dto.setDataCriacao(qrCode.getDataCriacao());
         dto.setDataExpiracao(qrCode.getDataExpiracao());
-        dto.setIdMesa(qrCode.getIdMesa());
-        dto.setCaminhoImagem(caminhoImagem);
+        dto.setIdMesa(qrCode.getIdMesa().getId());
         dto.setSucesso(true);
         dto.setMensagem("QR Code gerado com sucesso!");
         return dto;

@@ -2,281 +2,171 @@ package org.frangosInfinity.core.service.module.mesa;
 
 import org.frangosInfinity.application.module.mesa.request.QRCodeRequestDTO;
 import org.frangosInfinity.application.module.mesa.response.QRCodeResponseDTO;
+import org.frangosInfinity.core.entity.exception.BusinessException;
+import org.frangosInfinity.core.entity.exception.ResourceNotFoundException;
 import org.frangosInfinity.core.entity.module.mesa.Mesa;
 import org.frangosInfinity.core.entity.module.mesa.QRCode;
-import org.frangosInfinity.infrastructure.persistence.connection.ConnectionFactory;
 import org.frangosInfinity.infrastructure.persistence.module.mesa.MesaRepository;
 import org.frangosInfinity.infrastructure.persistence.module.mesa.QRCodeRepository;
 import org.frangosInfinity.infrastructure.util.Configuracao;
 import org.frangosInfinity.infrastructure.util.Formatador;
 import org.frangosInfinity.infrastructure.util.GeradorQRCode;
 import org.frangosInfinity.infrastructure.util.Validator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class QRCodeService
-{
-    private final GeradorQRCode geradorQRCode;
-    private final Validator validator;
-    private final Configuracao configuracao;
-    private final Formatador formatador;
+@Service
+public class QRCodeService {
+    @Autowired
+    private QRCodeRepository qrCodeRepository;
 
-    public QRCodeService()
-    {
-        this.geradorQRCode = new GeradorQRCode();
-        this.validator = new Validator();
-        this.configuracao = Configuracao.getInstance();
-        this.formatador = new Formatador();
-    }
+    @Autowired
+    private MesaRepository mesaRepository;
 
+    @Autowired
+    private GeradorQRCode geradorQRCode;
+
+    @Autowired
+    private Validator validator;
+
+    @Autowired
+    private Configuracao configuracao;
+
+    @Autowired
+    private Formatador formatador;
+
+    @Transactional
+    @CacheEvict(value = "qrCodes")
     public QRCodeResponseDTO gerarQRCode(QRCodeRequestDTO request)
     {
-        Connection connection = null;
-
-        try
+        if (!validator.validarRequestQRCode(request))
         {
-            if(!validator.validarRequestQRCode(request))
-            {
-                return QRCodeResponseDTO.erro("Dados inválidos para geração do QR Code");
-            }
+            return QRCodeResponseDTO.erro("Dados inválidos para geração do QR Code");
+        }
 
-            connection = ConnectionFactory.getConnection();
-            connection.setAutoCommit(false);
+        Mesa mesa = mesaRepository.findById(request.getIdMesa()).orElseThrow(() -> new ResourceNotFoundException("Mesa não encontrada: " + request.getIdMesa()));
 
-            MesaRepository mesaRepository = new MesaRepository(connection);
-            QRCodeRepository qrCodeRepository = new QRCodeRepository(connection);
+        if (!mesa.isAtiva())
+        {
+            return QRCodeResponseDTO.erro("Mesa " + mesa.getNumero() + " está desativada");
+        }
 
-            var mesaOpt = mesaRepository.buscarPorId(request.getIdMesa());
-            if (mesaOpt.isEmpty())
-            {
-                return QRCodeResponseDTO.erro("Mesa não encontrada: "+ request.getIdMesa());
-            }
-
-            Mesa mesa = mesaOpt.get();
-
-            if (!mesa.isAtiva())
-            {
-                return QRCodeResponseDTO.erro("Mesa " + mesa.getNumero() + " está desativada");
-            }
-
-            var qrAntigo = qrCodeRepository.buscarAtivoPorMesa(mesa.getId());
-            qrAntigo.ifPresent(qr ->
-            {
-                try
-                {
+        qrCodeRepository.findByMesaIdAndAtivoTrue(mesa.getId())
+                .forEach(qr -> {
                     qr.setAtivo(false);
-                }
-                catch (Exception e)
-                {
-                    return ;
-                }
-            });
+                    qrCodeRepository.save(qr);
+                });
 
-            QRCode qrCode = new QRCode();
-            qrCode.setIdMesa(mesa.getId());
+        QRCode qrCode = new QRCode();
+        qrCode.setIdMesa(mesa);
 
-            int tempoExpiracao = configuracao.getIntProperty("qr.code.tempo.expiracao", 120);
+        int tempoExpiracao = configuracao.getIntProperty("qr.code.tempo.expiracao", 120);
 
-            if (request.getTempoExpiracaoSgundos() != null && request.getTempoExpiracaoSgundos() > 0)
-            {
-                tempoExpiracao = request.getTempoExpiracaoSgundos();
-            }
-
-            qrCode.setDataExpiracao(
-                    qrCode.getDataCriacao().plusSeconds(tempoExpiracao)
-            );
-
-            String baseUrl = configuracao.getProperty("app.baseUrl", "localhost:8080");
-            String url = String.format("%s/auth/mesa/%d/%s", baseUrl, mesa.getId(), qrCode.getTokenSessao());
-            qrCode.setUrlAutenticacao(url);
-
-            String diretorio = configuracao.getProperty("qr.code.diretorio", "./qrcodes/");
-            String nomeArquivo = String.format("mesa_%d_%s.png",
-                    mesa.getNumero(),
-                    qrCode.getCodigo()
-            );
-
-            String caminhoImagem = geradorQRCode.gerarQRCode(url, nomeArquivo);
-
-            if (caminhoImagem == null)
-            {
-                return QRCodeResponseDTO.erro("Falha ao gerar arquivo de imagem");
-            }
-
-            qrCodeRepository.salvar(qrCode);
-
-            connection.commit();
-
-            QRCodeResponseDTO resposta = QRCodeResponseDTO.sucesso(qrCode, caminhoImagem);
-            resposta.setMensagem("QR Code gerado com sucesso! Expira em " +
-                    formatador.formatarTempoRestante(qrCode.getDataExpiracao()));
-
-            return resposta;
-
+        if (request.getTempoExpiracaoSgundos() != null && request.getTempoExpiracaoSgundos() > 0) {
+            tempoExpiracao = request.getTempoExpiracaoSgundos();
         }
-        catch (Exception e)
+
+        qrCode.setDataExpiracao(qrCode.getDataCriacao().plusSeconds(tempoExpiracao));
+
+        String baseUrl = configuracao.getProperty("app.baseUrl", "localhost:8080");
+        String url = String.format("%s/auth/mesa/%d/%s", baseUrl, mesa.getId(), qrCode.getTokenSessao());
+        qrCode.setUrlAutenticacao(url);
+
+        String diretorio = configuracao.getProperty("qr.code.diretorio", "./qrcodes/");
+        String nomeArquivo = String.format("mesa_%d_%s.png", mesa.getNumero(), qrCode.getCodigo());
+
+        String caminhoImagem = geradorQRCode.gerarQRCode(url, nomeArquivo);
+
+        if (caminhoImagem == null)
         {
-            if (connection != null)
-            {
-                try
-                {
-                    connection.rollback();
-                }
-                catch (SQLException ex)
-                {
-                    return QRCodeResponseDTO.erro("Erro no rollback: "+ex.getMessage());
-                }
-            }
-            return QRCodeResponseDTO.erro("Erro ao gerar QR Code: " + e.getMessage());
+            return QRCodeResponseDTO.erro("Falha ao gerar arquivo de imagem");
         }
-        finally
-        {
-            if (connection != null)
-            {
-                try
-                {
-                    connection.close();
-                }
-                catch (SQLException e)
-                {
-                   return null;
-                }
-            }
-        }
+
+        QRCode qrCodeSalvo = qrCodeRepository.save(qrCode);
+
+        return QRCodeResponseDTO.fromEntity(qrCodeSalvo);
     }
 
+    @Transactional
+    @CacheEvict(value = "qrCodes")
     public boolean validarQRCode(Long idMesa, String tokenSessao)
     {
-        Connection conn = null;
-        try
+        QRCode qrCode = qrCodeRepository.findByTokenSessao(tokenSessao).orElseThrow(() -> new BusinessException("Token não encontrado"));
+
+        if (qrCode.getIdMesa().getId().equals(idMesa))
         {
-            conn = ConnectionFactory.getConnection();
-            conn.setAutoCommit(false);
-
-            QRCodeRepository qrCodeRepository = new QRCodeRepository(conn);
-            MesaRepository mesaRepository = new MesaRepository(conn);
-
-            var qrCodeOpt = qrCodeRepository.buscarPorTokenSessao(tokenSessao);
-
-            if (qrCodeOpt.isEmpty())
-            {
-                return false;
-            }
-
-            QRCode qrCode = qrCodeOpt.get();
-
-            if (qrCode.getIdMesa().equals(idMesa))
-            {
-                return false;
-            }
-
-            if (!qrCode.podeSerUtilizado())
-            {
-                return false;
-            }
-
-            qrCodeRepository.marcarComoUtilizado(qrCode.getId());
-
-            mesaRepository.atualizarDisponibilidade(idMesa, false);
-
-            conn.commit();
-
-            return true;
-        }
-        catch (SQLException e)
-        {
-            if (conn != null)
-            {
-                try
-                {
-                    conn.rollback();
-                }
-                catch (SQLException ex)
-                {
-                    return false;
-                }
-            }
             return false;
         }
-        finally
+
+        if (!qrCode.podeSerUtilizado())
         {
-            if (conn != null)
-            {
-                try
-                {
-                    conn.close();
-                }
-                catch (SQLException e)
-                {
-                     return false;
-                }
-            }
+            return false;
         }
+
+        qrCodeRepository.marcarComoUtilizado(qrCode.getId());
+
+        Mesa mesa = qrCode.getIdMesa();
+        mesa.ocuparMesa();
+        mesaRepository.atualizarDisponibilidade(idMesa, false);
+
+        return true;
     }
 
-    public QRCode buscarPorId(Long id) {
-        try (Connection conn = ConnectionFactory.getConnection())
-        {
-            QRCodeRepository qrCodeRepository = new QRCodeRepository(conn);
-            return qrCodeRepository.buscarPorId(id).orElse(null);
-        }
-        catch (SQLException e)
-        {
-            return null;
-        }
-    }
-
-    public List<QRCode> listarAtivos()
+    @Transactional(readOnly = true)
+    @Cacheable(value = "qrCodes")
+    public QRCodeResponseDTO buscarPorId(Long id)
     {
-        try (Connection conn = ConnectionFactory.getConnection())
-        {
-            QRCodeRepository qrCodeRepository = new QRCodeRepository(conn);
-            return qrCodeRepository.listarAtivos();
-        }
-        catch (SQLException e)
-        {
-            return List.of();
-        }
+        QRCode qrCode = qrCodeRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("QR Code não encontrado"));
+
+        return QRCodeResponseDTO.fromEntity(qrCode);
     }
 
-    public List<QRCode> listarPorMesa(Long idMesa)
+    @Transactional(readOnly = true)
+    @Cacheable(value = "qrCodes", key = "#id")
+    public QRCode buscarEntidadePorId(Long id)
     {
-        try (Connection conn = ConnectionFactory.getConnection())
-        {
-            QRCodeRepository qrCodeRepository = new QRCodeRepository(conn);
-            return qrCodeRepository.listarPorMesa(idMesa);
-        }
-        catch (SQLException e)
-        {
-            return List.of();
-        }
+        return qrCodeRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("QR Code não encontrado"));
     }
 
-    public void limparExpirados() {
-        try (Connection conn = ConnectionFactory.getConnection())
-        {
-            QRCodeRepository qrCodeRepository = new QRCodeRepository(conn);
-
-            qrCodeRepository.desativarExpirados();
-        }
-        catch (SQLException e)
-        {
-            return;
-        }
-    }
-
-    public QRCode getQRCodeAtivoDaMesa(Long idMesa)
+    @Transactional(readOnly = true)
+    public QRCodeResponseDTO buscarPorToken(String tokenSessao)
     {
-        try (Connection conn = ConnectionFactory.getConnection())
-        {
-            QRCodeRepository qrCodeRepository = new QRCodeRepository(conn);
-            return qrCodeRepository.buscarAtivoPorMesa(idMesa).orElse(null);
-        }
-        catch (SQLException e)
-        {
-            return null;
-        }
+        QRCode qrCode = qrCodeRepository.findByTokenSessao(tokenSessao).orElseThrow(() -> new BusinessException("Token não encontrado"));
+
+        return QRCodeResponseDTO.fromEntity(qrCode);
     }
+
+    @Transactional(readOnly = true)
+    @Cacheable(value = "qrCodes")
+    public List<QRCodeResponseDTO> listarAtivos()
+    {
+        return qrCodeRepository.findAllAtivos().stream()
+                .map(QRCodeResponseDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    @Cacheable(value = "qrCodes")
+    public List<QRCodeResponseDTO> buscarAtivoPorMesa(Long idMesa)
+    {
+        return qrCodeRepository.findByMesaIdAndAtivoTrue(idMesa).stream()
+                .map(QRCodeResponseDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Scheduled
+    @Transactional
+    @CacheEvict(value = "qrCodes")
+    public void limparExpirados()
+    {
+        qrCodeRepository.desativarExpirados();
+    }
+
 }

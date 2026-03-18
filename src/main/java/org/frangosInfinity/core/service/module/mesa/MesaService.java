@@ -2,333 +2,177 @@ package org.frangosInfinity.core.service.module.mesa;
 
 import org.frangosInfinity.application.module.mesa.request.MesaRequestDTO;
 import org.frangosInfinity.application.module.mesa.response.MesaResponseDTO;
+import org.frangosInfinity.core.entity.exception.BusinessException;
+import org.frangosInfinity.core.entity.exception.ResourceNotFoundException;
 import org.frangosInfinity.core.entity.module.mesa.IotConfig;
 import org.frangosInfinity.core.entity.module.mesa.Mesa;
-import org.frangosInfinity.infrastructure.persistence.connection.ConnectionFactory;
-import org.frangosInfinity.infrastructure.persistence.module.mesa.IoTConfigRepository;
 import org.frangosInfinity.infrastructure.persistence.module.mesa.MesaRepository;
+import org.frangosInfinity.infrastructure.util.Configuracao;
 import org.frangosInfinity.infrastructure.util.Formatador;
 import org.frangosInfinity.infrastructure.util.Validator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class MesaService
-{
-    private final Validator validator;
-    private final Formatador formatador;
-    private final IoTConfigService ioTConfigService;
+@Service
+public class MesaService {
+    @Autowired
+    private MesaRepository mesaRepository;
 
-    public MesaService()
-    {
-        this.validator = new Validator();
-        this.formatador = new Formatador();
-        this.ioTConfigService = new IoTConfigService();
+    @Autowired
+    private Configuracao configuracao;
+
+    @Autowired
+    private Validator validator;
+
+    @Autowired
+    private Formatador formatador;
+
+    @Autowired
+    private IoTConfigService ioTConfigService;
+
+    @Transactional
+    @CacheEvict(value = "mesas")
+    public MesaResponseDTO criarmesa(MesaRequestDTO request) {
+        if (!validator.validarNumeroMesa(request.getNumero())) {
+            return criarRespostaErro("Número da mesa deve ser positivo (1-999)");
+        }
+
+        if (!validator.validarCapacidade(request.getCapacidade())) {
+            return criarRespostaErro("Capacidade deve ser entre 1 e 20 pessoas");
+        }
+
+        if (request.getLocalizacao() == null || request.getLocalizacao().trim().isEmpty()) {
+            return criarRespostaErro("Localização é obrigatória");
+        }
+
+        Mesa mesa = new Mesa(request.getNumero(), request.getCapacidade(), request.getLocalizacao());
+
+        Mesa mesaSalva = mesaRepository.save(mesa);
+
+        IotConfig iotConfig = ioTConfigService.criarConfiguracaoPadrao(mesaSalva);
+        mesa.setIotConfig(iotConfig);
+        mesaRepository.save(mesaSalva);
+
+        return MesaResponseDTO.fromEntity(mesa);
     }
 
-    public MesaResponseDTO criarmesa(MesaRequestDTO request)
-    {
-        Connection conn = null;
-        try
-        {
-            if (!validator.validarNumeroMesa(request.getNumero()))
-            {
-                return criarRespostaErro("Número da mesa deve ser positivo (1-999)");
-            }
+    @Transactional(readOnly = true)
+    @Cacheable(value = "mesas", key = "#id")
+    public MesaResponseDTO buscarPorId(Long id) {
+        Mesa mesa = mesaRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Mesa não encontrada com ID: " + id));
 
-            if (!validator.validarCapacidade(request.getCapacidade()))
-            {
-                return criarRespostaErro("Capacidade deve ser entre 1 e 20 pessoas");
-            }
-
-            if (request.getLocalizacao() == null || request.getLocalizacao().trim().isEmpty())
-            {
-                return criarRespostaErro("Localização é obrigatória");
-            }
-
-            conn = ConnectionFactory.getConnection();
-
-            conn.setAutoCommit(false);
-
-            MesaRepository mesaRepository = new MesaRepository(conn);
-
-            IoTConfigRepository iotConfigRepository = new IoTConfigRepository(conn);
-
-            var mesaExistente = mesaRepository.buscarPorNumero(request.getNumero());
-
-            if (mesaExistente.isPresent())
-            {
-                return criarRespostaErro("Já existe uma mesa com o número " + request.getNumero());
-            }
-
-            Mesa mesa = new Mesa(request.getNumero(), request.getCapacidade(), request.getLocalizacao());
-
-            mesaRepository.salvar(mesa);
-
-            IotConfig iotConfig = ioTConfigService.criarConfiguracaoPadrao(mesa.getId());
-            iotConfigRepository.salvar(iotConfig);
-
-            mesa.setIdIotConfig(iotConfig.getId());
-            mesaRepository.atualizar(mesa);
-
-            conn.commit();
-
-            MesaResponseDTO resposta = MesaResponseDTO.fromEntity(mesa);
-            resposta.setMensagem("Mesa criada com sucesso");
-            return resposta;
-
-        }
-        catch (SQLException e)
-        {
-            if (conn != null)
-            {
-                try
-                {
-                    conn.rollback();
-                }
-                catch (SQLException ex)
-                {
-                    criarRespostaErro("Erro no rollback: " + ex.getMessage());
-                }
-            }
-            return criarRespostaErro("Erro ao criar mesa: " + e.getMessage());
-        }
-        finally
-        {
-            if (conn != null)
-            {
-                try
-                {
-                    conn.close();
-                }
-                catch (SQLException e)
-                {
-                    criarRespostaErro("Erro ao fechar conexão: " + e.getMessage());
-                }
-            }
-        }
+        return MesaResponseDTO.fromEntity(mesa);
     }
 
-    public Mesa buscarPorId(Long id)
-    {
-        try (Connection conn = ConnectionFactory.getConnection())
-        {
-            MesaRepository mesaRepository = new MesaRepository(conn);
-
-            return mesaRepository.buscarPorId(id).orElse(null);
-
-        }
-        catch (SQLException e)
-        {
-            return null;
-        }
+    @Transactional(readOnly = true)
+    public Mesa buscarEntityPorId(Long id) {
+        return mesaRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Mesa não encontrada com ID: " + id));
     }
 
-    public Mesa buscarPorNumero(int numero)
+    @Transactional(readOnly = true)
+    public MesaResponseDTO buscarPorNumero(int numero)
     {
-        try (Connection conn = ConnectionFactory.getConnection())
-        {
-            MesaRepository mesaRepository = new MesaRepository(conn);
+        Mesa mesa = mesaRepository.buscarPorNumero(numero).orElseThrow(() -> new ResourceNotFoundException("Mesa não encontrada com número: " + numero));
 
-            return mesaRepository.buscarPorNumero(numero).orElse(null);
-        }
-        catch (SQLException e)
-        {
-            return null;
-        }
+        return MesaResponseDTO.fromEntity(mesa);
     }
 
-    public List<Mesa> listarTodas()
+    @Transactional(readOnly = true)
+    @Cacheable(value = "mesas")
+    public List<MesaResponseDTO> listarTodas()
     {
-        try (Connection conn = ConnectionFactory.getConnection())
-        {
-            MesaRepository mesaRepository = new MesaRepository(conn);
-
-            return mesaRepository.listarTodos();
-        }
-        catch (SQLException e)
-        {
-            return List.of();
-        }
+        return mesaRepository.findAll().stream()
+                .map(MesaResponseDTO::fromEntity)
+                .collect(Collectors.toList());
     }
 
-    public List<Mesa> listarDisponiveis()
+    @Transactional(readOnly = true)
+    @Cacheable(value = "mesas")
+    public List<MesaResponseDTO> listarDisponiveis()
     {
-        try (Connection conn = ConnectionFactory.getConnection())
-        {
-            MesaRepository mesaRepository = new MesaRepository(conn);
-
-            return mesaRepository.listarDisponiveis();
-        }
-        catch (SQLException e)
-        {
-            return List.of();
-        }
+        return mesaRepository.findByDisponivelTrueAndAtivaTrueOrderByNUmero().stream()
+                .map(MesaResponseDTO::fromEntity)
+                .collect(Collectors.toList());
     }
 
+    @Transactional
+    @CacheEvict(value = "mesas")
     public MesaResponseDTO atualizarStatus(Long idMesa, String acao)
     {
-        Connection conn = null;
-        try
+        Mesa mesa = mesaRepository.findById(idMesa).orElseThrow(() -> new ResourceNotFoundException("Mesa não encontrada com ID: " + idMesa));
+
+        String acaoUpper = acao.toUpperCase();
+
+        switch (acaoUpper)
         {
-            conn = ConnectionFactory.getConnection();
-            MesaRepository mesaRepository = new MesaRepository(conn);
-
-            var mesaOpt = mesaRepository.buscarPorId(idMesa);
-            if (mesaOpt.isEmpty())
-            {
-                return criarRespostaErro("Mesa não encontrada");
-            }
-
-            Mesa mesa = mesaOpt.get();
-            String acaoUpper = acao.toUpperCase();
-
-            switch (acaoUpper)
-            {
-                case "OCUPAR":
-                    if (!mesa.isDisponivel())
-                    {
-                        return criarRespostaErro("Mesa já está ocupada");
-                    }
-                    mesa.ocuparMesa();
-                    System.out.println("Mesa " + mesa.getNumero() + " ocupada");
-                    break;
-
-                case "LIBERAR":
-                    if (mesa.isDisponivel())
-                    {
-                        return criarRespostaErro("Mesa já está disponível");
-                    }
-                    mesa.liberarMesa();
-                    System.out.println("Mesa " + mesa.getNumero() + " liberada");
-                    break;
-
-                case "ATIVAR":
-                    mesa.setAtiva(true);
-                    System.out.println("Mesa " + mesa.getNumero() + " ativada");
-                    break;
-
-                case "DESATIVAR":
-                    mesa.setAtiva(false);
-                    System.out.println("Mesa " + mesa.getNumero() + " desativada");
-                    break;
-
-                default:
-                    return criarRespostaErro("Ação inválida: " + acao + ". Use: OCUPAR, LIBERAR, ATIVAR, DESATIVAR");
-            }
-
-            mesaRepository.atualizar(mesa);
-
-            MesaResponseDTO resposta = MesaResponseDTO.fromEntity(mesa);
-            resposta.setMensagem("Mesa " + acaoLower(acaoUpper) + " com sucesso");
-            return resposta;
-
-        }
-        catch (SQLException e)
-        {
-            return criarRespostaErro("Erro ao atualizar mesa: " + e.getMessage());
-        }
-        finally
-        {
-            if (conn != null)
-            {
-                try
+            case "OCUPAR":
+                if (!mesa.isDisponivel())
                 {
-                    conn.close();
+                    return criarRespostaErro("Mesa já está ocupada");
                 }
-                catch (SQLException e)
+                mesa.ocuparMesa();
+                System.out.println("Mesa " + mesa.getNumero() + " ocupada");
+                break;
+
+            case "LIBERAR":
+                if (mesa.isDisponivel())
                 {
-                    return criarRespostaErro("Erro ao fechar conexão: " + e.getMessage());
+                    return criarRespostaErro("Mesa já está disponível");
                 }
-            }
+                mesa.liberarMesa();
+                System.out.println("Mesa " + mesa.getNumero() + " liberada");
+                break;
+
+            case "ATIVAR":
+                mesa.setAtiva(true);
+                System.out.println("Mesa " + mesa.getNumero() + " ativada");
+                break;
+
+            case "DESATIVAR":
+                mesa.setAtiva(false);
+                System.out.println("Mesa " + mesa.getNumero() + " desativada");
+                break;
+
+            default:
+                return criarRespostaErro("Ação inválida: " + acao + ". Use: OCUPAR, LIBERAR, ATIVAR, DESATIVAR");
         }
+
+        mesaRepository.save(mesa);
+
+       return MesaResponseDTO.fromEntity(mesa);
     }
 
+    @Transactional(readOnly = true)
     public IotConfig getConfiguracaoIoT(Long idMesa)
     {
-        try (Connection conn = ConnectionFactory.getConnection())
-        {
-            MesaRepository mesaRepository = new MesaRepository(conn);
-            IoTConfigRepository iotConfigRepository = new IoTConfigRepository(conn);
+        Mesa mesa = mesaRepository.findById(idMesa).orElseThrow(() -> new ResourceNotFoundException("Mesa não encontrada"));
 
-            var mesaOpt = mesaRepository.buscarPorId(idMesa);
-            if (mesaOpt.isPresent() && mesaOpt.get().getIdIotConfig() != null)
-            {
-                return iotConfigRepository.buscarPorId(mesaOpt.get().getIdIotConfig()).orElse(null);
-            }
-            return null;
-        }
-        catch (SQLException e)
+        if (mesa.getIotConfig() == null)
         {
-            return null;
+            throw new BusinessException("Mesa não possui configuração IoT");
         }
+
+        return mesa.getIotConfig();
     }
 
-    public boolean deletarMesa(Long idMesa)
+    @Transactional
+    @CacheEvict(value = "mesas")
+    public void deletarMesa(Long idMesa)
     {
-        Connection conn = null;
-        try
+        Mesa mesa = mesaRepository.findById(idMesa).orElseThrow(() -> new ResourceNotFoundException("Mesa não encontrada"));
+
+        if (!mesa.isDisponivel())
         {
-            conn = ConnectionFactory.getConnection();
-            conn.setAutoCommit(false);
-
-            MesaRepository mesaRepository = new MesaRepository(conn);
-            IoTConfigRepository iotConfigRepository = new IoTConfigRepository(conn);
-
-            var mesaOpt = mesaRepository.buscarPorId(idMesa);
-            if (mesaOpt.isEmpty())
-            {
-                return false;
-            }
-
-            Mesa mesa = mesaOpt.get();
-
-            if (!mesa.isDisponivel())
-            {
-                return false;
-            }
-
-            if (mesa.getIdIotConfig() != null)
-            {
-                iotConfigRepository.deletar(mesa.getIdIotConfig());
-            }
-
-            mesaRepository.deletar(idMesa);
-
-            conn.commit();
-            return true;
-
+            throw new BusinessException("Não foi possível deletar uma mesa ocupada");
         }
-        catch (SQLException e)
-        {
-            if (conn != null)
-            {
-                try
-                {
-                    conn.rollback();
-                }
-                catch (SQLException ex)
-                {
-                    return false;
-                }
-            }
-            return false;
-        }
-        finally
-        {
-            if (conn != null)
-            {
-                try
-                {
-                    conn.close();
-                }
-                catch (SQLException e)
-                {
-                    return false;
-                }
-            }
-        }
+
+        mesaRepository.delete(mesa);
     }
 
     private String acaoLower(String acao)
@@ -349,11 +193,5 @@ public class MesaService
         dto.setSucesso(false);
         dto.setMensagem(mensagem);
         return dto;
-    }
-
-    public void exibirMesasFormatadas()
-    {
-        List<Mesa> mesas = listarTodas();
-        System.out.println(formatador.formatarListaMesas(mesas));
     }
 }
