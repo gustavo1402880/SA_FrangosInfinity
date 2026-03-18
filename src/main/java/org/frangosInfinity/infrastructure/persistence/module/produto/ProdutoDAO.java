@@ -75,7 +75,6 @@ public class ProdutoDAO {
 
     public Produto buscarPorId(Long id){
 
-        Produto produto = new Produto();
         String querySQL = "select * from produto\n" +"where id = ?";
 
         try (Statement stmt = connection.createStatement();
