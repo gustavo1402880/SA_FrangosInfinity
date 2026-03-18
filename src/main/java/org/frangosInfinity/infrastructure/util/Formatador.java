@@ -2,11 +2,13 @@ package org.frangosInfinity.infrastructure.util;
 
 import org.frangosInfinity.core.entity.module.mesa.Mesa;
 import org.frangosInfinity.core.entity.module.mesa.QRCode;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+@Component
 public class Formatador
 {
     private final DateTimeFormatter formatoDataHora = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
@@ -30,7 +32,7 @@ public class Formatador
         for (Mesa mesa : mesas)
         {
             String status = mesa.isDisponivel() ? "LIVRE" : "OCUPADA";
-            String iotStatus = mesa.getIdIotConfig() != null ? "CONFIG" : "SEM IoT";
+            String iotStatus = mesa.getIotConfig().getId() != null ? "CONFIG" : "SEM IoT";
 
             sb.append(String.format("| %-4d | %-8d | %-10d | %-25s | %-8s | %-6s |\n",
                     mesa.getId(),

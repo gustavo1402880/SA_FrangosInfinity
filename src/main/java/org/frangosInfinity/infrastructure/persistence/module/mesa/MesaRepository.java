@@ -13,9 +13,10 @@ import java.util.Optional;
 @Repository
 public interface MesaRepository extends JpaRepository<Mesa, Long>
 {
-    Optional<Mesa> buscarPorNumero(Integer numero);
+    @Query("SELECT m FROM Mesa m WHERE m.numero = :numero")
+    Optional<Mesa> findByNumero(@Param("numero") Integer numero);
 
-    List<Mesa> findByDisponivelTrueAndAtivaTrueOrderByNUmero();
+    List<Mesa> findByDisponivelTrueAndAtivaTrueOrderByNumero();
 
     Boolean existsByNumero(Integer numero);
 
@@ -23,10 +24,10 @@ public interface MesaRepository extends JpaRepository<Mesa, Long>
 
     List<Mesa> findByDisponivelFalse();
 
-    @Query("SELECT m FROM Mesa m WHERE m.id_iot_config IS NOT NULL")
+    @Query("SELECT m FROM Mesa m WHERE m.iotConfig.id IS NOT NULL")
     List<Mesa> findComIoT();
 
-    @Query("SELECT m FROM Mesa m WHERE m.id_iot_config IS NULL")
+    @Query("SELECT m FROM Mesa m WHERE m.iotConfig.id IS NULL")
     List<Mesa> findSemIoT();
 
     @Modifying

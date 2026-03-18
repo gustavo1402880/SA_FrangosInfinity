@@ -1,12 +1,13 @@
 package org.frangosInfinity.core.service.module.mesa;
 
+import lombok.extern.slf4j.Slf4j;
 import org.frangosInfinity.core.entity.exception.ResourceNotFoundException;
 import org.frangosInfinity.core.entity.module.mesa.IotConfig;
 import org.frangosInfinity.core.entity.module.mesa.Mesa;
 import org.frangosInfinity.infrastructure.persistence.module.mesa.IoTConfigRepository;
 import org.frangosInfinity.infrastructure.persistence.module.mesa.MesaRepository;
-import org.frangosInfinity.infrastructure.util.Configuracao;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 public class IoTConfigService {
     @Autowired
@@ -22,14 +24,15 @@ public class IoTConfigService {
     @Autowired
     private MesaRepository mesaRepository;
 
-    @Autowired
-    private Configuracao config;
+    @Value("${iot.ip.base}")
+    private String ipBase;
+
+    @Value("${iot.porta.base}")
+    private Integer portaBase;
 
     @Transactional
-    public IotConfig criarConfiguracaoPadrao(Mesa mesa) {
-        String ipBase = config.getProperty("iot.ip.base", "192.168.1");
-        int portaBase = config.getIntProperty("iot.porta.base", 9000);
-
+    public IotConfig criarConfiguracaoPadrao(Mesa mesa)
+    {
         int numeroMesa = (mesa.getNumero() % 100) + 10;
         String ip = ipBase + "." + numeroMesa;
         int porta = portaBase + (mesa.getNumero() % 100);

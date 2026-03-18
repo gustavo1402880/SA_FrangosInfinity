@@ -1,5 +1,6 @@
 package org.frangosInfinity.core.service.module.mesa;
 
+import lombok.extern.slf4j.Slf4j;
 import org.frangosInfinity.application.module.mesa.request.MesaRequestDTO;
 import org.frangosInfinity.application.module.mesa.response.MesaResponseDTO;
 import org.frangosInfinity.core.entity.exception.BusinessException;
@@ -7,7 +8,6 @@ import org.frangosInfinity.core.entity.exception.ResourceNotFoundException;
 import org.frangosInfinity.core.entity.module.mesa.IotConfig;
 import org.frangosInfinity.core.entity.module.mesa.Mesa;
 import org.frangosInfinity.infrastructure.persistence.module.mesa.MesaRepository;
-import org.frangosInfinity.infrastructure.util.Configuracao;
 import org.frangosInfinity.infrastructure.util.Formatador;
 import org.frangosInfinity.infrastructure.util.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,13 +19,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class MesaService {
     @Autowired
     private MesaRepository mesaRepository;
-
-    @Autowired
-    private Configuracao configuracao;
 
     @Autowired
     private Validator validator;
@@ -78,7 +76,7 @@ public class MesaService {
     @Transactional(readOnly = true)
     public MesaResponseDTO buscarPorNumero(int numero)
     {
-        Mesa mesa = mesaRepository.buscarPorNumero(numero).orElseThrow(() -> new ResourceNotFoundException("Mesa não encontrada com número: " + numero));
+        Mesa mesa = mesaRepository.findByNumero(numero).orElseThrow(() -> new ResourceNotFoundException("Mesa não encontrada com número: " + numero));
 
         return MesaResponseDTO.fromEntity(mesa);
     }
@@ -96,7 +94,7 @@ public class MesaService {
     @Cacheable(value = "mesas")
     public List<MesaResponseDTO> listarDisponiveis()
     {
-        return mesaRepository.findByDisponivelTrueAndAtivaTrueOrderByNUmero().stream()
+        return mesaRepository.findByDisponivelTrueAndAtivaTrueOrderByNumero().stream()
                 .map(MesaResponseDTO::fromEntity)
                 .collect(Collectors.toList());
     }

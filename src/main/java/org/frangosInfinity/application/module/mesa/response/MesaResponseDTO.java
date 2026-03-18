@@ -115,7 +115,7 @@ public class MesaResponseDTO
         dto.setLocalizacao(mesa.getLocalizacao());
         dto.setDisponivel(mesa.isDisponivel());
         dto.setAtiva(mesa.isAtiva());
-        dto.setIdIotConfig(mesa.getIdIotConfig());
+        dto.setIdIotConfig(mesa.getIotConfig().getId());
         dto.setSucesso(true);
         dto.setMensagem("Operação realizada com sucesso");
         return dto;

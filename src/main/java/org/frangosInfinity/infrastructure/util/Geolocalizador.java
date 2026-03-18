@@ -1,18 +1,22 @@
 package org.frangosInfinity.infrastructure.util;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
+@Component
 public class Geolocalizador
 {
     private static final Map<Integer, Coordenadas> cacheLocalizacao = new HashMap<>();
-    private final Configuracao config;
 
-    public Geolocalizador()
-    {
-        this.config = Configuracao.getInstance();
-    }
+    @Value("${geo.latitude.base:-26.4911}")
+    private double latitudeBase;
+
+    @Value("${geo.longitude.base:-49.0771}")
+    private double longitudeBase;
 
     public Coordenadas getCoordenadasMesa(int idMesa)
     {
@@ -20,9 +24,6 @@ public class Geolocalizador
         {
             return cacheLocalizacao.get(idMesa);
         }
-
-        double latitudeBase = config.getDoubleProperty("geo.latitude.base", -26.4911);
-        double longitudeBase = config.getDoubleProperty("geo.longitude.base", -49.0771);
 
         ThreadLocalRandom random = ThreadLocalRandom.current();
         double variacaoLat = random.nextDouble(-0.01, 0.01);

@@ -3,15 +3,14 @@ package org.frangosInfinity.infrastructure.util;
 import org.frangosInfinity.application.module.mesa.request.QRCodeRequestDTO;
 import org.frangosInfinity.core.entity.module.mesa.Mesa;
 import org.frangosInfinity.core.entity.module.mesa.QRCode;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+@Component
 public class Validator
 {
-    private final Configuracao configuracao;
-
-    public Validator()
-    {
-        this.configuracao = Configuracao.getInstance();
-    }
+    @Value("${mesa.capacidade.maxima:20}")
+    private Integer capacidadeMaxima;
 
     public Boolean validarRequestQRCode(QRCodeRequestDTO requestDTO)
     {
@@ -50,7 +49,7 @@ public class Validator
             return false;
         }
 
-        if (qrCode.getIdMesa() <= 0)
+        if (qrCode.getIdMesa().getId() <= 0)
         {
             return false;
         }
@@ -115,7 +114,6 @@ public class Validator
             return false;
         }
 
-        int capacidadeMaxima = configuracao.getIntProperty("mesa.capacidade.maxima", 20);
         if (capacidade > capacidadeMaxima)
         {
             return false;

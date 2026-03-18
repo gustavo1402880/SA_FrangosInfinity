@@ -1,5 +1,6 @@
 package org.frangosInfinity.core.service.module.mesa;
 
+import lombok.extern.slf4j.Slf4j;
 import org.frangosInfinity.application.module.mesa.request.QRCodeRequestDTO;
 import org.frangosInfinity.application.module.mesa.response.QRCodeResponseDTO;
 import org.frangosInfinity.core.entity.exception.BusinessException;
@@ -8,11 +9,11 @@ import org.frangosInfinity.core.entity.module.mesa.Mesa;
 import org.frangosInfinity.core.entity.module.mesa.QRCode;
 import org.frangosInfinity.infrastructure.persistence.module.mesa.MesaRepository;
 import org.frangosInfinity.infrastructure.persistence.module.mesa.QRCodeRepository;
-import org.frangosInfinity.infrastructure.util.Configuracao;
 import org.frangosInfinity.infrastructure.util.Formatador;
 import org.frangosInfinity.infrastructure.util.GeradorQRCode;
 import org.frangosInfinity.infrastructure.util.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class QRCodeService {
     @Autowired
@@ -37,10 +39,16 @@ public class QRCodeService {
     private Validator validator;
 
     @Autowired
-    private Configuracao configuracao;
-
-    @Autowired
     private Formatador formatador;
+
+    @Value("${qr.code.tempo.expiracao}")
+    private Integer tempoExpiracao;
+
+    @Value("${app.baseUrl}")
+    private String baseUrl;
+
+    @Value("${qr.code.diretorio}")
+    private String diretorio;
 
     @Transactional
     @CacheEvict(value = "qrCodes")
@@ -67,19 +75,15 @@ public class QRCodeService {
         QRCode qrCode = new QRCode();
         qrCode.setIdMesa(mesa);
 
-        int tempoExpiracao = configuracao.getIntProperty("qr.code.tempo.expiracao", 120);
-
         if (request.getTempoExpiracaoSgundos() != null && request.getTempoExpiracaoSgundos() > 0) {
             tempoExpiracao = request.getTempoExpiracaoSgundos();
         }
 
         qrCode.setDataExpiracao(qrCode.getDataCriacao().plusSeconds(tempoExpiracao));
 
-        String baseUrl = configuracao.getProperty("app.baseUrl", "localhost:8080");
         String url = String.format("%s/auth/mesa/%d/%s", baseUrl, mesa.getId(), qrCode.getTokenSessao());
         qrCode.setUrlAutenticacao(url);
 
-        String diretorio = configuracao.getProperty("qr.code.diretorio", "./qrcodes/");
         String nomeArquivo = String.format("mesa_%d_%s.png", mesa.getNumero(), qrCode.getCodigo());
 
         String caminhoImagem = geradorQRCode.gerarQRCode(url, nomeArquivo);

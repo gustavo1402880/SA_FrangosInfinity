@@ -5,37 +5,35 @@ import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+@Component
 public class GeradorQRCode
 {
-    private final QRCodeWriter qrCodeWriter;
-    private final Configuracao configuracao;
+    private QRCodeWriter qrCodeWriter;
 
-    public GeradorQRCode()
-    {
-        this.qrCodeWriter = new QRCodeWriter();
-        this.configuracao = Configuracao.getInstance();
-    }
+    @Value("${qr.code.diretorio:./qrcodes/}")
+    private String diretorioBase;
+
+    @Value("${qr.code.tamanho:300}")
+    private Integer tamanhoPadrao;
 
     public String gerarQRCode(String conteudo, String nomeArquivo)
     {
         try
         {
-            String diretorBase = configuracao.getProperty("qr.code.diretorio", "./qrcodes/");
-
-            int tamanho = configuracao.getIntProperty("qr.code.tamanho", 300);
-
-            Path diretorio = Paths.get(diretorBase);
+            Path diretorio = Paths.get(diretorioBase);
             Files.createDirectories(diretorio);
 
             Path caminhoArquivo = diretorio.resolve(nomeArquivo);
 
-            BitMatrix bitMatrix = qrCodeWriter.encode(conteudo, BarcodeFormat.QR_CODE, tamanho, tamanho);
+            BitMatrix bitMatrix = qrCodeWriter.encode(conteudo, BarcodeFormat.QR_CODE, tamanhoPadrao, tamanhoPadrao);
 
             MatrixToImageWriter.writeToPath(bitMatrix, "PNG", caminhoArquivo);
 
@@ -51,8 +49,6 @@ public class GeradorQRCode
     {
         try
         {
-            String diretorioBase = configuracao.getProperty("qr.code.diretorio", "./qrcodes/");
-
             Path diretorio = Paths.get(diretorioBase);
             Files.createDirectories(diretorio);
 
@@ -73,13 +69,12 @@ public class GeradorQRCode
     {
         try
         {
-            int tamanho = configuracao.getIntProperty("qr.code.tamanho", 300);
 
             BitMatrix bitMatrix = qrCodeWriter.encode(
                     conteudo,
                     BarcodeFormat.QR_CODE,
-                    tamanho,
-                    tamanho
+                    tamanhoPadrao,
+                    tamanhoPadrao
             );
             return new byte[0];
         }

@@ -13,8 +13,10 @@ import java.util.Optional;
 @Repository
 public interface QRCodeRepository extends JpaRepository<QRCode, Long>
 {
-    Optional<QRCode> findByTokenSessao(String token);
+    @Query("SELECT q FROM QRCode q WHERE q.tokenSessao = :token")
+    Optional<QRCode> findByTokenSessao(@Param("token") String token);
 
+    @Query("SELECT q FROM QRCode q WHERE q.mesa.id = :idMesa AND q.ativo = true")
     Optional<QRCode> buscarAtivoPorMesa(Long idMesa);
 
     @Modifying
@@ -22,17 +24,17 @@ public interface QRCodeRepository extends JpaRepository<QRCode, Long>
     void marcarComoUtilizado(@Param("id") Long id);
 
     @Modifying
-    @Query("UPDATE QRCode q SET q.ativo = false WHERE q.data_expiracao <= CURRENT_TIMESTAMP")
+    @Query("UPDATE QRCode q SET q.ativo = false WHERE q.dataExpiracao <= CURRENT_TIMESTAMP")
     void desativarExpirados();
 
-    List<QRCode> findByMesaIdOrderByDatCriacaoDesc(Long idMesa);
+    List<QRCode> findByMesaIdOrderByDataCriacaoDesc(Long idMesa);
 
     @Query("SELECT q FROM QRCode q WHERE q.ativo = true AND q.utilizado = false AND q.dataExpiracao > CURRENT_TIMESTAMP")
     List<QRCode> findAllAtivos();
 
     List<QRCode> findByMesaIdAndAtivoTrue(Long idMesa);
 
-    List<QRCode> findByMesaIdAndUtilizadoFalse();
+    List<QRCode> findByMesaIdAndUtilizadoFalse(Long idMesa);
 
     @Query("SELECT COUNT(q) FROM QRCode q WHERE q.mesa.id = :idMesa AND q.ativo = true")
     Long countAtivosPorMesa(@Param("idMesa") Long idMesa);
