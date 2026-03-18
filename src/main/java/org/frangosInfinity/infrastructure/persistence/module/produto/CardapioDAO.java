@@ -63,7 +63,6 @@ public class CardapioDAO {
 
     public Cardapio buscarPorId(Long id){
 
-        Cardapio cardapio = new Cardapio();
         String querySQL = "select * from pedido\n" +"where id = ?";
 
         try (Statement stmt = connection.createStatement();

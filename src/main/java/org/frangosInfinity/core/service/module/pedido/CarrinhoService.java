@@ -128,6 +128,8 @@ public class CarrinhoService {
 
             SubPedido subPedido = new SubPedido();
 
+            // FAZER
+
         }
 
         throw new Exception("Erro ao converter para SubPedido");

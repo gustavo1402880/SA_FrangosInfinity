@@ -70,7 +70,6 @@ public class PedidoDAO {
 
     public Pedido buscarPorId(Long id){
 
-        Pedido pedido = new Pedido();
         String querySQL = "select * from pedido\n" +"where id = ?";
 
         try (Statement stmt = connection.createStatement();
