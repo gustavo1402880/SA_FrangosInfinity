@@ -5,8 +5,8 @@ import org.frangosInfinity.application.module.mesa.response.QRCodeResponseDTO;
 import org.frangosInfinity.core.entity.module.mesa.Mesa;
 import org.frangosInfinity.core.entity.module.mesa.QRCode;
 import org.frangosInfinity.infrastructure.persistence.connection.ConnectionFactory;
-import org.frangosInfinity.infrastructure.persistence.module.mesa.MesaDAO;
-import org.frangosInfinity.infrastructure.persistence.module.mesa.QRCodeDAO;
+import org.frangosInfinity.infrastructure.persistence.module.mesa.MesaRepository;
+import org.frangosInfinity.infrastructure.persistence.module.mesa.QRCodeRepository;
 import org.frangosInfinity.infrastructure.util.Configuracao;
 import org.frangosInfinity.infrastructure.util.Formatador;
 import org.frangosInfinity.infrastructure.util.GeradorQRCode;
@@ -45,10 +45,10 @@ public class QRCodeService
             connection = ConnectionFactory.getConnection();
             connection.setAutoCommit(false);
 
-            MesaDAO mesaDAO = new MesaDAO(connection);
-            QRCodeDAO qrCodeDAO = new QRCodeDAO(connection);
+            MesaRepository mesaRepository = new MesaRepository(connection);
+            QRCodeRepository qrCodeRepository = new QRCodeRepository(connection);
 
-            var mesaOpt = mesaDAO.buscarPorId(request.getIdMesa());
+            var mesaOpt = mesaRepository.buscarPorId(request.getIdMesa());
             if (mesaOpt.isEmpty())
             {
                 return QRCodeResponseDTO.erro("Mesa não encontrada: "+ request.getIdMesa());
@@ -61,7 +61,7 @@ public class QRCodeService
                 return QRCodeResponseDTO.erro("Mesa " + mesa.getNumero() + " está desativada");
             }
 
-            var qrAntigo = qrCodeDAO.buscarAtivoPorMesa(mesa.getId());
+            var qrAntigo = qrCodeRepository.buscarAtivoPorMesa(mesa.getId());
             qrAntigo.ifPresent(qr ->
             {
                 try
@@ -105,7 +105,7 @@ public class QRCodeService
                 return QRCodeResponseDTO.erro("Falha ao gerar arquivo de imagem");
             }
 
-            qrCodeDAO.salvar(qrCode);
+            qrCodeRepository.salvar(qrCode);
 
             connection.commit();
 
@@ -155,10 +155,10 @@ public class QRCodeService
             conn = ConnectionFactory.getConnection();
             conn.setAutoCommit(false);
 
-            QRCodeDAO qrCodeDAO = new QRCodeDAO(conn);
-            MesaDAO mesaDAO = new MesaDAO(conn);
+            QRCodeRepository qrCodeRepository = new QRCodeRepository(conn);
+            MesaRepository mesaRepository = new MesaRepository(conn);
 
-            var qrCodeOpt = qrCodeDAO.buscarPorTokenSessao(tokenSessao);
+            var qrCodeOpt = qrCodeRepository.buscarPorTokenSessao(tokenSessao);
 
             if (qrCodeOpt.isEmpty())
             {
@@ -177,9 +177,9 @@ public class QRCodeService
                 return false;
             }
 
-            qrCodeDAO.marcarComoUtilizado(qrCode.getId());
+            qrCodeRepository.marcarComoUtilizado(qrCode.getId());
 
-            mesaDAO.atualizarDisponibilidade(idMesa, false);
+            mesaRepository.atualizarDisponibilidade(idMesa, false);
 
             conn.commit();
 
@@ -219,8 +219,8 @@ public class QRCodeService
     public QRCode buscarPorId(Long id) {
         try (Connection conn = ConnectionFactory.getConnection())
         {
-            QRCodeDAO qrCodeDAO = new QRCodeDAO(conn);
-            return qrCodeDAO.buscarPorId(id).orElse(null);
+            QRCodeRepository qrCodeRepository = new QRCodeRepository(conn);
+            return qrCodeRepository.buscarPorId(id).orElse(null);
         }
         catch (SQLException e)
         {
@@ -232,8 +232,8 @@ public class QRCodeService
     {
         try (Connection conn = ConnectionFactory.getConnection())
         {
-            QRCodeDAO qrCodeDAO = new QRCodeDAO(conn);
-            return qrCodeDAO.listarAtivos();
+            QRCodeRepository qrCodeRepository = new QRCodeRepository(conn);
+            return qrCodeRepository.listarAtivos();
         }
         catch (SQLException e)
         {
@@ -245,8 +245,8 @@ public class QRCodeService
     {
         try (Connection conn = ConnectionFactory.getConnection())
         {
-            QRCodeDAO qrCodeDAO = new QRCodeDAO(conn);
-            return qrCodeDAO.listarPorMesa(idMesa);
+            QRCodeRepository qrCodeRepository = new QRCodeRepository(conn);
+            return qrCodeRepository.listarPorMesa(idMesa);
         }
         catch (SQLException e)
         {
@@ -257,9 +257,9 @@ public class QRCodeService
     public void limparExpirados() {
         try (Connection conn = ConnectionFactory.getConnection())
         {
-            QRCodeDAO qrCodeDAO = new QRCodeDAO(conn);
+            QRCodeRepository qrCodeRepository = new QRCodeRepository(conn);
 
-            qrCodeDAO.desativarExpirados();
+            qrCodeRepository.desativarExpirados();
         }
         catch (SQLException e)
         {
@@ -271,8 +271,8 @@ public class QRCodeService
     {
         try (Connection conn = ConnectionFactory.getConnection())
         {
-            QRCodeDAO qrCodeDAO = new QRCodeDAO(conn);
-            return qrCodeDAO.buscarAtivoPorMesa(idMesa).orElse(null);
+            QRCodeRepository qrCodeRepository = new QRCodeRepository(conn);
+            return qrCodeRepository.buscarAtivoPorMesa(idMesa).orElse(null);
         }
         catch (SQLException e)
         {

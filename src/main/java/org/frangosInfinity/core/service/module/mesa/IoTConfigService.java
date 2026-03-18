@@ -2,7 +2,7 @@ package org.frangosInfinity.core.service.module.mesa;
 
 import org.frangosInfinity.core.entity.module.mesa.IotConfig;
 import org.frangosInfinity.infrastructure.persistence.connection.ConnectionFactory;
-import org.frangosInfinity.infrastructure.persistence.module.mesa.IoTConfigDAO;
+import org.frangosInfinity.infrastructure.persistence.module.mesa.IoTConfigRepository;
 import org.frangosInfinity.infrastructure.util.Configuracao;
 
 import java.sql.Connection;
@@ -34,7 +34,7 @@ public class IoTConfigService
     {
         try (Connection conn = ConnectionFactory.getConnection())
         {
-            IoTConfigDAO dao = new IoTConfigDAO(conn);
+            IoTConfigRepository dao = new IoTConfigRepository(conn);
             return dao.salvar(config);
         }
         catch (SQLException e)
@@ -47,7 +47,7 @@ public class IoTConfigService
     {
         try (Connection conn = ConnectionFactory.getConnection())
         {
-            IoTConfigDAO dao = new IoTConfigDAO(conn);
+            IoTConfigRepository dao = new IoTConfigRepository(conn);
             return dao.buscarPorId(id).orElse(null);
         }
         catch (SQLException e)
@@ -60,7 +60,7 @@ public class IoTConfigService
     {
         try (Connection conn = ConnectionFactory.getConnection())
         {
-            IoTConfigDAO dao = new IoTConfigDAO(conn);
+            IoTConfigRepository dao = new IoTConfigRepository(conn);
             return dao.buscarPorMesa(idMesa).orElse(null);
         }
         catch (SQLException e)
@@ -73,7 +73,7 @@ public class IoTConfigService
     {
         try (Connection conn = ConnectionFactory.getConnection())
         {
-            IoTConfigDAO dao = new IoTConfigDAO(conn);
+            IoTConfigRepository dao = new IoTConfigRepository(conn);
             return dao.listarTodos();
         }
         catch (SQLException e)
@@ -86,7 +86,7 @@ public class IoTConfigService
     {
         try (Connection conn = ConnectionFactory.getConnection())
         {
-            IoTConfigDAO dao = new IoTConfigDAO(conn);
+            IoTConfigRepository dao = new IoTConfigRepository(conn);
             return dao.listarOnline();
         }
         catch (SQLException e)
@@ -99,7 +99,7 @@ public class IoTConfigService
     {
         try (Connection conn = ConnectionFactory.getConnection())
         {
-            IoTConfigDAO dao = new IoTConfigDAO(conn);
+            IoTConfigRepository dao = new IoTConfigRepository(conn);
 
             var configOpt = dao.buscarPorId(idConfig);
             if (configOpt.isEmpty())
@@ -140,7 +140,7 @@ public class IoTConfigService
     {
         try (Connection conn = ConnectionFactory.getConnection())
         {
-            IoTConfigDAO dao = new IoTConfigDAO(conn);
+            IoTConfigRepository dao = new IoTConfigRepository(conn);
 
             var configOpt = dao.buscarPorId(idConfig);
             if (configOpt.isEmpty())
@@ -163,7 +163,7 @@ public class IoTConfigService
     {
         try (Connection conn = ConnectionFactory.getConnection())
         {
-            IoTConfigDAO dao = new IoTConfigDAO(conn);
+            IoTConfigRepository dao = new IoTConfigRepository(conn);
             var configOpt = dao.buscarPorId(idConfig);
             return configOpt.isPresent() && configOpt.get().isOnline();
         }

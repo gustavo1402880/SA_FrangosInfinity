@@ -5,8 +5,8 @@ import org.frangosInfinity.application.module.mesa.response.MesaResponseDTO;
 import org.frangosInfinity.core.entity.module.mesa.IotConfig;
 import org.frangosInfinity.core.entity.module.mesa.Mesa;
 import org.frangosInfinity.infrastructure.persistence.connection.ConnectionFactory;
-import org.frangosInfinity.infrastructure.persistence.module.mesa.IoTConfigDAO;
-import org.frangosInfinity.infrastructure.persistence.module.mesa.MesaDAO;
+import org.frangosInfinity.infrastructure.persistence.module.mesa.IoTConfigRepository;
+import org.frangosInfinity.infrastructure.persistence.module.mesa.MesaRepository;
 import org.frangosInfinity.infrastructure.util.Formatador;
 import org.frangosInfinity.infrastructure.util.Validator;
 
@@ -51,11 +51,11 @@ public class MesaService
 
             conn.setAutoCommit(false);
 
-            MesaDAO mesaDAO = new MesaDAO(conn);
+            MesaRepository mesaRepository = new MesaRepository(conn);
 
-            IoTConfigDAO iotConfigDAO = new IoTConfigDAO(conn);
+            IoTConfigRepository iotConfigRepository = new IoTConfigRepository(conn);
 
-            var mesaExistente = mesaDAO.buscarPorNumero(request.getNumero());
+            var mesaExistente = mesaRepository.buscarPorNumero(request.getNumero());
 
             if (mesaExistente.isPresent())
             {
@@ -64,13 +64,13 @@ public class MesaService
 
             Mesa mesa = new Mesa(request.getNumero(), request.getCapacidade(), request.getLocalizacao());
 
-            mesaDAO.salvar(mesa);
+            mesaRepository.salvar(mesa);
 
             IotConfig iotConfig = ioTConfigService.criarConfiguracaoPadrao(mesa.getId());
-            iotConfigDAO.salvar(iotConfig);
+            iotConfigRepository.salvar(iotConfig);
 
             mesa.setIdIotConfig(iotConfig.getId());
-            mesaDAO.atualizar(mesa);
+            mesaRepository.atualizar(mesa);
 
             conn.commit();
 
@@ -114,9 +114,9 @@ public class MesaService
     {
         try (Connection conn = ConnectionFactory.getConnection())
         {
-            MesaDAO mesaDAO = new MesaDAO(conn);
+            MesaRepository mesaRepository = new MesaRepository(conn);
 
-            return mesaDAO.buscarPorId(id).orElse(null);
+            return mesaRepository.buscarPorId(id).orElse(null);
 
         }
         catch (SQLException e)
@@ -129,9 +129,9 @@ public class MesaService
     {
         try (Connection conn = ConnectionFactory.getConnection())
         {
-            MesaDAO mesaDAO = new MesaDAO(conn);
+            MesaRepository mesaRepository = new MesaRepository(conn);
 
-            return mesaDAO.buscarPorNumero(numero).orElse(null);
+            return mesaRepository.buscarPorNumero(numero).orElse(null);
         }
         catch (SQLException e)
         {
@@ -143,9 +143,9 @@ public class MesaService
     {
         try (Connection conn = ConnectionFactory.getConnection())
         {
-            MesaDAO mesaDAO = new MesaDAO(conn);
+            MesaRepository mesaRepository = new MesaRepository(conn);
 
-            return mesaDAO.listarTodos();
+            return mesaRepository.listarTodos();
         }
         catch (SQLException e)
         {
@@ -157,9 +157,9 @@ public class MesaService
     {
         try (Connection conn = ConnectionFactory.getConnection())
         {
-            MesaDAO mesaDAO = new MesaDAO(conn);
+            MesaRepository mesaRepository = new MesaRepository(conn);
 
-            return mesaDAO.listarDisponiveis();
+            return mesaRepository.listarDisponiveis();
         }
         catch (SQLException e)
         {
@@ -173,9 +173,9 @@ public class MesaService
         try
         {
             conn = ConnectionFactory.getConnection();
-            MesaDAO mesaDAO = new MesaDAO(conn);
+            MesaRepository mesaRepository = new MesaRepository(conn);
 
-            var mesaOpt = mesaDAO.buscarPorId(idMesa);
+            var mesaOpt = mesaRepository.buscarPorId(idMesa);
             if (mesaOpt.isEmpty())
             {
                 return criarRespostaErro("Mesa não encontrada");
@@ -218,7 +218,7 @@ public class MesaService
                     return criarRespostaErro("Ação inválida: " + acao + ". Use: OCUPAR, LIBERAR, ATIVAR, DESATIVAR");
             }
 
-            mesaDAO.atualizar(mesa);
+            mesaRepository.atualizar(mesa);
 
             MesaResponseDTO resposta = MesaResponseDTO.fromEntity(mesa);
             resposta.setMensagem("Mesa " + acaoLower(acaoUpper) + " com sucesso");
@@ -249,13 +249,13 @@ public class MesaService
     {
         try (Connection conn = ConnectionFactory.getConnection())
         {
-            MesaDAO mesaDAO = new MesaDAO(conn);
-            IoTConfigDAO iotConfigDAO = new IoTConfigDAO(conn);
+            MesaRepository mesaRepository = new MesaRepository(conn);
+            IoTConfigRepository iotConfigRepository = new IoTConfigRepository(conn);
 
-            var mesaOpt = mesaDAO.buscarPorId(idMesa);
+            var mesaOpt = mesaRepository.buscarPorId(idMesa);
             if (mesaOpt.isPresent() && mesaOpt.get().getIdIotConfig() != null)
             {
-                return iotConfigDAO.buscarPorId(mesaOpt.get().getIdIotConfig()).orElse(null);
+                return iotConfigRepository.buscarPorId(mesaOpt.get().getIdIotConfig()).orElse(null);
             }
             return null;
         }
@@ -273,10 +273,10 @@ public class MesaService
             conn = ConnectionFactory.getConnection();
             conn.setAutoCommit(false);
 
-            MesaDAO mesaDAO = new MesaDAO(conn);
-            IoTConfigDAO iotConfigDAO = new IoTConfigDAO(conn);
+            MesaRepository mesaRepository = new MesaRepository(conn);
+            IoTConfigRepository iotConfigRepository = new IoTConfigRepository(conn);
 
-            var mesaOpt = mesaDAO.buscarPorId(idMesa);
+            var mesaOpt = mesaRepository.buscarPorId(idMesa);
             if (mesaOpt.isEmpty())
             {
                 return false;
@@ -291,10 +291,10 @@ public class MesaService
 
             if (mesa.getIdIotConfig() != null)
             {
-                iotConfigDAO.deletar(mesa.getIdIotConfig());
+                iotConfigRepository.deletar(mesa.getIdIotConfig());
             }
 
-            mesaDAO.deletar(idMesa);
+            mesaRepository.deletar(idMesa);
 
             conn.commit();
             return true;
