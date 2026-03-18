@@ -3,11 +3,15 @@ package org.frangosInfinity.core.service.module.notificacao;
 import jakarta.mail.*;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
 
 import java.util.Properties;
 
+@Service
 public class EmailService
 {
+    @Async
     public static void enviarEmail(String destinatario, String assunto, String mensagem)
     {
         Properties properties = new Properties();

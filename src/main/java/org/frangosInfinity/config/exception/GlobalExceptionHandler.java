@@ -1,4 +1,4 @@
-package org.frangosInfinity.config;
+package org.frangosInfinity.config.exception;
 
 import org.frangosInfinity.core.entity.exception.BusinessException;
 import org.frangosInfinity.core.entity.exception.ResourceNotFoundException;

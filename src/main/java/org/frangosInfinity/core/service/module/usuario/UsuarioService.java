@@ -9,6 +9,9 @@ import org.frangosInfinity.core.enums.NivelAcesso;
 import org.frangosInfinity.core.enums.TipoUsuario;
 import org.frangosInfinity.infrastructure.persistence.module.usuario.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,6 +61,7 @@ public class UsuarioService
     }
 
     @Transactional
+    @CacheEvict(value = "usuarios", allEntries = true)
     public UsuarioResponseDTO adicionarUsuario(UsuarioRequestDTO request)
     {
         if (!request.isValid())
@@ -183,6 +187,7 @@ public class UsuarioService
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "usuarios", key = "#id")
     public UsuarioResponseDTO buscarPorId(Long id)
     {
 
@@ -197,6 +202,7 @@ public class UsuarioService
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "usuarios", key = "#email")
     public UsuarioResponseDTO buscarPorEmail(String email)
     {
 
@@ -210,6 +216,7 @@ public class UsuarioService
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "usuarios")
     public List<UsuarioResponseDTO> listarTodos()
     {
         return usuarioRepository.findAll().stream()
@@ -218,6 +225,7 @@ public class UsuarioService
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "usuarios")
     public List<UsuarioResponseDTO> listarTodosAtivos()
     {
         return usuarioRepository.findByAtivoTrue().stream()
@@ -226,6 +234,7 @@ public class UsuarioService
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "usuarios")
     public List<UsuarioResponseDTO> listarTodosInativos()
     {
         return usuarioRepository.findByAtivoFalse().stream()
@@ -234,6 +243,7 @@ public class UsuarioService
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "usuarios")
     public List<UsuarioResponseDTO> listarPorTipoUsuario(TipoUsuario tipoUsuario)
     {
         return usuarioRepository.findByTipo(tipoUsuario).stream()
@@ -242,6 +252,7 @@ public class UsuarioService
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "usuarios")
     public  List<UsuarioResponseDTO> listarPorNivelAcesso(NivelAcesso nivelAcesso)
     {
         return usuarioRepository.buscarFuncionarioPorNivelAcesso(nivelAcesso).stream()
@@ -250,6 +261,7 @@ public class UsuarioService
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "usuarios", key = "#idSessao")
     public UsuarioResponseDTO buscarPorIdSessao(String idSessao)
     {
         if (!validarIdSessao(idSessao))
@@ -263,6 +275,7 @@ public class UsuarioService
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "usuarios", key = "#matricula")
     public UsuarioResponseDTO buscarPorMatricula(String matricula)
     {
         if (!validarMatricula(matricula))
@@ -276,6 +289,7 @@ public class UsuarioService
     }
 
     @Transactional
+    @CachePut(value = "usuarios", key = "#id")
     public UsuarioResponseDTO atualizarUsuario(Long id, UsuarioRequestDTO request)
     {
         if (!validarId(id))
@@ -306,6 +320,7 @@ public class UsuarioService
     }
 
     @Transactional
+    @CachePut(value = "usuarios", key = "#id")
     public UsuarioResponseDTO atualizarSenha(Long id, String senhaAntiga, String senhaNova)
     {
         if (!validarId(id))
@@ -332,6 +347,7 @@ public class UsuarioService
     }
 
     @Transactional
+    @CachePut(value = "usuarios", key = "#email")
     public UsuarioResponseDTO atualizarEmail(String emailAntigo, String emailNovo)
     {
         if (!validarEmail(emailNovo) || emailAntigo.equals(emailNovo))
@@ -353,34 +369,7 @@ public class UsuarioService
     }
 
     @Transactional
-    public UsuarioResponseDTO login(String email, String senha)
-    {
-        if (!validarEmail(email))
-        {
-            return UsuarioResponseDTO.erro("Email inválido");
-        }
-
-        if (!validarSenha(senha))
-        {
-            return UsuarioResponseDTO.erro("Senha inválida");
-        }
-
-        Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow(() -> new BusinessException("Email ou senha inválido"));
-
-        if (!passwordEncoder.matches(senha, usuario.getSenha()))
-        {
-            return UsuarioResponseDTO.erro("Email ou senha inválidos");
-        }
-
-        if (!usuario.isAtivo())
-        {
-            return UsuarioResponseDTO.erro("Usuário invativo");
-        }
-
-        return UsuarioResponseDTO.fromEntity(usuario);
-    }
-
-    @Transactional
+    @CacheEvict(value = "usuarios", key = "#id")
     public UsuarioResponseDTO deletarUsuario(Long id)
     {
 
