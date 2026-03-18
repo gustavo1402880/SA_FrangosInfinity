@@ -27,7 +27,7 @@ public class RelatorioVendasService
 
             RelatorioDAO relatorioDAO = new RelatorioDAO(conn);
 
-            RelatorioVendas relatorioVendas = new RelatorioVendas(null, request.getPeriodoFim(), request.getDataGeracao(), request.getPeriodoFim(),
+            RelatorioVendas relatorioVendas = new RelatorioVendas(null, request.getPeriodoInicio(), request.getDataGeracao(), request.getPeriodoFim(),
                     request.getTotalPedidor(), request.getTotalVendas(), request.getTicketMedio());
 
             relatorioDAO.salvar(relatorioVendas);
@@ -52,6 +52,29 @@ public class RelatorioVendasService
                 }
             }
             throw new RuntimeException(e);
+        }
+    }
+
+    public byte[] gerarRelatorioPdfPorPeriodo(LocalDateTime inicio, LocalDateTime fim)
+    {
+        try (Connection conn = ConnectionFactory.getConnection())
+        {
+            RelatorioDAO relatorioDAO = new RelatorioDAO(conn);
+
+            List<RelatorioVendas> relatorios = relatorioDAO.buscarPorPeriodo(inicio, fim);
+
+            if (relatorios.isEmpty())
+            {
+                throw new RuntimeException("Nenhum relatório encontrado para o período");
+            }
+
+            // chama o PDF service
+            RelatorioPDFService pdfService = new RelatorioPDFService();
+            return pdfService.gerarPdf(relatorios);
+        }
+        catch (SQLException e)
+        {
+            throw new RuntimeException("Erro ao gerar PDF", e);
         }
     }
 

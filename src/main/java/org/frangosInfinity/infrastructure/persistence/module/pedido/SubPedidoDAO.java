@@ -75,7 +75,6 @@ public class SubPedidoDAO {
 
     public SubPedido buscarPorId(Long id){
 
-        SubPedido subPedido = new SubPedido();
         String querySQL = "select * from subpedido\n" +"where id = ?";
 
         try (Statement stmt = connection.createStatement();

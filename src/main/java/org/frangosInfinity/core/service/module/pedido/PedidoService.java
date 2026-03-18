@@ -1,9 +1,9 @@
 package org.frangosInfinity.core.service.module.pedido;
-import org.frangosInfinity.core.entity.module.pedido.Pedido;
+import org.frangosInfinity.application.module.pedido.request.PedidoRequestDTO;
+import org.frangosInfinity.application.module.pedido.response.PedidoResponseDTO;
 
 public class PedidoService {
 
-    //+ criarPedidoHub(mesaId: Long, cl ienteSessao: St ring) : Pedido
     //  + gerarLinkConvi te(pedidoId: Long): St ring
     //  + val idarConvi te(token: St ring): Boolean
     //  + l i starSubPedidos(): Li st<SubPedido>
@@ -19,6 +19,11 @@ public class PedidoService {
     //  + atual i zarStatus(pedidoId: Long, novoStatus: StatusPedido): void
 
 
+    public PedidoResponseDTO criarPedidoHub(PedidoRequestDTO pedidoRequestDTO, String clienteSessao){
+
+
+
+    }
 
 
 }

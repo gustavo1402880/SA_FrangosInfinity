@@ -65,7 +65,6 @@ public class CategoriaDAO {
 
     public Categoria buscarPorId(Long id){
 
-        Cardapio cardapio = new Cardapio();
         String querySQL = "select * from categoria\n" +"where id = ?";
 
         try (Statement stmt = connection.createStatement();

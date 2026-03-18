@@ -67,7 +67,6 @@ public class EstoqueDAO {
 
     public Estoque buscarPorId(Long id){
 
-        Estoque estoque = new Estoque();
         String querySQL = "select * from estoque\n" +"where id = ?";
 
         try (Statement stmt = connection.createStatement();
