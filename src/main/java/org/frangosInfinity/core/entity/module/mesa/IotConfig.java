@@ -1,18 +1,39 @@
 package org.frangosInfinity.core.entity.module.mesa;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "iot_config")
 public class IotConfig
 {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long idMesa;
+
+    @OneToOne
+    @JoinColumn(name = "id_mesa")
+    private Mesa mesa;
+
+    @Column(name = "ip_dispositivo")
     private String ipDispositivo;
+
+    @Column(nullable = false)
     private Integer porta;
+
+    @Column(nullable = false)
     private String modelo;
+
+    @Column(nullable = false)
     private Boolean online;
+
+    @Column(name = "versao_firmware", length = 20)
     private String versaoFirmware;
 
-    public IotConfig(Long idMesa, String ipDispositivo, Integer porta)
+    public IotConfig() {}
+
+    public IotConfig(Mesa mesa, String ipDispositivo, Integer porta)
     {
-        this.idMesa = idMesa;
+        this.mesa = mesa;
         this.ipDispositivo = ipDispositivo;
         this.porta = porta;
         this.modelo = "IoT Frango's Infinity";
@@ -30,14 +51,14 @@ public class IotConfig
         this.id = id;
     }
 
-    public Long getIdMesa()
+    public Mesa getMesa()
     {
-        return idMesa;
+        return mesa;
     }
 
-    public void setIdMesa(Long idMesa)
+    public void setMesa(Mesa mesa)
     {
-        this.idMesa = idMesa;
+        this.mesa = mesa;
     }
 
     public String getIpDispositivo()
@@ -97,8 +118,6 @@ public class IotConfig
             return "Erro dispositivo não encontrado";
         }
 
-        System.out.println("[IoT - Mesa " + idMesa + "] Comando enviado: " + comando);
-
         switch (comando)
         {
             case "GERAR_QR":
@@ -112,7 +131,7 @@ public class IotConfig
 
     public String toString()
     {
-        return "IoTConfig [Mesa: " + idMesa + ", IP: " + ipDispositivo + ":" + porta +
+        return "IoTConfig [Mesa: " + mesa + ", IP: " + ipDispositivo + ":" + porta +
                 ", Online: " + online + "]";
     }
 }

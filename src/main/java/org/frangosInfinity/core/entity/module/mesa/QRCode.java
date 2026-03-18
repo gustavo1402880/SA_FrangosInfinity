@@ -1,18 +1,41 @@
 package org.frangosInfinity.core.entity.module.mesa;
 
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Entity
+@Table(name = "qr_code")
 public class QRCode
 {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(unique = true, length = 8)
     private String codigo;
+
+    @Column(name = "url_autenticacao", length = 255)
     private String urlAutenticacao;
+
+    @Column(name = "data_criacao", nullable = false)
     private LocalDateTime dataCriacao;
+
+    @Column(name = "data_expiracao", nullable = false)
     private LocalDateTime dataExpiracao;
+
+    @Column(nullable = false)
     private Boolean ativo;
+
+    @Column(nullable = false)
     private Boolean utilizado;
-    private Long idMesa;
+
+    @ManyToOne
+    @JoinColumn(name = "id_mesa", nullable = false)
+    private Mesa mesa;
+
+    @Column(name = "token_sessao", unique = true, length = 36)
     private String tokenSessao;
 
     public QRCode()
@@ -95,14 +118,14 @@ public class QRCode
         this.utilizado = utilizado;
     }
 
-    public Long getIdMesa()
+    public Mesa getIdMesa()
     {
-        return idMesa;
+        return mesa;
     }
 
-    public void setIdMesa(Long idMesa)
+    public void setIdMesa(Mesa mesa)
     {
-        this.idMesa = idMesa;
+        this.mesa = mesa;
     }
 
     public String getTokenSessao()
@@ -140,7 +163,7 @@ public class QRCode
     {
         return "QRCode{"+
                 "codigo='" + codigo + '\'' +
-                ", mesa=" + idMesa +
+                ", mesa=" + mesa +
                 ", expira=" + dataExpiracao +
                 '}';
     }
