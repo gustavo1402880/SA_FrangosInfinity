@@ -1,370 +1,133 @@
 package org.frangosInfinity.core.service.module.fidelidade;
 
+import org.frangosInfinity.core.entity.exception.BusinessException;
+import org.frangosInfinity.core.entity.exception.ResourceNotFoundException;
 import org.frangosInfinity.core.entity.module.fidelidade.RegrasFidelidade;
-import org.frangosInfinity.infrastructure.persistence.connection.ConnectionFactory;
 import org.frangosInfinity.infrastructure.persistence.module.fidelidade.RegrasFidelidadeRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
 
+@Service
 public class RegrasFidelidadeService
 {
+    @Autowired
+    private RegrasFidelidadeRepository regrasFidelidadeRepository;
+
+    @Transactional
     public RegrasFidelidade criarRegras(RegrasFidelidade regras)
     {
-        Connection conn = null;
-        try
+        if (regras.isAtivo())
         {
-            conn = ConnectionFactory.getConnection();
-            conn.setAutoCommit(false);
-
-            RegrasFidelidadeRepository regrasDAO = new RegrasFidelidadeRepository(conn);
-
-            if (regras.isAtivo())
+            regrasFidelidadeRepository.findByAtivoTrue().forEach(r ->
             {
-                RegrasFidelidade ativa = regrasDAO.buscarAtiva();
-                if (ativa != null)
-                {
-                    ativa.setAtivo(false);
-                    regrasDAO.atualizar(ativa);
-                }
-            }
-
-            boolean salvo = regrasDAO.salvar(regras);
-
-            if (salvo)
-            {
-                conn.commit();
-                return regras;
-            }
-            else
-            {
-                return null;
-            }
-
+            r.setAtivo(false);
+            regrasFidelidadeRepository.save(r);
+            });
         }
-        catch (SQLException e)
-        {
-            if (conn != null)
-            {
-                try
-                {
-                    conn.rollback();
-                }
-                catch (SQLException ex)
-                {
-                    System.err.println("Erro no rollback: " + ex.getMessage());
-                }
-            }
-            System.err.println("Erro ao criar regras: " + e.getMessage());
-            return null;
-        }
-        finally
-        {
-            if (conn != null)
-            {
-                try
-                {
-                    conn.close();
-                }
-                catch (SQLException e)
-                {
-                    System.err.println("Erro ao fechar conexão: " + e.getMessage());
-                }
-            }
-        }
+
+        return regrasFidelidadeRepository.save(regras);
     }
 
+    @Transactional(readOnly = true)
     public RegrasFidelidade buscarRegrasAtivas()
     {
-        try (Connection conn = ConnectionFactory.getConnection())
-        {
-            RegrasFidelidadeRepository regrasDAO = new RegrasFidelidadeRepository(conn);
-
-            RegrasFidelidade regras = regrasDAO.buscarAtiva();
-
-            if (regras == null)
-            {
-                regras = new RegrasFidelidade();
-                regrasDAO.salvar(regras);
-            }
-
-            return regras;
-
-        }
-        catch (SQLException e)
-        {
-            System.err.println("Erro ao buscar regras ativas: " + e.getMessage());
-            return new RegrasFidelidade();
-        }
+        return regrasFidelidadeRepository.buscarAtiva().orElseGet(() -> {
+            RegrasFidelidade regras = new RegrasFidelidade();
+            return regrasFidelidadeRepository.save(regras);
+        });
     }
 
+    @Transactional(readOnly = true)
     public RegrasFidelidade buscarPorId(Long id)
     {
-        try (Connection conn = ConnectionFactory.getConnection())
-        {
-            if (!validarId(id))
-            {
-                System.err.println("ID inválido");
-                return null;
-            }
 
-            RegrasFidelidadeRepository regrasDAO = new RegrasFidelidadeRepository(conn);
-            return regrasDAO.buscarPorId(id);
-
-        }
-        catch (SQLException e)
+        if (!validarId(id))
         {
-            System.err.println("Erro ao buscar regras: " + e.getMessage());
-            return null;
+            throw new BusinessException("ID inválido");
         }
+
+        return regrasFidelidadeRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Regras não encontradas"));
     }
 
+    @Transactional(readOnly = true)
     public List<RegrasFidelidade> listarTodas()
     {
-        try (Connection conn = ConnectionFactory.getConnection())
-        {
-            RegrasFidelidadeRepository regrasDAO = new RegrasFidelidadeRepository(conn);
-            return regrasDAO.listarTodas();
-
-        }
-        catch (SQLException e)
-        {
-            System.err.println("Erro ao listar regras: " + e.getMessage());
-            return List.of();
-        }
+        return regrasFidelidadeRepository.listarTodasOrdenadas();
     }
 
-    public boolean atualizarRegras(Long id, RegrasFidelidade regrasAtualizadas)
+    @Transactional
+    public RegrasFidelidade atualizarRegras(Long id, RegrasFidelidade regrasAtualizadas)
     {
-        Connection conn = null;
-        try
+        RegrasFidelidade existente = regrasFidelidadeRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Regras não encontradas"));
+
+
+        existente.setPontosPorReal(regrasAtualizadas.getPontosPorReal());
+        existente.setDiasExpiracao(regrasAtualizadas.getDiasExpiracao());
+        existente.setPontosMinimosResgate(regrasAtualizadas.getPontosMinimosResgate());
+        existente.setValorDescontoPorBloco(regrasAtualizadas.getValorDescontoPorBloco());
+        existente.setPontosPorBloco(regrasAtualizadas.getPontosPorBloco());
+        existente.setValorMinimoProdutoDesconto(regrasAtualizadas.getValorMinimoProdutoDesconto());
+
+        if (regrasAtualizadas.isAtivo() && !existente.isAtivo())
         {
-            conn = ConnectionFactory.getConnection();
-            conn.setAutoCommit(false);
-
-            RegrasFidelidadeRepository regrasDAO = new RegrasFidelidadeRepository(conn);
-
-            RegrasFidelidade existente = regrasDAO.buscarPorId(id);
-
-            if (existente == null)
-            {
-                return false;
-            }
-
-            existente.setPontosPorReal(regrasAtualizadas.getPontosPorReal());
-            existente.setDiasExpiracao(regrasAtualizadas.getDiasExpiracao());
-            existente.setPontosMinimosResgate(regrasAtualizadas.getPontosMinimosResgate());
-            existente.setValorDescontoPorBloco(regrasAtualizadas.getValorDescontoPorBloco());
-            existente.setPontosPorBloco(regrasAtualizadas.getPontosPorBloco());
-            existente.setValorMinimoProdutoDesconto(regrasAtualizadas.getValorMinimoProdutoDesconto());
-
-            if (regrasAtualizadas.isAtivo() && !existente.isAtivo())
-            {
-                RegrasFidelidade ativa = regrasDAO.buscarAtiva();
-                if (ativa != null && !ativa.getId().equals(id))
-                {
-                    ativa.setAtivo(false);
-                    regrasDAO.atualizar(ativa);
-                }
-                existente.setAtivo(true);
-            }
-            else
-            {
-                existente.setAtivo(regrasAtualizadas.isAtivo());
-            }
-
-            boolean atualizado = regrasDAO.atualizar(existente);
-
-            if (atualizado)
-            {
-                conn.commit();
-            }
-
-            return atualizado;
-
+            regrasFidelidadeRepository.findByAtivoTrue().stream()
+                    .filter(r -> r.getId().equals(id))
+                    .forEach(r ->
+                    {
+                        r.setAtivo(false);
+                        regrasFidelidadeRepository.save(r);
+                    });
+            existente.setAtivo(true);
         }
-        catch (SQLException e)
+        else
         {
-            if (conn != null)
-            {
-                try
-                {
-                    conn.rollback();
-                }
-                catch (SQLException ex)
-                {
-                    System.err.println("Erro no rollback: " + ex.getMessage());
-                }
-            }
-            System.err.println("Erro ao atualizar regras: " + e.getMessage());
-            return false;
+            existente.setAtivo(regrasAtualizadas.isAtivo());
         }
-        finally
-        {
-            if (conn != null)
-            {
-                try
-                {
-                    conn.close();
-                }
-                catch (SQLException e)
-                {
-                    System.err.println("Erro ao fechar conexão: " + e.getMessage());
-                }
-            }
-        }
+
+        return regrasFidelidadeRepository.save(existente);
     }
 
-    public boolean setAtivo(Long id, boolean ativo)
+    @Transactional
+    public RegrasFidelidade setAtivo(Long id, boolean ativo)
     {
-        Connection conn = null;
-        try
+
+        RegrasFidelidade regras = regrasFidelidadeRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Regras não encontradas"));
+
+        if (ativo && !regras.isAtivo())
         {
-            conn = ConnectionFactory.getConnection();
-            conn.setAutoCommit(false);
-
-            RegrasFidelidadeRepository regrasDAO = new RegrasFidelidadeRepository(conn);
-
-            RegrasFidelidade regras = regrasDAO.buscarPorId(id);
-
-            if (regras == null)
-            {
-                return false;
-            }
-
-            if (ativo && !regras.isAtivo())
-            {
-                RegrasFidelidade ativa = regrasDAO.buscarAtiva();
-                if (ativa != null && !ativa.getId().equals(id))
-                {
-                    ativa.setAtivo(false);
-                    regrasDAO.atualizar(ativa);
-                }
-            }
-
-            regras.setAtivo(ativo);
-            boolean atualizado = regrasDAO.atualizar(regras);
-
-            if (atualizado)
-            {
-                conn.commit();
-            }
-
-            return atualizado;
-
+            regrasFidelidadeRepository.findByAtivoTrue().stream()
+                    .filter(r -> r.getId().equals(id))
+                    .forEach(r ->
+                    {
+                        r.setAtivo(false);
+                        regrasFidelidadeRepository.save(r);
+                    });
         }
-        catch (SQLException e)
-        {
-            if (conn != null)
-            {
-                try
-                {
-                    conn.rollback();
-                }
-                catch (SQLException ex)
-                {
-                    System.err.println("Erro no rollback: " + ex.getMessage());
-                }
-            }
-            System.err.println("Erro ao alterar status: " + e.getMessage());
-            return false;
-        }
-        finally
-        {
-            if (conn != null)
-            {
-                try
-                {
-                    conn.close();
-                }
-                catch (SQLException e)
-                {
-                    System.err.println("Erro ao fechar conexão: " + e.getMessage());
-                }
-            }
-        }
+
+        regras.setAtivo(ativo);
+
+        return regrasFidelidadeRepository.save(regras);
     }
 
-    public boolean deletar(Long id)
+    @Transactional(readOnly = true)
+    public void deletar(Long id)
     {
-        Connection conn = null;
-        try
+        RegrasFidelidade regras = regrasFidelidadeRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Regras não encontradas"));
+
+
+        if (regras.isAtivo())
         {
-            conn = ConnectionFactory.getConnection();
-            conn.setAutoCommit(false);
-
-            RegrasFidelidadeRepository regrasDAO = new RegrasFidelidadeRepository(conn);
-
-            RegrasFidelidade regras = regrasDAO.buscarPorId(id);
-
-            if (regras == null)
-            {
-                return false;
-            }
-
-            if (regras.isAtivo())
-            {
-                System.err.println("Não é possível deletar regras ativas");
-                return false;
-            }
-
-            boolean deletado = regrasDAO.deletar(id);
-
-            if (deletado)
-            {
-                conn.commit();
-            }
-
-            return deletado;
-
+            throw new BusinessException("Não é possível deletar regras ativas");
         }
-        catch (SQLException e)
-        {
-            if (conn != null)
-            {
-                try
-                {
-                    conn.rollback();
-                }
-                catch (SQLException ex)
-                {
-                    System.err.println("Erro no rollback: " + ex.getMessage());
-                }
-            }
-            System.err.println("Erro ao deletar regras: " + e.getMessage());
-            return false;
-        }
-        finally
-        {
-            if (conn != null)
-            {
-                try
-                {
-                    conn.close();
-                }
-                catch (SQLException e)
-                {
-                    System.err.println("Erro ao fechar conexão: " + e.getMessage());
-                }
-            }
-        }
+
+        regrasFidelidadeRepository.delete(regras);
     }
 
     private boolean validarId(Long id)
     {
         return id != null && id > 0;
-    }
-
-    public String getRegrasFormatadas()
-    {
-        RegrasFidelidade regras = buscarRegrasAtivas();
-
-        return regras.toString();
-    }
-
-    public void exibirRegras()
-    {
-        System.out.println(getRegrasFormatadas());
     }
 }
