@@ -1,21 +1,38 @@
 package org.frangosInfinity.core.entity.module.pagamento;
 
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "transacao_pix")
 public class TransacaoPIX
 {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long pagamentoId;
+
+    @OneToOne
+    @JoinColumn(name = "pagamento_id", nullable = false, unique = true)
+    private Pagamento pagamento;
+
+    @Column(name = "qr_code", length = 500)
     private String qrCode;
+
+    @Column(name = "codigo_copia_cola", length = 500)
     private String codigoCopiaCola;
+
+    @Column(name = "tempo_expiracao_segundos", nullable = false)
     private Integer tempoExpiracaoSegundos;
+
+    @Column(name = "chave_pix", length = 50)
     private LocalDateTime dataExpiracao;
 
     public TransacaoPIX() {}
 
-    public TransacaoPIX(Long pagamentoId, String qrCode, String codigoCopiaCola)
+    public TransacaoPIX(Pagamento pagamento, String qrCode, String codigoCopiaCola)
     {
-        this.pagamentoId = pagamentoId;
+        this.pagamento = pagamento;
         this.qrCode = qrCode;
         this.codigoCopiaCola = codigoCopiaCola;
         this.tempoExpiracaoSegundos = 600;
@@ -30,12 +47,12 @@ public class TransacaoPIX
         this.id = id;
     }
 
-    public Long getPagamentoId() {
-        return pagamentoId;
+    public Pagamento getPagamento() {
+        return pagamento;
     }
 
-    public void setPagamentoId(Long pagamentoId) {
-        this.pagamentoId = pagamentoId;
+    public void setPagamento(Pagamento pagamento) {
+        this.pagamento = pagamento;
     }
 
     public String getQrCode() {
