@@ -40,7 +40,9 @@ public class SecurityConfig
                         .requestMatchers("/usuarios/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/mesas/{id}/qrcode/validar").authenticated()
                         .requestMatchers("/cardapio/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/contas/cliente/{clienteId}").authenticated()
                         // ROTA DO ATENDENTE
+                        .requestMatchers(HttpMethod.GET, "/contas").hasAnyRole("ADMINISTRADOR", "ATENDENTE")
                         .requestMatchers(HttpMethod.GET,"/mesas").hasAnyRole("ADMINISTRADOR", "ATENDENTE", "CAIXA")
                         .requestMatchers(HttpMethod.GET, "/mesas/disponiveis").hasAnyRole("ADMINISTRADOR", "ATENDENTE", "CAIXA")
                         .requestMatchers(HttpMethod.GET,"/mesas/{id}").hasAnyRole("ADMINISTRADOR", "ATENDENTE", "CAIXA")
@@ -54,6 +56,8 @@ public class SecurityConfig
                         .requestMatchers(HttpMethod.GET, "/pagamentos/**").hasAnyRole("ADMINISTRADOR", "ATENDENTE", "CAIXA")
                         .requestMatchers(HttpMethod.GET, "/pagamentos").hasAnyRole("ADMINISTRADOR", "ATENDENTE", "CAIXA")
                         .requestMatchers(HttpMethod.PATCH,"/pagametnos/{id}/confirmar").hasAnyRole("ADMINISTRADOR", "ATENDENTE", "CAIXA")
+                        .requestMatchers(HttpMethod.POST, "/pontos/acumular").hasAnyRole("ADMINISTRADOR", "ATENDENTE", "CAIXA")
+                        .requestMatchers(HttpMethod.POST, "/pontos/resgatar").hasAnyRole("ADMINISTRADOR", "ATENDENTE", "CAIXA")
                         // ROTA DO ADMINISTRADOR
                         .requestMatchers(HttpMethod.POST,"/mesas").hasRole("ADMINISTRADOR")
                         .requestMatchers(HttpMethod.PUT, "/mesas/**").hasRole("ADMINISTRADOR")

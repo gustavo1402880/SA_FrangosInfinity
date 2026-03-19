@@ -1,99 +1,86 @@
 package org.frangosInfinity.infrastructure.console.module.fidelidade;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.frangosInfinity.application.module.fidelidade.request.ResgateRequestDTO;
 import org.frangosInfinity.application.module.fidelidade.response.PontosResponseDTO;
 import org.frangosInfinity.application.module.fidelidade.response.RegrasResponseDTO;
 import org.frangosInfinity.core.entity.module.fidelidade.RegrasFidelidade;
 import org.frangosInfinity.core.service.module.fidelidade.PontosFidelidadeService;
 import org.frangosInfinity.core.service.module.fidelidade.RegrasFidelidadeService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+@RestController
+@RequestMapping
+@Tag(name = "Fidelidade", description = "Endpoints para gerenciamento do programa de fidelidades")
 public class FidelidadeController
 {
-    private final PontosFidelidadeService pontosFidelidadeService;
-    private final RegrasFidelidadeService regrasFidelidadeService;
+    @Autowired
+    private PontosFidelidadeService pontosFidelidadeService;
 
-    public FidelidadeController()
+    @Autowired
+    private RegrasFidelidadeService regrasFidelidadeService;
+
+    @PostMapping("/contas/cliente/{clienteId}")
+    @Operation(summary = "Criar conta de fidelidade para um cliente")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Conta criada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos"),
+            @ApiResponse(responseCode = "409", description = "Cliente já possui conta")
+    })
+    public ResponseEntity<PontosResponseDTO> processarCriarConta(@PathVariable Long clienteId)
     {
-        this.pontosFidelidadeService = new PontosFidelidadeService();
-        this.regrasFidelidadeService = new RegrasFidelidadeService();
-    }
-
-    public PontosResponseDTO processarCriarConta(Long clienteId)
-    {
-        if (clienteId == null || clienteId <= 0)
-        {
-            throw new IllegalArgumentException("ID do cliente inválido");
-        }
-
         PontosResponseDTO response = pontosFidelidadeService.criarConta(clienteId);
 
         if (!response.getSucesso())
         {
-            throw new RuntimeException("Erro ao criar conta: " + response.getMensagem());
+            return ResponseEntity.badRequest().body(response);
         }
 
-        return response;
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    public PontosResponseDTO processarBuscarPontosPorCliente(Long clienteId)
+    @GetMapping("/contas/cliente/{clienteId}")
+    @Operation(summary = "Buscar pontos por ID do cliente")
+    public ResponseEntity<PontosResponseDTO> processarBuscarPontosPorCliente(@PathVariable Long clienteId)
     {
-        if (clienteId == null || clienteId <= 0)
-        {
-            throw new IllegalArgumentException("ID do cliente inválido");
-        }
-
         PontosResponseDTO response = pontosFidelidadeService.buscarPorCliente(clienteId);
 
-        return response;
+        if (!response.getSucesso())
+        {
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        return ResponseEntity.ok(response);
     }
 
-    public PontosResponseDTO processarAcumularPontos(Long clienteId, Double valorGasto)
+    @PostMapping("/pontos/acumular")
+    @Operation(summary = "Acumular pontos baseado no valor gasto")
+    public ResponseEntity<PontosResponseDTO> processarAcumularPontos(@RequestParam Long clienteId, @RequestParam Double valorGasto)
     {
-        if (clienteId == null || clienteId <= 0)
-        {
-            throw new IllegalArgumentException("ID do cliente inválido");
-        }
-
-        if (valorGasto == null || valorGasto <= 0)
-        {
-            throw new IllegalArgumentException("Valor gasto deve ser positivo");
-        }
-
         PontosResponseDTO response = pontosFidelidadeService.acumularPontos(clienteId, valorGasto);
 
         if (!response.getSucesso())
         {
-            throw new RuntimeException("Erro ao acumular pontos: " + response.getMensagem());
+            return ResponseEntity.badRequest().body(response);
         }
 
-        return response;
+        return ResponseEntity.ok(response);
     }
 
-    public PontosResponseDTO processarResgatarPontos(ResgateRequestDTO request)
+    @PostMapping("/pontos/resgatar")
+    @Operation(summary = "Resgatar pontos para obter desconto")
+    public ResponseEntity<PontosResponseDTO> processarResgatarPontos(@Valid @RequestBody ResgateRequestDTO request)
     {
-        if (request == null)
-        {
-            throw new IllegalArgumentException("Request não pode ser nulo");
-        }
-
-        if (request.getClienteId() == null || request.getClienteId() <= 0)
-        {
-            throw new IllegalArgumentException("ID do cliente inválido");
-        }
-
-        if (request.getPontos() == null || request.getPontos() <= 0)
-        {
-            throw new IllegalArgumentException("Quantidade de pontos inválida");
-        }
-
-        if (request.getValorCompra() == null || request.getValorCompra() <= 0)
-        {
-            throw new IllegalArgumentException("Valor da compra inválido");
-        }
-
         PontosResponseDTO response = pontosFidelidadeService.resgatarPontos(
                 request.getClienteId(),
                 request.getPontos(),
@@ -102,234 +89,140 @@ public class FidelidadeController
 
         if (!response.getSucesso())
         {
-            throw new RuntimeException("Erro ao resgatar pontos: " + response.getMensagem());
+            return ResponseEntity.badRequest().body(response);
         }
 
-        return response;
+        return ResponseEntity.ok(response);
     }
 
-    public RegrasResponseDTO processarVerRegras()
+    @GetMapping("/regras/ativas")
+    @Operation(summary = "Buscar regras ativas do programa")
+    public ResponseEntity<RegrasResponseDTO> processarVerRegras()
     {
         RegrasFidelidade regras = regrasFidelidadeService.buscarRegrasAtivas();
 
-        return RegrasResponseDTO.fromEntity(regras);
+        return ResponseEntity.ok(RegrasResponseDTO.fromEntity(regras));
     }
 
-    public List<PontosResponseDTO> processarListarTodosClientes()
+    @GetMapping("/contas")
+    @Operation(summary = "Listar todas as contas de fidelidade")
+    public ResponseEntity<List<PontosResponseDTO>> processarListarTodosClientes()
     {
         List<PontosResponseDTO> lista = pontosFidelidadeService.listarTodos();
 
         if (lista.isEmpty())
         {
-            throw new RuntimeException("Nenhum cliente com pontos cadastrados");
+            return ResponseEntity.noContent().build();
         }
 
-        return lista;
+        return ResponseEntity.ok(lista);
     }
 
-    public PontosResponseDTO processarBuscarPontosPorClienteAdmin(Long clienteId)
+    @GetMapping("/contas/cliente/{clienteId}")
+    @Operation(summary = "Buscar pontos por ID do cliente")
+    public ResponseEntity<PontosResponseDTO> processarBuscarPontosPorClienteAdmin(@PathVariable Long clienteId)
     {
-        if (clienteId == null || clienteId <= 0)
-        {
-            throw new IllegalArgumentException("ID do cliente inválido");
-        }
-
         PontosResponseDTO response = pontosFidelidadeService.buscarPorCliente(clienteId);
 
         if (!response.getSucesso())
         {
-            throw new RuntimeException(response.getMensagem());
+            return ResponseEntity.badRequest().body(response);
         }
 
-        return response;
+        return ResponseEntity.notFound().build();
     }
 
-    public PontosResponseDTO processarAdicionarPontosManual(Long clienteId, Double valorGasto)
+    @DeleteMapping("/contas/{id}")
+    @Operation(summary = "Remover conta de fidelidade")
+    public ResponseEntity<Void> processarRemoverConta(@PathVariable Long id)
     {
-        if (clienteId == null || clienteId <= 0)
+        Boolean removido = pontosFidelidadeService.deletarConta(id);
+
+        if (removido)
         {
-            throw new IllegalArgumentException("ID do cliente inválido");
+            return ResponseEntity.ok().build();
         }
 
-        if (valorGasto == null || valorGasto <= 0)
-        {
-            throw new IllegalArgumentException("Valor gasto deve ser positivo");
-        }
-
-        PontosResponseDTO response = pontosFidelidadeService.acumularPontos(clienteId, valorGasto);
-
-        if (!response.getSucesso())
-        {
-            throw new RuntimeException("Erro ao adicionar pontos: " + response.getMensagem());
-        }
-
-        return response;
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 
-    public boolean processarRemoverConta(Long id)
+    @PostMapping("/admin/regras")
+    @Operation(summary = "Criar novas regras de fidelidade")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Regras criadas com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+    })
+    public ResponseEntity<RegrasResponseDTO> processarCriarRegras(@Valid @RequestBody RegrasFidelidade regras)
     {
-        if (id == null || id <= 0)
-        {
-            throw new IllegalArgumentException("ID inválido");
-        }
-
-        PontosResponseDTO busca = pontosFidelidadeService.buscarPorCliente(id);
-
-        if (!busca.getSucesso())
-        {
-            throw new RuntimeException("Conta não encontrada");
-        }
-
-        boolean removido = pontosFidelidadeService.deletarConta(id);
-
-        if (!removido)
-        {
-            throw new RuntimeException("Erro ao remover conta de fidelidade");
-        }
-
-        return true;
-    }
-
-    public RegrasResponseDTO processarCriarRegras(RegrasFidelidade regras)
-    {
-        if (regras == null)
-        {
-            throw new IllegalArgumentException("Regras não podem ser nulas");
-        }
-
-        if (regras.getPontosPorReal() <= 0)
-        {
-            throw new IllegalArgumentException("Pontos por real deve ser positivo");
-        }
-
-        if (regras.getDiasExpiracao() <= 0)
-        {
-            throw new IllegalArgumentException("Dias para expiração deve ser positivo");
-        }
-
-        if (regras.getPontosMinimosResgate() <= 0)
-        {
-            throw new IllegalArgumentException("Pontos mínimos para resgate deve ser positivo");
-        }
-
-        if (regras.getValorDescontoPorBloco() <= 0)
-        {
-            throw new IllegalArgumentException("Valor do desconto deve ser positivo");
-        }
-
-        if (regras.getPontosPorBloco() <= 0)
-        {
-            throw new IllegalArgumentException("Pontos por bloco deve ser positivo");
-        }
-
         RegrasFidelidade criadas = regrasFidelidadeService.criarRegras(regras);
 
         if (criadas == null)
         {
-            throw new RuntimeException("Erro ao criar regras de fidelidade");
+            return ResponseEntity.badRequest().build();
         }
 
-        return RegrasResponseDTO.fromEntity(regras);
+        return ResponseEntity.status(HttpStatus.CREATED).body(RegrasResponseDTO.fromEntity(regras));
     }
 
-    public RegrasResponseDTO processarAtualizarRegras(Long id, RegrasFidelidade regrasAtualizadas)
+    @PutMapping("/admin/regras/{id}")
+    @Operation(summary = "Atualizar regras existentes")
+    public ResponseEntity<RegrasResponseDTO> processarAtualizarRegras(@PathVariable Long id, @Valid @RequestBody RegrasFidelidade regrasAtualizadas)
     {
-        if (id == null || id <= 0)
-        {
-            throw new IllegalArgumentException("ID inválido");
-        }
-
-        if (regrasAtualizadas == null)
-        {
-            throw new IllegalArgumentException("Regras não podem ser nulas");
-        }
-
-        boolean atualizado = regrasFidelidadeService.atualizarRegras(id, regrasAtualizadas);
-
-        if (!atualizado)
-        {
-            throw new RuntimeException("Erro ao atualizar regras");
-        }
-
         RegrasFidelidade regras = regrasFidelidadeService.buscarPorId(id);
 
-        return RegrasResponseDTO.fromEntity(regras);
+        return ResponseEntity.ok(RegrasResponseDTO.fromEntity(regras));
     }
 
-    public boolean processarAtivarRegras(Long id)
+    @PatchMapping("/admin/regras/{id}/ativar")
+    @Operation(summary = "Ativar regras")
+    public ResponseEntity<RegrasResponseDTO> processarAtivarRegras(@PathVariable Long id)
     {
-        if (id == null || id <= 0)
-        {
-            throw new IllegalArgumentException("ID inválido");
-        }
+        RegrasFidelidade ativadas = regrasFidelidadeService.setAtivo(id, true);
 
-        boolean ativado = regrasFidelidadeService.setAtivo(id, true);
-
-        if (!ativado)
-        {
-            throw new RuntimeException("Erro ao ativar regras");
-        }
-
-        return true;
+        return ResponseEntity.ok(RegrasResponseDTO.fromEntity(ativadas));
     }
 
-    public boolean processarDesativarRegras(Long id)
+    @PatchMapping("/admin/regras/{id}/desativar")
+    @Operation(summary = "Desativar regras")
+    public ResponseEntity<RegrasResponseDTO> processarDesativarRegras(Long id)
     {
-        if (id == null || id <= 0)
-        {
-            throw new IllegalArgumentException("ID inválido");
-        }
+        RegrasFidelidade ativadas = regrasFidelidadeService.setAtivo(id, false);
 
-        boolean desativado = regrasFidelidadeService.setAtivo(id, false);
-
-        if (!desativado)
-        {
-            throw new RuntimeException("Erro ao desativar regras");
-        }
-
-        return true;
+        return ResponseEntity.ok(RegrasResponseDTO.fromEntity(ativadas));
     }
 
-    public boolean processarDeletarRegras(Long id)
+    @DeleteMapping("/admin/regras/{id}")
+    @Operation(summary = "Deletar regras")
+    public ResponseEntity<Void> processarDeletarRegras(@PathVariable Long id)
     {
-        if (id == null || id <= 0)
-        {
-            throw new IllegalArgumentException("ID inválido");
-        }
+        regrasFidelidadeService.deletar(id);
 
-        boolean deletado = regrasFidelidadeService.deletar(id);
-
-        if (!deletado)
-        {
-            throw new RuntimeException("Erro ao deletar regras");
-        }
-
-        return true;
+        return ResponseEntity.ok().build();
     }
 
-    public List<RegrasResponseDTO> processarListarTodasRegras()
+    @GetMapping("/admin/regras")
+    @Operation(summary = "Listar todas as regras")
+    public ResponseEntity<List<RegrasResponseDTO>> processarListarTodasRegras()
     {
-        List<RegrasFidelidade> regrasList = regrasFidelidadeService.listarTodas();
-        List<RegrasResponseDTO> responseList = new ArrayList<>();
+       List<RegrasFidelidade> regras = regrasFidelidadeService.listarTodas();
 
-        if (regrasList.isEmpty())
+        if (regras.isEmpty())
         {
-            throw new RuntimeException("Nenhuma regra cadastrada");
+            return ResponseEntity.noContent().build();
         }
 
-        for (RegrasFidelidade regras : regrasList)
-        {
-            RegrasResponseDTO response = RegrasResponseDTO.fromEntity(regras);
+        List<RegrasResponseDTO> response = regras.stream()
+                .map(RegrasResponseDTO::fromEntity)
+                .collect(Collectors.toList());
 
-            responseList.add(response);
-        }
-
-        return responseList;
+        return ResponseEntity.ok(response);
     }
 
-    public Integer processarExecutarExpiracaoPontos()
+    @PostMapping("/admin/processar-expiracao")
+    @Operation(summary = "Processar expiração de pontos")
+    public ResponseEntity<Integer> processarExecutarExpiracaoPontos()
     {
         int totalExpirados = pontosFidelidadeService.processarExpiracaoPontos();
-        return totalExpirados;
+        return ResponseEntity.ok(totalExpirados);
     }
 }
