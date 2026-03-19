@@ -1,20 +1,38 @@
 package org.frangosInfinity.core.entity.module.fidelidade;
 
+import jakarta.persistence.*;
 import org.frangosInfinity.core.enums.TipoTransacaoPontos;
 
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "transacao_pontos")
 public class TransacaoPontos
 {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long pontosFidelidadeId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pontos_fidelidade_id", nullable = false)
+    private PontosFidelidade pontosFidelidade;
+
+    @Column(nullable = false)
     private LocalDateTime data;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_transacao", nullable = false)
     private TipoTransacaoPontos tipoTransacaoPontos;
+
+    @Column(nullable = false)
     private Integer quantidade;
 
-    public TransacaoPontos(Long pontosFidelidadeId, TipoTransacaoPontos tipoTransacaoPontos, Integer quantidade)
+    public TransacaoPontos () {}
+
+    public TransacaoPontos(PontosFidelidade pontosFidelidade, TipoTransacaoPontos tipoTransacaoPontos, Integer quantidade)
     {
-        this.pontosFidelidadeId = pontosFidelidadeId;
+        this.pontosFidelidade = pontosFidelidade;
+        this.tipoTransacaoPontos = tipoTransacaoPontos;
         this.data = LocalDateTime.now();
         this.quantidade = quantidade;
     }
@@ -29,14 +47,14 @@ public class TransacaoPontos
         this.id = id;
     }
 
-    public Long getPontosFidelidadeId()
+    public PontosFidelidade getPontosFidelidade()
     {
-        return pontosFidelidadeId;
+        return pontosFidelidade;
     }
 
-    public void setPontosFidelidadeId(Long pontosFidelidadeId)
+    public void setPontosFidelidade(PontosFidelidade pontosFidelidade)
     {
-        this.pontosFidelidadeId = pontosFidelidadeId;
+        this.pontosFidelidade = pontosFidelidade;
     }
 
     public LocalDateTime getData()

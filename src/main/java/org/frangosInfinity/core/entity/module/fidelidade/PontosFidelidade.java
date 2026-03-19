@@ -1,19 +1,33 @@
 package org.frangosInfinity.core.entity.module.fidelidade;
 
+import jakarta.persistence.*;
 import org.frangosInfinity.core.enums.TipoTransacaoPontos;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
+@Entity
+@Table(name = "pontos_fidelidade")
 public class PontosFidelidade
 {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "cliente_id", nullable = false, unique = true)
     private Long clienteId;
+
+    @Column(nullable = false)
     private Integer saldo;
+
+    @OneToMany(mappedBy = "pontosFidelidade", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<TransacaoPontos> historico;
+
+    @Column(name = "data_validade", nullable = false)
     private LocalDateTime dataValidade;
+
+    public PontosFidelidade() {}
 
     public PontosFidelidade(Long clienteId)
     {
@@ -77,7 +91,7 @@ public class PontosFidelidade
     {
         this.saldo += quantidade;
 
-        TransacaoPontos transacaoPontos = new TransacaoPontos(this.id, TipoTransacaoPontos.ACUMULO, quantidade);
+        TransacaoPontos transacaoPontos = new TransacaoPontos(this, TipoTransacaoPontos.ACUMULO, quantidade);
 
         this.historico.add(transacaoPontos);
 
@@ -93,7 +107,7 @@ public class PontosFidelidade
         {
             saldo -= quantidade;
 
-            TransacaoPontos transacaoPontos = new TransacaoPontos(this.id, TipoTransacaoPontos.RESGATE, quantidade);
+            TransacaoPontos transacaoPontos = new TransacaoPontos(this, TipoTransacaoPontos.RESGATE, quantidade);
 
             this.historico.add(transacaoPontos);
 
@@ -109,7 +123,7 @@ public class PontosFidelidade
         {
             this.saldo -= quantidade;
 
-            TransacaoPontos transacaoPontos = new TransacaoPontos(this.id, TipoTransacaoPontos.EXPIRACAO, quantidade);
+            TransacaoPontos transacaoPontos = new TransacaoPontos(this, TipoTransacaoPontos.EXPIRACAO, quantidade);
 
             this.historico.add(transacaoPontos);
         }
@@ -117,7 +131,7 @@ public class PontosFidelidade
         {
             this.saldo = 0;
 
-            TransacaoPontos transacaoPontos = new TransacaoPontos(this.id, TipoTransacaoPontos.EXPIRACAO, this.saldo);
+            TransacaoPontos transacaoPontos = new TransacaoPontos(this, TipoTransacaoPontos.EXPIRACAO, this.saldo);
 
             this.historico.add(transacaoPontos);
         }

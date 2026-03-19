@@ -1,15 +1,35 @@
 package org.frangosInfinity.core.entity.module.fidelidade;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "regras_fidelidade")
 public class RegrasFidelidade
 {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private double pontosPorReal;
-    private int diasExpiracao;
-    private int pontosMinimosResgate;
-    private double valorDescontoPorBloco;
-    private int pontosPorBloco;
-    private double valorMinimoProdutoDesconto;
-    private boolean ativo;
+
+    @Column(name = "pontos_por_real", nullable = false)
+    private Double pontosPorReal;
+
+    @Column(name = "dias_expiracao", nullable = false)
+    private Integer diasExpiracao;
+
+    @Column(name = "pontos_minimos_resgate", nullable = false)
+    private Integer pontosMinimosResgate;
+
+    @Column(name = "valor_desconto_por_bloco", nullable = false)
+    private Double valorDescontoPorBloco;
+
+    @Column(name = "pontos_por_bloco", nullable = false)
+    private Integer pontosPorBloco;
+
+    @Column(name = "valor_minimo_produto_desconto", nullable = false)
+    private Double valorMinimoProdutoDesconto;
+
+    @Column(nullable = false)
+    private Boolean ativo;
 
     public RegrasFidelidade()
     {
@@ -32,60 +52,60 @@ public class RegrasFidelidade
         this.id = id;
     }
 
-    public double getPontosPorReal()
+    public Double getPontosPorReal()
     {
         return pontosPorReal;
     }
-    public void setPontosPorReal(double pontosPorReal)
+    public void setPontosPorReal(Double pontosPorReal)
     {
         this.pontosPorReal = pontosPorReal;
     }
 
-    public int getDiasExpiracao()
+    public Integer getDiasExpiracao()
     {
         return diasExpiracao;
     }
-    public void setDiasExpiracao(int diasExpiracao)
+    public void setDiasExpiracao(Integer diasExpiracao)
     {
         this.diasExpiracao = diasExpiracao;
     }
 
-    public int getPontosMinimosResgate()
+    public Integer getPontosMinimosResgate()
     {
         return pontosMinimosResgate;
     }
 
-    public void setPontosMinimosResgate(int pontosMinimosResgate)
+    public void setPontosMinimosResgate(Integer pontosMinimosResgate)
     {
         this.pontosMinimosResgate = pontosMinimosResgate;
     }
 
-    public double getValorDescontoPorBloco()
+    public Double getValorDescontoPorBloco()
     {
         return valorDescontoPorBloco;
     }
 
-    public void setValorDescontoPorBloco(double valorDescontoPorBloco)
+    public void setValorDescontoPorBloco(Double valorDescontoPorBloco)
     {
         this.valorDescontoPorBloco = valorDescontoPorBloco;
     }
 
-    public int getPontosPorBloco()
+    public Integer getPontosPorBloco()
     {
         return pontosPorBloco;
     }
 
-    public void setPontosPorBloco(int pontosPorBloco)
+    public void setPontosPorBloco(Integer pontosPorBloco)
     {
         this.pontosPorBloco = pontosPorBloco;
     }
 
-    public double getValorMinimoProdutoDesconto()
+    public Double getValorMinimoProdutoDesconto()
     {
         return valorMinimoProdutoDesconto;
     }
 
-    public void setValorMinimoProdutoDesconto(double valorMinimoProdutoDesconto)
+    public void setValorMinimoProdutoDesconto(Double valorMinimoProdutoDesconto)
     {
         this.valorMinimoProdutoDesconto = valorMinimoProdutoDesconto;
     }
@@ -105,17 +125,17 @@ public class RegrasFidelidade
         return (int) (valor * this.pontosPorReal);
     }
 
-    public double calcularDescontoPorPontos(int pontos)
+    public double calcularDescontoPorPontos(Integer pontos)
     {
         if (pontos < pontosMinimosResgate)
         {
             return 0;
         }
-        int blocos = pontos / pontosPorBloco;
+        Integer blocos = pontos / pontosPorBloco;
         return blocos * valorDescontoPorBloco;
     }
 
-    public boolean podeResgatar(int pontos, double valorProduto)
+    public boolean podeResgatar(Integer pontos, Double valorProduto)
     {
         return pontos >= pontosMinimosResgate && valorProduto >= valorMinimoProdutoDesconto;
     }
