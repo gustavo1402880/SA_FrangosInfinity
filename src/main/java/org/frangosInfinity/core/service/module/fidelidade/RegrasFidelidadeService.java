@@ -2,7 +2,7 @@ package org.frangosInfinity.core.service.module.fidelidade;
 
 import org.frangosInfinity.core.entity.module.fidelidade.RegrasFidelidade;
 import org.frangosInfinity.infrastructure.persistence.connection.ConnectionFactory;
-import org.frangosInfinity.infrastructure.persistence.module.fidelidade.RegrasFidelidadeDAO;
+import org.frangosInfinity.infrastructure.persistence.module.fidelidade.RegrasFidelidadeRepository;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -18,7 +18,7 @@ public class RegrasFidelidadeService
             conn = ConnectionFactory.getConnection();
             conn.setAutoCommit(false);
 
-            RegrasFidelidadeDAO regrasDAO = new RegrasFidelidadeDAO(conn);
+            RegrasFidelidadeRepository regrasDAO = new RegrasFidelidadeRepository(conn);
 
             if (regras.isAtivo())
             {
@@ -79,7 +79,7 @@ public class RegrasFidelidadeService
     {
         try (Connection conn = ConnectionFactory.getConnection())
         {
-            RegrasFidelidadeDAO regrasDAO = new RegrasFidelidadeDAO(conn);
+            RegrasFidelidadeRepository regrasDAO = new RegrasFidelidadeRepository(conn);
 
             RegrasFidelidade regras = regrasDAO.buscarAtiva();
 
@@ -109,7 +109,7 @@ public class RegrasFidelidadeService
                 return null;
             }
 
-            RegrasFidelidadeDAO regrasDAO = new RegrasFidelidadeDAO(conn);
+            RegrasFidelidadeRepository regrasDAO = new RegrasFidelidadeRepository(conn);
             return regrasDAO.buscarPorId(id);
 
         }
@@ -124,7 +124,7 @@ public class RegrasFidelidadeService
     {
         try (Connection conn = ConnectionFactory.getConnection())
         {
-            RegrasFidelidadeDAO regrasDAO = new RegrasFidelidadeDAO(conn);
+            RegrasFidelidadeRepository regrasDAO = new RegrasFidelidadeRepository(conn);
             return regrasDAO.listarTodas();
 
         }
@@ -143,7 +143,7 @@ public class RegrasFidelidadeService
             conn = ConnectionFactory.getConnection();
             conn.setAutoCommit(false);
 
-            RegrasFidelidadeDAO regrasDAO = new RegrasFidelidadeDAO(conn);
+            RegrasFidelidadeRepository regrasDAO = new RegrasFidelidadeRepository(conn);
 
             RegrasFidelidade existente = regrasDAO.buscarPorId(id);
 
@@ -224,7 +224,7 @@ public class RegrasFidelidadeService
             conn = ConnectionFactory.getConnection();
             conn.setAutoCommit(false);
 
-            RegrasFidelidadeDAO regrasDAO = new RegrasFidelidadeDAO(conn);
+            RegrasFidelidadeRepository regrasDAO = new RegrasFidelidadeRepository(conn);
 
             RegrasFidelidade regras = regrasDAO.buscarPorId(id);
 
@@ -294,7 +294,7 @@ public class RegrasFidelidadeService
             conn = ConnectionFactory.getConnection();
             conn.setAutoCommit(false);
 
-            RegrasFidelidadeDAO regrasDAO = new RegrasFidelidadeDAO(conn);
+            RegrasFidelidadeRepository regrasDAO = new RegrasFidelidadeRepository(conn);
 
             RegrasFidelidade regras = regrasDAO.buscarPorId(id);
 

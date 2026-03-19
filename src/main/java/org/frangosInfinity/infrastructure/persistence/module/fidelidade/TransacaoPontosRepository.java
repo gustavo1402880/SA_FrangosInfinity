@@ -22,5 +22,8 @@ public interface TransacaoPontosRepository extends JpaRepository<TransacaoPontos
     @Query("SELECT t FROM TransacaoPontos t WHERE t.tipoTransacaoPontos = :tipo ORDER BY t.data DESC")
     List<TransacaoPontos> buscarPorTipo(@Param("tipo") TipoTransacaoPontos tipo);
 
+    List<TransacaoPontos> findByPontosFidelidadeIdOrderByDataDesc(Long pontosFidelidadadeId);
 
+    @Query("SELECT t FROM TransacaoPontos t WHERE t.pontosFidelidade.id = :pontosFidelidadeId AND t.tipoTransacaoPontos = :tipo ORDER BY t.data DESC")
+    List<TransacaoPontos> buscarPorPontosETipo(@Param("pontosFidelidade") Long pontosFidelidadeID, @Param("tipo") TipoTransacaoPontos tipo);
 }
