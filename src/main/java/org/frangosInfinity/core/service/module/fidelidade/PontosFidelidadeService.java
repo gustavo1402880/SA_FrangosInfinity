@@ -7,10 +7,8 @@ import org.frangosInfinity.core.entity.module.fidelidade.RegrasFidelidade;
 import org.frangosInfinity.core.entity.module.fidelidade.TransacaoPontos;
 import org.frangosInfinity.core.enums.TipoTransacaoPontos;
 import org.frangosInfinity.infrastructure.persistence.connection.ConnectionFactory;
-import org.frangosInfinity.infrastructure.persistence.module.fidelidade.PontosFidelidadeDAO;
-import org.frangosInfinity.infrastructure.persistence.module.fidelidade.TransacaoPontosDAO;
-import org.frangosInfinity.infrastructure.util.Formatador;
-import org.frangosInfinity.infrastructure.util.Validator;
+import org.frangosInfinity.infrastructure.persistence.module.fidelidade.PontosFidelidadeRepository;
+import org.frangosInfinity.infrastructure.persistence.module.fidelidade.TransacaoPontosRepository;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -38,7 +36,7 @@ public class PontosFidelidadeService
                 return criarRespostaErro("ID do cliente inválido");
             }
 
-            PontosFidelidadeDAO pontosDAO = new PontosFidelidadeDAO(conn);
+            PontosFidelidadeRepository pontosDAO = new PontosFidelidadeRepository(conn);
 
             PontosFidelidade existente = pontosDAO.buscarPorClienteId(clienteId);
             if (existente != null)
@@ -70,8 +68,8 @@ public class PontosFidelidadeService
                 return criarRespostaErro("ID do cliente inválido");
             }
 
-            PontosFidelidadeDAO pontosDAO = new PontosFidelidadeDAO(conn);
-            TransacaoPontosDAO transacaoDAO = new TransacaoPontosDAO(conn);
+            PontosFidelidadeRepository pontosDAO = new PontosFidelidadeRepository(conn);
+            TransacaoPontosRepository transacaoDAO = new TransacaoPontosRepository(conn);
 
             PontosFidelidade pontos = pontosDAO.buscarPorClienteId(clienteId);
 
@@ -111,8 +109,8 @@ public class PontosFidelidadeService
                 return criarRespostaErro("Valor gasto inválido");
             }
 
-            PontosFidelidadeDAO pontosDAO = new PontosFidelidadeDAO(conn);
-            TransacaoPontosDAO transacaoDAO = new TransacaoPontosDAO(conn);
+            PontosFidelidadeRepository pontosDAO = new PontosFidelidadeRepository(conn);
+            TransacaoPontosRepository transacaoDAO = new TransacaoPontosRepository(conn);
 
             PontosFidelidade pontos = pontosDAO.buscarPorClienteId(clienteId);
 
@@ -204,8 +202,8 @@ public class PontosFidelidadeService
                 return criarRespostaErro("Valor da compra inválido");
             }
 
-            PontosFidelidadeDAO pontosDAO = new PontosFidelidadeDAO(conn);
-            TransacaoPontosDAO transacaoDAO = new TransacaoPontosDAO(conn);
+            PontosFidelidadeRepository pontosDAO = new PontosFidelidadeRepository(conn);
+            TransacaoPontosRepository transacaoDAO = new TransacaoPontosRepository(conn);
 
             PontosFidelidade pontos = pontosDAO.buscarPorClienteId(clienteId);
 
@@ -300,8 +298,8 @@ public class PontosFidelidadeService
             conn = ConnectionFactory.getConnection();
             conn.setAutoCommit(false);
 
-            PontosFidelidadeDAO pontosDAO = new PontosFidelidadeDAO(conn);
-            TransacaoPontosDAO transacaoDAO = new TransacaoPontosDAO(conn);
+            PontosFidelidadeRepository pontosDAO = new PontosFidelidadeRepository(conn);
+            TransacaoPontosRepository transacaoDAO = new TransacaoPontosRepository(conn);
 
             List<PontosFidelidade> todos = pontosDAO.listarTodos();
             LocalDateTime hoje = LocalDateTime.now();
@@ -366,8 +364,8 @@ public class PontosFidelidadeService
     {
         try (Connection conn = ConnectionFactory.getConnection())
         {
-            PontosFidelidadeDAO pontosDAO = new PontosFidelidadeDAO(conn);
-            TransacaoPontosDAO transacaoDAO = new TransacaoPontosDAO(conn);
+            PontosFidelidadeRepository pontosDAO = new PontosFidelidadeRepository(conn);
+            TransacaoPontosRepository transacaoDAO = new TransacaoPontosRepository(conn);
 
             List<PontosFidelidade> todos = pontosDAO.listarTodos();
 
@@ -396,8 +394,8 @@ public class PontosFidelidadeService
             conn = ConnectionFactory.getConnection();
             conn.setAutoCommit(false);
 
-            PontosFidelidadeDAO pontosDAO = new PontosFidelidadeDAO(conn);
-            TransacaoPontosDAO transacaoDAO = new TransacaoPontosDAO(conn);
+            PontosFidelidadeRepository pontosDAO = new PontosFidelidadeRepository(conn);
+            TransacaoPontosRepository transacaoDAO = new TransacaoPontosRepository(conn);
 
             List<TransacaoPontos> transacoes = transacaoDAO.buscarPorPontosId(id);
             for (TransacaoPontos t : transacoes)
