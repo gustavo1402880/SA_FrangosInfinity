@@ -1,4 +1,7 @@
 package org.frangosInfinity.core.service.module.pedido;
+import org.frangosInfinity.application.module.pedido.request.CarrinhoRequestDTO;
+import org.frangosInfinity.application.module.pedido.request.ItemPedidoRequestDTO;
+import org.frangosInfinity.application.module.pedido.response.CarrinhoResponseDTO;
 import org.frangosInfinity.core.entity.module.pedido.Carrinho;
 import org.frangosInfinity.core.entity.module.pedido.ItemPedido;
 import org.frangosInfinity.core.entity.module.pedido.SubPedido;
@@ -10,23 +13,32 @@ import java.util.ArrayList;
 
 public class CarrinhoService {
 
-    public Carrinho adicionarItem(ItemPedido itemPedido, Carrinho carrinho) throws Exception
+    public CarrinhoResponseDTO adicionarItem(ItemPedidoRequestDTO itemPedidoRequestDTO, CarrinhoRequestDTO carrinhoRequestDTO) throws Exception
     {
 
         ArrayList<ItemPedido> pedidos;
-        Double valortotal;
+        Double valortotal = 0.0;
+        ItemPedido itemPedido = new ItemPedido(itemPedidoRequestDTO.getId_ItemPedido(),
+                itemPedidoRequestDTO.getSubPedidoID(),
+                itemPedidoRequestDTO.getProdutoid(),
+                itemPedidoRequestDTO.getQuantidade(),
+                itemPedidoRequestDTO.getPrecoUnitario(),
+                itemPedidoRequestDTO.getObservacao(),
+                itemPedidoRequestDTO.getSubTotal());
 
-        if (itemPedido != null) {
+        if (itemPedidoRequestDTO != null) {
 
-            pedidos = carrinho.getItens();
+            pedidos = carrinhoRequestDTO.getItens();
 
             pedidos.add(itemPedido);
 
-            valortotal = carrinho.getValorTotal();
 
-            valortotal += itemPedido.getSubTotal();
+            for(ItemPedido i : pedidos){
+                valortotal += i.getSubTotal();
+            }
 
-            carrinho.setItens(pedidos);
+            CarrinhoResponseDTO carrinho = new CarrinhoResponseDTO(carrinhoRequestDTO.getId_carrinho(),carrinhoRequestDTO.getCliente_id(),
+                    carrinhoRequestDTO.getDataCriacao(),pedidos,valortotal);
 
             return carrinho;
 
@@ -37,18 +49,25 @@ public class CarrinhoService {
         }
     }
 
-    public Carrinho removerItem(ItemPedido itemPedido, Carrinho carrinho) throws Exception
+    public CarrinhoResponseDTO removerItem(ItemPedidoRequestDTO itemPedidoRequestDTO, CarrinhoRequestDTO carrinhoRequestDTO) throws Exception
     {
 
         ArrayList<ItemPedido> pedidos;
 
-        if (itemPedido != null) {
+        if (itemPedidoRequestDTO != null) {
 
-            pedidos = carrinho.getItens();
+            pedidos = carrinhoRequestDTO.getItens();
 
-            pedidos.remove(itemPedido);
+            pedidos.removeIf(item -> item.getId_ItemPedido().equals(itemPedidoRequestDTO.getId_ItemPedido()));
 
-            carrinho.setItens(pedidos);
+            Double valortotal = 0.0;
+
+            for(ItemPedido i : pedidos){
+                valortotal += i.getSubTotal();
+            }
+
+            CarrinhoResponseDTO carrinho = new CarrinhoResponseDTO(carrinhoRequestDTO.getId_carrinho(),carrinhoRequestDTO.getCliente_id(),
+                    carrinhoRequestDTO.getDataCriacao(),pedidos,valortotal);
 
             return carrinho;
 
@@ -59,25 +78,39 @@ public class CarrinhoService {
         }
     }
 
-    public Carrinho alterarQuantidade(ItemPedido itemPedido, int quantidade, Carrinho carrinho) throws Exception{
+    public CarrinhoResponseDTO alterarQuantidade(ItemPedidoRequestDTO itemPedidoRequestDTO, int quantidade, CarrinhoRequestDTO carrinhoRequestDTO) throws Exception{
 
         ArrayList<ItemPedido> pedidos;
+        ItemPedido itemPedido = new ItemPedido(itemPedidoRequestDTO.getId_ItemPedido(),
+                itemPedidoRequestDTO.getSubPedidoID(),
+                itemPedidoRequestDTO.getProdutoid(),
+                itemPedidoRequestDTO.getQuantidade(),
+                itemPedidoRequestDTO.getPrecoUnitario(),
+                itemPedidoRequestDTO.getObservacao(),
+                itemPedidoRequestDTO.getSubTotal());
 
         try{
 
             ItemPedidoDAO itemPedidoDAO = new ItemPedidoDAO(ConnectionFactory.getConnection());
 
-            if (itemPedido != null && quantidade > 0) {
+            if (itemPedidoRequestDTO != null && quantidade > 0) {
 
-                pedidos = carrinho.getItens();
+                pedidos = carrinhoRequestDTO.getItens();
 
-                pedidos.remove(itemPedido);
+                pedidos.removeIf(item -> item.getId_ItemPedido().equals(itemPedidoRequestDTO.getId_ItemPedido()));
 
                 ItemPedido itemPedido1 = itemPedidoDAO.updateQuantidade(itemPedido,quantidade);
 
                 pedidos.add(itemPedido1);
 
-                carrinho.setItens(pedidos);
+                Double valortotal = 0.0;
+
+                for(ItemPedido i : pedidos){
+                    valortotal += i.getSubTotal();
+                }
+
+                CarrinhoResponseDTO carrinho = new CarrinhoResponseDTO(carrinhoRequestDTO.getId_carrinho(),carrinhoRequestDTO.getCliente_id(),
+                        carrinhoRequestDTO.getDataCriacao(),pedidos,valortotal);
 
                 return carrinho;
 
@@ -93,12 +126,19 @@ public class CarrinhoService {
 
     }
 
-    public Double calcularTotal(Carrinho carrinho) throws Exception{
+    public Double calcularTotal(CarrinhoRequestDTO carrinho) throws Exception{
 
+        ArrayList<ItemPedido> pedidos = carrinho.getItens();
 
         if(carrinho != null){
 
-            return carrinho.calcularTotal();
+            Double valortotal = 0.0;
+
+            for(ItemPedido i : pedidos){
+                valortotal += i.getSubTotal();
+            }
+
+            return valortotal;
 
         }else {
 
@@ -107,16 +147,24 @@ public class CarrinhoService {
         }
     }
 
-    public void limpar(Carrinho carrinho) throws Exception{
+    public CarrinhoResponseDTO limpar(CarrinhoRequestDTO carrinhoRequestDTO) throws Exception{
 
-        if (carrinho != null) {
-            ArrayList<ItemPedido> pedidos = carrinho.getItens();
+        if (carrinhoRequestDTO != null) {
+            ArrayList<ItemPedido> pedidos = carrinhoRequestDTO.getItens();
 
             pedidos.clear();
 
-            carrinho.setItens(pedidos);
+            Double valortotal = 0.0;
 
-            return;
+            for(ItemPedido i : pedidos){
+                valortotal += i.getSubTotal();
+            }
+
+            CarrinhoResponseDTO carrinho = new CarrinhoResponseDTO(carrinhoRequestDTO.getId_carrinho(),carrinhoRequestDTO.getCliente_id(),
+                    carrinhoRequestDTO.getDataCriacao(),pedidos,valortotal);
+
+
+            return carrinho;
         }
 
         throw new Exception("Erro ao limpar o carrinho");
