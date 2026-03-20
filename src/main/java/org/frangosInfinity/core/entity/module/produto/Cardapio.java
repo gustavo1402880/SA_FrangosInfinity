@@ -1,49 +1,68 @@
 package org.frangosInfinity.core.entity.module.produto;
 
-import java.sql.Date;
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 
-public class Cardapio {
-
-    // Atributos
-
+@Entity
+@Table(name = "cardapio")
+public class Cardapio
+{
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private int versao;
-    private Date dataAtualizacao;
 
-    // Contrutores
+    @Column(nullable = false)
+    private Integer versao;
 
-    public Cardapio() {}
+    @Column(name = "data_atualizacao", nullable = false)
+    private LocalDateTime dataAtualizacao;
 
-    public Cardapio(Long id, int versao, java.sql.Date dataAtualizacao) {
-        this.id = id;
-        this.versao = versao;
-        this.dataAtualizacao = dataAtualizacao;
+    public Cardapio()
+    {
+        this.versao = 1;
+        this.dataAtualizacao = LocalDateTime.now();
     }
 
-    // Getters & Setters
+    public Cardapio(Integer versao)
+    {
+        this.versao = versao;
+        this.dataAtualizacao = LocalDateTime.now();
+    }
 
-    public Long getId() {
+    public Long getId()
+    {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Long id)
+    {
         this.id = id;
     }
 
-    public int getVersao() {
+    public Integer getVersao()
+    {
         return versao;
     }
 
-    public void setVersao(int versao) {
+    public void setVersao(Integer versao)
+    {
         this.versao = versao;
     }
 
-    public java.sql.Date getDataAtualizacao() {
+    public LocalDateTime getDataAtualizacao()
+    {
         return dataAtualizacao;
     }
 
-    public void setDataAtualizacao(Date dataAtualizacao) {
+    public void setDataAtualizacao(LocalDateTime dataAtualizacao)
+    {
         this.dataAtualizacao = dataAtualizacao;
+    }
+
+    public void atualizarVersao()
+    {
+        this.versao++;
+        this.dataAtualizacao = LocalDateTime.now();
     }
 }
