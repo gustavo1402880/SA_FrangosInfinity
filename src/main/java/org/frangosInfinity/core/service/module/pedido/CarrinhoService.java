@@ -6,7 +6,7 @@ import org.frangosInfinity.core.entity.module.pedido.Carrinho;
 import org.frangosInfinity.core.entity.module.pedido.ItemPedido;
 import org.frangosInfinity.core.entity.module.pedido.SubPedido;
 import org.frangosInfinity.infrastructure.persistence.connection.ConnectionFactory;
-import org.frangosInfinity.infrastructure.persistence.module.pedido.ItemPedidoDAO;
+import org.frangosInfinity.infrastructure.persistence.module.pedido.ItemPedidoRepository;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -91,7 +91,7 @@ public class CarrinhoService {
 
         try{
 
-            ItemPedidoDAO itemPedidoDAO = new ItemPedidoDAO(ConnectionFactory.getConnection());
+            ItemPedidoRepository itemPedidoRepository = new ItemPedidoRepository(ConnectionFactory.getConnection());
 
             if (itemPedidoRequestDTO != null && quantidade > 0) {
 
@@ -99,7 +99,7 @@ public class CarrinhoService {
 
                 pedidos.removeIf(item -> item.getId_ItemPedido().equals(itemPedidoRequestDTO.getId_ItemPedido()));
 
-                ItemPedido itemPedido1 = itemPedidoDAO.updateQuantidade(itemPedido,quantidade);
+                ItemPedido itemPedido1 = itemPedidoRepository.updateQuantidade(itemPedido,quantidade);
 
                 pedidos.add(itemPedido1);
 

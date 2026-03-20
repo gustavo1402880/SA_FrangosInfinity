@@ -2,15 +2,15 @@ package org.frangosInfinity.core.service.module.produto;
 import org.frangosInfinity.core.entity.module.produto.Estoque;
 import org.frangosInfinity.core.entity.module.produto.Produto;
 import org.frangosInfinity.infrastructure.persistence.connection.ConnectionFactory;
-import org.frangosInfinity.infrastructure.persistence.module.produto.EstoqueDAO;
+import org.frangosInfinity.infrastructure.persistence.module.produto.EstoqueRepository;
 import java.util.ArrayList;
 
 public class EstoqueService {
 
     public boolean verifiucarDisponibilidade(int quantidade, Produto produto) throws Exception {
 
-        EstoqueDAO estoqueDAO = new EstoqueDAO(ConnectionFactory.getConnection());
-        ArrayList<Estoque> estoques = estoqueDAO.buscarEstoque();
+        EstoqueRepository estoqueRepository = new EstoqueRepository(ConnectionFactory.getConnection());
+        ArrayList<Estoque> estoques = estoqueRepository.buscarEstoque();
 
         for(Estoque e : estoques){
 
@@ -37,7 +37,7 @@ public class EstoqueService {
             throw new Exception("Erro ao diminuir o estoque");
 
         }
-        EstoqueDAO estoqueDAO = new EstoqueDAO(ConnectionFactory.getConnection());
+        EstoqueRepository estoqueRepository = new EstoqueRepository(ConnectionFactory.getConnection());
 
         int quantidadefinal = estoque.getQuantidadeAtual() - quantidade;
 
@@ -47,7 +47,7 @@ public class EstoqueService {
 
         }else{
 
-            estoqueDAO.atualizarQuantidade(quantidadefinal, produto, estoque);
+            estoqueRepository.atualizarQuantidade(quantidadefinal, produto, estoque);
 
         }
 
@@ -60,7 +60,7 @@ public class EstoqueService {
             throw new Exception("Erro ao aumentar o estoque");
 
         }
-        EstoqueDAO estoqueDAO = new EstoqueDAO(ConnectionFactory.getConnection());
+        EstoqueRepository estoqueRepository = new EstoqueRepository(ConnectionFactory.getConnection());
 
         int quantidadefinal = estoque.getQuantidadeAtual() + quantidade;
 
@@ -70,7 +70,7 @@ public class EstoqueService {
 
         }else{
 
-            estoqueDAO.atualizarQuantidade(quantidadefinal, produto, estoque);
+            estoqueRepository.atualizarQuantidade(quantidadefinal, produto, estoque);
 
         }
 
