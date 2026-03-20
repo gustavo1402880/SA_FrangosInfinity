@@ -8,12 +8,12 @@ import java.util.ArrayList;
 public class CarrinhoResponseDTO {
 
     private final Long id_carrinho;
-    private final String cliente_id;
+    private final Long cliente_id;
     private final Date dataCriacao;
     private final ArrayList<ItemPedido> itens;
     private final Double valorTotal;
 
-    public CarrinhoResponseDTO(Long id_carrinho, String cliente_id, Date dataCriacao, ArrayList<ItemPedido> itens, Double valorTotal) {
+    public CarrinhoResponseDTO(Long id_carrinho, Long cliente_id, Date dataCriacao, ArrayList<ItemPedido> itens, Double valorTotal) {
         this.id_carrinho = id_carrinho;
         this.cliente_id = cliente_id;
         this.dataCriacao = dataCriacao;
@@ -25,7 +25,7 @@ public class CarrinhoResponseDTO {
         return id_carrinho;
     }
 
-    public String getCliente_id() {
+    public Long getCliente_id() {
         return cliente_id;
     }
 

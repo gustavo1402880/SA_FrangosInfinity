@@ -144,4 +144,19 @@ public class PedidoService {
 
     }
 
+    public Double calcularTotal(Long id){
+
+        ArrayList<SubPedido> subPedidos = subPedidoDAO.buscarSubPedido();
+
+        Double total = 0.0;
+
+        for(SubPedido subPedido : subPedidos){
+            if (subPedido.getPedidoHub().getId().equals(id)) {
+                total += subPedido.getValorTotal();
+            }
+        }
+
+        return total;
+    }
+
 }

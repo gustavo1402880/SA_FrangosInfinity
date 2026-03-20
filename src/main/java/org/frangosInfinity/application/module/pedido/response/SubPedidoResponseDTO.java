@@ -9,14 +9,14 @@ public class SubPedidoResponseDTO {
 
     private final Long id;
     private final Pedido pedidoHub;
-    private final String clienteID;
+    private final Long clienteID;
     private final Date date;
     private final StatusPedido status;
     private final Double valorTotal;
     private final int tempo_em_minutos;
     private final String obsevacoes;
 
-    public SubPedidoResponseDTO(Long id, Pedido pedidoHub, String clienteID, Date date, StatusPedido status, Double valorTotal, int tempo_em_minutos, String obsevacoes) {
+    public SubPedidoResponseDTO(Long id, Pedido pedidoHub, Long clienteID, Date date, StatusPedido status, Double valorTotal, int tempo_em_minutos, String obsevacoes) {
         this.id = id;
         this.pedidoHub = pedidoHub;
         this.clienteID = clienteID;
@@ -35,7 +35,7 @@ public class SubPedidoResponseDTO {
         return pedidoHub;
     }
 
-    public String getClienteID() {
+    public Long getClienteID() {
         return clienteID;
     }
 

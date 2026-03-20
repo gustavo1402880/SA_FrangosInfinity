@@ -11,7 +11,7 @@ public class SubPedido {
 
     private Long id;
     private Pedido pedidoHub;
-    private String clienteID;
+    private Long clienteID;
     private Date date;
     private StatusPedido status;
     private Double valorTotal;
@@ -22,7 +22,7 @@ public class SubPedido {
 
     public SubPedido(){}
 
-    public SubPedido(Pedido pedidoHub, String clienteID, Date date, StatusPedido status, Double valorTotal, int tempo_em_minutos, String obsevacoes) {
+    public SubPedido(Pedido pedidoHub, Long clienteID, Date date, StatusPedido status, Double valorTotal, int tempo_em_minutos, String obsevacoes) {
         this.pedidoHub = pedidoHub;
         this.clienteID = clienteID;
         this.date = date;
@@ -67,11 +67,11 @@ public class SubPedido {
         this.pedidoHub = pedidoHub;
     }
 
-    public String getClienteID() {
+    public Long getClienteID() {
         return clienteID;
     }
 
-    public void setClienteID(String clienteID) {
+    public void setClienteID(Long clienteID) {
         this.clienteID = clienteID;
     }
 

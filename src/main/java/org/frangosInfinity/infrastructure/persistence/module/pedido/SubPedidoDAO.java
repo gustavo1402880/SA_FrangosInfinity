@@ -26,7 +26,7 @@ public class SubPedidoDAO {
         {
 
             stmt.setLong(1,subPedido.getPedidoHub().getId());
-            stmt.setString(2,subPedido.getClienteID());
+            stmt.setLong(2,subPedido.getClienteID());
             stmt.setDate(3,subPedido.getDate());
             stmt.setInt(4, stats.getCodigo());
             stmt.setDouble(5,subPedido.getValorTotal());
@@ -71,6 +71,33 @@ public class SubPedidoDAO {
         }
 
         return subPedidos;
+    }
+
+    public boolean AtualizarStatusPedido(Long id, int statusPedido){
+
+        String querySQL = "update subpedido set status_id = ? where id = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(querySQL))
+        {
+            stmt.setLong(1,statusPedido);
+            stmt.setLong(2,id);
+
+            int linhasAfetadas = stmt.executeUpdate();
+
+            if (linhasAfetadas > 0)
+            {
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        catch (SQLException e)
+        {
+            System.out.println("Erro ao atualizar pedido: " + e.getMessage());
+        }
+        return false;
+
     }
 
     public SubPedido buscarPorId(Long id){
@@ -127,7 +154,7 @@ public class SubPedidoDAO {
         SubPedido subPedido = new SubPedido();
         Pedido pedido = pedidoDAO.buscarPorId(rs.getLong("numero_pedido"));
         subPedido.setPedidoHub(pedido);
-        subPedido.setClienteID(rs.getString("cliente_id"));
+        subPedido.setClienteID(rs.getLong("cliente_id"));
         subPedido.setDate(rs.getDate("data_hora"));
         subPedido.setStatus(DecidirStatus(rs.getInt("status_id")));
         subPedido.setValorTotal(rs.getDouble("valor_total"));

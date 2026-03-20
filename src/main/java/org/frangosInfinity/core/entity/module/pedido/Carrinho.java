@@ -9,7 +9,7 @@ public class Carrinho {
     // Atributos
 
     private Long id_carrinho;
-    private String cliente_id;
+    private Long cliente_id;
     private Date dataCriacao;
     private ArrayList<ItemPedido> itens;
     private Double valorTotal;
@@ -19,7 +19,7 @@ public class Carrinho {
 
     public Carrinho() {}
 
-    public Carrinho( Date dataCriacao,String cliente_id, ArrayList<ItemPedido> itens, Double valorTotal) {
+    public Carrinho( Date dataCriacao,Long cliente_id, ArrayList<ItemPedido> itens, Double valorTotal) {
         this.cliente_id = cliente_id;
         this.dataCriacao = dataCriacao;
         this.itens = itens;
@@ -61,11 +61,11 @@ public class Carrinho {
         this.valorTotal = valorTotal;
     }
 
-    public String getCliente_id() {
+    public Long getCliente_id() {
         return cliente_id;
     }
 
-    public void setCliente_id(String cliente_id) {
+    public void setCliente_id(Long cliente_id) {
         this.cliente_id = cliente_id;
     }
 

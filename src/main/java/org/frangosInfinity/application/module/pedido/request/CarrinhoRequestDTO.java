@@ -6,11 +6,11 @@ import java.util.ArrayList;
 public class CarrinhoRequestDTO {
 
     private final Long id_carrinho;
-    private final String cliente_id;
+    private final Long cliente_id;
     private final Date dataCriacao;
     private final ArrayList<ItemPedido> itens;
 
-    public CarrinhoRequestDTO(Long id_carrinho, String cliente_id, Date dataCriacao, ArrayList<ItemPedido> itens){
+    public CarrinhoRequestDTO(Long id_carrinho, Long cliente_id, Date dataCriacao, ArrayList<ItemPedido> itens){
 
         if(id_carrinho >= 1 && dataCriacao.after(Date.valueOf("1900-1-1")) && !itens.isEmpty()){
             this.id_carrinho = id_carrinho;
@@ -26,7 +26,7 @@ public class CarrinhoRequestDTO {
         return id_carrinho;
     }
 
-    public String getCliente_id() {
+    public Long getCliente_id() {
         return cliente_id;
     }
 

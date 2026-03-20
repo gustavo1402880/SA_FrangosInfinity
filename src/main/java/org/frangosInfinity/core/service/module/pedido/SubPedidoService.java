@@ -1,15 +1,98 @@
 package org.frangosInfinity.core.service.module.pedido;
 
+import org.frangosInfinity.application.module.pedido.request.PedidoRequestDTO;
+import org.frangosInfinity.application.module.pedido.request.SubPedidoRequestDTO;
+import org.frangosInfinity.application.module.pedido.response.SubPedidoResponseDTO;
+import org.frangosInfinity.core.entity.module.pedido.SubPedido;
+import org.frangosInfinity.core.enums.StatusPedido;
+import org.frangosInfinity.infrastructure.persistence.connection.ConnectionFactory;
+import org.frangosInfinity.infrastructure.persistence.module.pedido.SubPedidoDAO;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+
 public class SubPedidoService {
 
 
-    //+ criarSubPedido(pedidoHubId: Long, cl ienteSessao: St ring, i tens: Li st<I temPedido>):
-    //SubPedido
-    //  + conf i rmarSubPedido(): Boolean
-    //  + consul tarStatus(): StatusPedido
-    //  + cancelarSubPedido(just i f i cat i va: St ring): Boolean
-    //  + l i starHi stori coCl iente(cl ienteSessao: St ring): Li st<SubPedido>
-    //  + sol i ci tarPagamento(): void
-    //  + atual i zarStatusPreparo(status: StatusPedido): void
-    //  + cal cularTotal (): double
+    public SubPedidoResponseDTO criarSubPedido(SubPedidoRequestDTO subPedidoRequestDTO ){
+
+        SubPedido subPedido = new SubPedido();
+
+        subPedidoDAO.adicionarSubPedido(subPedido);
+
+        return new SubPedidoResponseDTO(subPedidoRequestDTO.getClienteID(),subPedidoRequestDTO.getPedidoHub(),subPedidoRequestDTO.getClienteID(),subPedidoRequestDTO.getDate(),subPedidoRequestDTO.getStatus(),subPedidoRequestDTO.getValorTotal(),subPedidoRequestDTO.getTempo_em_minutos(),subPedidoRequestDTO.getObsevacoes());
+
+    }
+
+    public boolean confirmarSubPedido(Long id){
+
+        if(id >= 1) {
+            subPedidoDAO.AtualizarStatusPedido(id, 1);
+
+            return true;
+        }
+
+        return false;
+    }
+    public StatusPedido consultarStatus(Long id){
+
+        SubPedido subPedido = subPedidoDAO.buscarPorId(id);
+
+        return subPedido.getStatus();
+    }
+
+    static SubPedidoDAO subPedidoDAO;
+
+    {
+        try {
+            subPedidoDAO = new SubPedidoDAO(ConnectionFactory.getConnection());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void cancelarSubPedido(Long id ){
+
+        subPedidoDAO.AtualizarStatusPedido(id,5);
+
+    }
+
+    public ArrayList<SubPedido> listarHistoricoCliente(Long id){
+
+
+        ArrayList<SubPedido> subPedidos =  subPedidoDAO.buscarSubPedido();
+
+        ArrayList<SubPedido> subPedidos1 = new ArrayList<>();
+
+        for(SubPedido subPedido: subPedidos){
+
+            if(subPedido.getClienteID().equals(id)){
+
+                subPedidos1.add(subPedido);
+
+            }
+        }
+
+        return subPedidos1;
+    }
+
+    public void solicitarPagamento(Long id ){
+
+        subPedidoDAO.AtualizarStatusPedido(id,6);
+
+    }
+
+    public void AtualizarStatusPreparo(Long id, StatusPedido statusPedido){
+
+        subPedidoDAO.AtualizarStatusPedido(id,statusPedido.getCodigo());
+
+    }
+
+    public Double calcularTotal(SubPedidoRequestDTO subPedidoRequestDTO){
+
+        return subPedidoRequestDTO.getValorTotal();
+
+    }
+
+
 }
