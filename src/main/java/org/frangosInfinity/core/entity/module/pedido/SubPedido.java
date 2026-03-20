@@ -118,6 +118,14 @@ public class SubPedido
         this.valorTotal = valorTotal;
     }
 
+    public List<ItemPedido> getItens() {
+        return itens;
+    }
+
+    public void setItens(List<ItemPedido> itens) {
+        this.itens = itens;
+    }
+
     public void adicionarItem(ItemPedido item)
     {
         itens.add(item);

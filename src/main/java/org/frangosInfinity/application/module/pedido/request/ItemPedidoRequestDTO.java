@@ -1,58 +1,42 @@
 package org.frangosInfinity.application.module.pedido.request;
 
-import org.frangosInfinity.core.entity.module.pedido.ItemPedido;
+public class ItemPedidoRequestDTO
+{
+    private Long produtoId;
 
-public class ItemPedidoRequestDTO {
+    private Integer quantidade;
 
-    private final Long id_ItemPedido;
-    private final Long subPedidoID;
-    private final Long produtoid;
-    private final Integer quantidade;
-    private final Double precoUnitario;
-    private final String Observacao;
-    private final Double subTotal;
+    private String observacao;
 
-    public ItemPedidoRequestDTO(Long id_ItemPedido, Long subPedidoID, Long produtoid, Integer quantidade, Double precoUnitario, String observacao, Double subTotal) {
+    public ItemPedidoRequestDTO() {}
 
-        if(id_ItemPedido >= 1 && subPedidoID >= 1 && produtoid >= 1 && quantidade >= 1 && precoUnitario >= 1 && !observacao.isEmpty() && subTotal >= 1) {
-            this.id_ItemPedido = id_ItemPedido;
-            this.subPedidoID = subPedidoID;
-            this.produtoid = produtoid;
-            this.quantidade = quantidade;
-            this.precoUnitario = precoUnitario;
-            this.Observacao = observacao;
-            this.subTotal = subTotal;
-        }
-
-        throw new IllegalArgumentException("Erro - dados de Item pedido invalidos");
-
+    public Long getProdutoId()
+    {
+        return produtoId;
     }
 
-    public Long getId_ItemPedido() {
-        return id_ItemPedido;
+    public void setProdutoId(Long produtoId)
+    {
+        this.produtoId = produtoId;
     }
 
-    public Long getSubPedidoID() {
-        return subPedidoID;
-    }
-
-    public Long getProdutoid() {
-        return produtoid;
-    }
-
-    public Integer getQuantidade() {
+    public Integer getQuantidade()
+    {
         return quantidade;
     }
 
-    public Double getPrecoUnitario() {
-        return precoUnitario;
+    public void setQuantidade(Integer quantidade)
+    {
+        this.quantidade = quantidade;
     }
 
-    public String getObservacao() {
-        return Observacao;
+    public String getObservacao()
+    {
+        return observacao;
     }
 
-    public Double getSubTotal() {
-        return subTotal;
+    public void setObservacao(String observacao)
+    {
+        this.observacao = observacao;
     }
 }

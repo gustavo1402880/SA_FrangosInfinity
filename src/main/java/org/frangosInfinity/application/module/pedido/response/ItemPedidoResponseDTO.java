@@ -1,50 +1,96 @@
 package org.frangosInfinity.application.module.pedido.response;
 
-public class ItemPedidoResponseDTO {
+import org.frangosInfinity.core.entity.module.pedido.ItemPedido;
 
-    private final Long id_ItemPedido;
-    private final Long subPedidoID;
-    private final Long produtoid;
-    private final Integer quantidade;
-    private final Double precoUnitario;
-    private final String Observacao;
-    private final Double subTotal;
+public class ItemPedidoResponseDTO
+{
+    private Long id;
+    private Long produtoId;
+    private String nomeProduto;
+    private Integer quantidade;
+    private Double precoUnitario;
+    private String observacao;
+    private Double subTotal;
+    private Integer tempoPreparoMinutos;
 
-    public ItemPedidoResponseDTO(Long id_ItemPedido, Long subPedidoID, Long produtoid, Integer quantidade, Double precoUnitario, String observacao, Double subTotal) {
-        this.id_ItemPedido = id_ItemPedido;
-        this.subPedidoID = subPedidoID;
-        this.produtoid = produtoid;
-        this.quantidade = quantidade;
-        this.precoUnitario = precoUnitario;
-        Observacao = observacao;
-        this.subTotal = subTotal;
+    public ItemPedidoResponseDTO() {}
+
+    public static ItemPedidoResponseDTO fromEntity(ItemPedido itemPedido)
+    {
+        ItemPedidoResponseDTO response = new ItemPedidoResponseDTO();
+        response.setId(itemPedido.getId());
+        response.setProdutoId(itemPedido.getProdutoId());
+        response.setNomeProduto(itemPedido.getNomeProduto());
+        response.setQuantidade(itemPedido.getQuantidade());
+        response.setPrecoUnitario(itemPedido.getPrecoUnitario());
+        response.setSubTotal(itemPedido.getSubTotal());
+        response.setTempoPreparoMinutos(itemPedido.getTempoPreparoEstimado());
+        response.setObservacao(itemPedido.getObservacao());
+
+        return response;
     }
 
-    public Long getId_ItemPedido() {
-        return id_ItemPedido;
+    public Long getId() {
+        return id;
     }
 
-    public Long getSubPedidoID() {
-        return subPedidoID;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public Long getProdutoid() {
-        return produtoid;
+    public Long getProdutoId() {
+        return produtoId;
+    }
+
+    public void setProdutoId(Long produtoId) {
+        this.produtoId = produtoId;
+    }
+
+    public String getNomeProduto() {
+        return nomeProduto;
+    }
+
+    public void setNomeProduto(String nomeProduto) {
+        this.nomeProduto = nomeProduto;
     }
 
     public Integer getQuantidade() {
         return quantidade;
     }
 
+    public void setQuantidade(Integer quantidade) {
+        this.quantidade = quantidade;
+    }
+
     public Double getPrecoUnitario() {
         return precoUnitario;
     }
 
+    public void setPrecoUnitario(Double precoUnitario) {
+        this.precoUnitario = precoUnitario;
+    }
+
     public String getObservacao() {
-        return Observacao;
+        return observacao;
+    }
+
+    public void setObservacao(String observacao) {
+        this.observacao = observacao;
     }
 
     public Double getSubTotal() {
         return subTotal;
+    }
+
+    public void setSubTotal(Double subTotal) {
+        this.subTotal = subTotal;
+    }
+
+    public Integer getTempoPreparoMinutos() {
+        return tempoPreparoMinutos;
+    }
+
+    public void setTempoPreparoMinutos(Integer tempoPreparoMinutos) {
+        this.tempoPreparoMinutos = tempoPreparoMinutos;
     }
 }

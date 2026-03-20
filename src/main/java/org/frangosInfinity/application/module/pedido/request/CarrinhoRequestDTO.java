@@ -3,38 +3,41 @@ import org.frangosInfinity.core.entity.module.pedido.ItemPedido;
 import java.sql.Date;
 import java.util.ArrayList;
 
-public class CarrinhoRequestDTO {
+public class CarrinhoRequestDTO
+{
+    private Long produtoId;
+    private Integer quantidade;
+    private String observacao;
 
-    private final Long id_carrinho;
-    private final String cliente_id;
-    private final Date dataCriacao;
-    private final ArrayList<ItemPedido> itens;
+    public CarrinhoRequestDTO() {}
 
-    public CarrinhoRequestDTO(Long id_carrinho, String cliente_id, Date dataCriacao, ArrayList<ItemPedido> itens){
-
-        if(id_carrinho >= 1 && dataCriacao.after(Date.valueOf("1900-1-1")) && !itens.isEmpty()){
-            this.id_carrinho = id_carrinho;
-            this.cliente_id = cliente_id;
-            this.dataCriacao = dataCriacao;
-            this.itens = itens;
-        }
-
-        throw new IllegalArgumentException("Erro - valores de carrinho estão no formato incorreto");
+    public Long getProdutoId()
+    {
+        return produtoId;
     }
 
-    public Long getId_carrinho() {
-        return id_carrinho;
+    public void setProdutoId(Long produtoId)
+    {
+        this.produtoId = produtoId;
     }
 
-    public String getCliente_id() {
-        return cliente_id;
+    public Integer getQuantidade()
+    {
+        return quantidade;
     }
 
-    public Date getDataCriacao() {
-        return dataCriacao;
+    public void setQuantidade(Integer quantidade)
+    {
+        this.quantidade = quantidade;
     }
 
-    public ArrayList<ItemPedido> getItens() {
-        return itens;
+    public String getObservacao()
+    {
+        return observacao;
+    }
+
+    public void setObservacao(String observacao)
+    {
+        this.observacao = observacao;
     }
 }

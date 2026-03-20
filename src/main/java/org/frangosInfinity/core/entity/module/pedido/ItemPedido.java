@@ -17,6 +17,9 @@ public class ItemPedido
     @Column(name = "produto_id", nullable = false)
     private Long produtoId;
 
+    @Column(nullable = false, length = 100)
+    private String nomeProduto;
+
     @Column(nullable = false)
     private Integer quantidade;
 
@@ -70,6 +73,16 @@ public class ItemPedido
     public void setProdutoId(Long produtoId)
     {
         this.produtoId = produtoId;
+    }
+
+    public String getNomeProduto()
+    {
+        return nomeProduto;
+    }
+
+    public void setNomeProduto(String nomeProduto)
+    {
+        this.nomeProduto = nomeProduto;
     }
 
     public Integer getQuantidade()

@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @RedisHash(value = "carrinho", timeToLive = 3600)
@@ -28,7 +29,7 @@ public class Carrinho implements Serializable
 
     private LocalDateTime dataAtualizacao;
 
-    private ArrayList<ItemCarrinho> itens;
+    private List<ItemCarrinho> itens;
 
     public Carrinho()
     {
@@ -104,12 +105,12 @@ public class Carrinho implements Serializable
         this.dataAtualizacao = dataAtualizacao;
     }
 
-    public ArrayList<ItemCarrinho> getItens()
+    public List<ItemCarrinho> getItens()
     {
         return itens;
     }
 
-    public void setItens(ArrayList<ItemCarrinho> itens)
+    public void setItens(List<ItemCarrinho> itens)
     {
         this.itens = itens;
     }
