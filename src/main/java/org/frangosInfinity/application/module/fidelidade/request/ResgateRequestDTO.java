@@ -8,7 +8,10 @@ public class ResgateRequestDTO
     private Long pedidoId;
     private String descricao;
 
-    private ResgateRequestDTO() {}
+    public ResgateRequestDTO() {}
+
+    public ResgateRequestDTO(Long id, Integer pontos, Double valor) {
+    }
 
     public Long getClienteId()
     {

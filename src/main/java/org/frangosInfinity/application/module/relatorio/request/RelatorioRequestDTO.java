@@ -22,6 +22,11 @@ public class RelatorioRequestDTO
         this.ticketMedio = ticketMedio;
     }
 
+    public RelatorioRequestDTO(LocalDateTime periodoInicio, LocalDateTime periodoFim) {
+        this.periodoInicio = periodoInicio;
+        this.periodoFim = periodoFim;
+    }
+
     public LocalDateTime getPeriodoInicio() {
         return periodoInicio;
     }

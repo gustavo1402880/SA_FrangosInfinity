@@ -16,6 +16,9 @@ public class MesaRequestDTO
         this.localizacao = localizacao;
     }
 
+    public MesaRequestDTO(int numero, int capacidade) {
+    }
+
     public Integer getNumero()
     {
         return numero;

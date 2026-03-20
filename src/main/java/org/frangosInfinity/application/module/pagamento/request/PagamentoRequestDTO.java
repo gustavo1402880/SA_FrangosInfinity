@@ -17,6 +17,9 @@ public class PagamentoRequestDTO
         this.tipo = tipo;
     }
 
+    public PagamentoRequestDTO(Long id, Double valor) {
+    }
+
     public Long getSubPedidoId() {
         return subPedidoId;
     }
