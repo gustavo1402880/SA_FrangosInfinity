@@ -2,12 +2,13 @@ package org.frangosInfinity.core.enums;
 
 public enum StatusPedido
 {
-    CONFIMADO(1),
-    EM_PREPARO(2),
-    PRONTO(3),
-    ENTREGUE(4),
-    CANCELADO(5),
-    PAGO(6);
+    PENDENTE(1),
+    CONFIMADO(2),
+    EM_PREPARO(3),
+    PRONTO(4),
+    ENTREGUE(5),
+    CANCELADO(6),
+    PAGO(7);
 
     private int codigo;
 

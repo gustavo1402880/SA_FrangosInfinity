@@ -1,39 +1,58 @@
 package org.frangosInfinity.core.entity.module.pedido;
 
+import jakarta.persistence.*;
 import org.frangosInfinity.core.enums.StatusPedido;
 
 import java.sql.Date;
 import java.time.LocalDateTime;
+import java.util.List;
 
-public class SubPedido {
-
-    // Atributos
-
+@Entity
+@Table(name = "sub_pedido")
+public class SubPedido
+{
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Pedido pedidoHub;
-    private String clienteID;
-    private Date date;
+
+    @ManyToOne()
+    @JoinColumn(name = "pedido_id", nullable = false)
+    private Pedido pedido;
+
+    @Column(name = "cliente_id", nullable = false)
+    private Long clienteID;
+
+    @Column(name = "data_hora", nullable = false)
+    private LocalDateTime dataHora;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status_pedido", nullable = false)
     private StatusPedido status;
+
+    @Column(name = "valor_total", nullable = false)
     private Double valorTotal;
-    private int tempo_em_minutos;
+
+    @Column(name = "tempo_preparo_minutos")
+    private Integer tempo_em_minutos;
+
+    @Column(length = 500)
     private String obsevacoes;
 
-    // Construtores
+    @OneToMany(mappedBy = "subPedido", cascade = CascadeType.ALL)
+    private List<ItemPedido> itens;
 
-    public SubPedido(){}
-
-    public SubPedido(Pedido pedidoHub, String clienteID, Date date, StatusPedido status, Double valorTotal, int tempo_em_minutos, String obsevacoes) {
-        this.pedidoHub = pedidoHub;
-        this.clienteID = clienteID;
-        this.date = date;
-        this.status = status;
-        this.valorTotal = valorTotal;
-        this.tempo_em_minutos = tempo_em_minutos;
-        this.obsevacoes = obsevacoes;
+    public SubPedido()
+    {
+        this.dataHora = LocalDateTime.now();
+        this.status = StatusPedido.PENDENTE;
     }
 
-    // Getters & Setters
-
+    public SubPedido(Pedido pedidoHub, Long clienteID)
+    {
+        this();
+        this.pedido = pedidoHub;
+        this.clienteID = clienteID;
+    }
 
     public void setObsevacoes(String obsevacoes) {
         this.obsevacoes = obsevacoes;
@@ -59,28 +78,28 @@ public class SubPedido {
         this.id = id;
     }
 
-    public Pedido getPedidoHub() {
-        return pedidoHub;
+    public Pedido getPedido() {
+        return pedido;
     }
 
-    public void setPedidoHub(Pedido pedidoHub) {
-        this.pedidoHub = pedidoHub;
+    public void setPedido(Pedido pedido) {
+        this.pedido = pedido;
     }
 
-    public String getClienteID() {
+    public Long getClienteID() {
         return clienteID;
     }
 
-    public void setClienteID(String clienteID) {
+    public void setClienteID(Long clienteID) {
         this.clienteID = clienteID;
     }
 
-    public java.sql.Date getDate() {
-        return date;
+    public LocalDateTime getDate() {
+        return dataHora;
     }
 
-    public void setDate(Date date) {
-        this.date = date;
+    public void setDate(LocalDateTime date) {
+        this.dataHora = date;
     }
 
     public StatusPedido getStatus() {
@@ -99,5 +118,24 @@ public class SubPedido {
         this.valorTotal = valorTotal;
     }
 
-    // Metodos
+    public void adicionarItem(ItemPedido item)
+    {
+        itens.add(item);
+    }
+
+    public void recalcularValorTotal()
+    {
+        this.valorTotal = itens.stream()
+                .mapToDouble(ItemPedido::getSubTotal)
+                .max()
+                .orElse(0);
+    }
+
+    public void recalcularTempoPreparo()
+    {
+        this.tempo_em_minutos = itens.stream()
+                .mapToInt(ItemPedido::getTempoPreparoEstimado)
+                .max()
+                .orElse(0);
+    }
 }

@@ -1,121 +1,269 @@
 package org.frangosInfinity.core.entity.module.pedido;
+import jakarta.mail.FetchProfile;
+import jakarta.persistence.Id;
 import org.frangosInfinity.core.enums.StatusPedido;
+import org.springframework.data.redis.core.RedisHash;
+import org.springframework.data.redis.core.index.Indexed;
+
+import java.io.Serializable;
 import java.sql.Date;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.UUID;
 
+@RedisHash(value = "carrinho", timeToLive = 3600)
+public class Carrinho implements Serializable
+{
+    @Id
+    private String id;
 
-public class Carrinho {
+    @Indexed
+    private String sessaoId;
 
-    // Atributos
+    private Long mesaId;
 
-    private Long id_carrinho;
-    private String cliente_id;
-    private Date dataCriacao;
-    private ArrayList<ItemPedido> itens;
-    private Double valorTotal;
+    private Long clienteId;
 
-    // Contrutores
+    private LocalDateTime dataCriacao;
 
+    private LocalDateTime dataAtualizacao;
 
-    public Carrinho() {}
+    private ArrayList<ItemCarrinho> itens;
 
-    public Carrinho( Date dataCriacao,String cliente_id, ArrayList<ItemPedido> itens, Double valorTotal) {
-        this.cliente_id = cliente_id;
-        this.dataCriacao = dataCriacao;
-        this.itens = itens;
-        this.valorTotal = valorTotal;
+    public Carrinho()
+    {
+        this.id = UUID.randomUUID().toString();
+        this.dataCriacao = LocalDateTime.now();
+        this.dataAtualizacao = LocalDateTime.now();
     }
 
-    // Getters & Setters
-
-
-    public Long getId_carrinho() {
-        return id_carrinho;
+    public Carrinho(String sessaoId, Long mesaId)
+    {
+        this();
+        this.sessaoId = sessaoId;
+        this.mesaId = mesaId;
     }
 
-    public void setId_carrinho(Long id_carrinho) {
-        this.id_carrinho = id_carrinho;
+    public String getId()
+    {
+        return id;
     }
 
-    public java.sql.Date getDataCriacao() {
+    public void setId(String id)
+    {
+        this.id = id;
+    }
+
+    public String getSessaoId()
+    {
+        return sessaoId;
+    }
+
+    public void setSessaoId(String sessaoId)
+    {
+        this.sessaoId = sessaoId;
+    }
+
+    public Long getMesaId()
+    {
+        return mesaId;
+    }
+
+    public void setMesaId(Long mesaId)
+    {
+        this.mesaId = mesaId;
+    }
+
+    public Long getClienteId()
+    {
+        return clienteId;
+    }
+
+    public void setClienteId(Long clienteId)
+    {
+        this.clienteId = clienteId;
+    }
+
+    public LocalDateTime getDataCriacao()
+    {
         return dataCriacao;
     }
 
-    public void setDataCriacao(Date dataCriacao) {
+    public void setDataCriacao(LocalDateTime dataCriacao)
+    {
         this.dataCriacao = dataCriacao;
     }
 
-    public ArrayList<ItemPedido> getItens() {
+    public LocalDateTime getDataAtualizacao()
+    {
+        return dataAtualizacao;
+    }
+
+    public void setDataAtualizacao(LocalDateTime dataAtualizacao)
+    {
+        this.dataAtualizacao = dataAtualizacao;
+    }
+
+    public ArrayList<ItemCarrinho> getItens()
+    {
         return itens;
     }
 
-    public void setItens(ArrayList<ItemPedido> itens) {
+    public void setItens(ArrayList<ItemCarrinho> itens)
+    {
         this.itens = itens;
     }
 
-    public Double getValorTotal() {
-        return valorTotal;
-    }
+    public static class ItemCarrinho implements Serializable
+    {
+        private Long produtoId;
+        private String nome;
+        private Integer quantidade;
+        private Double precoUnitario;
+        private String observacao;
+        private Integer tempoPreparoEstimado;
 
-    public void setValorTotal(Double valorTotal) {
-        this.valorTotal = valorTotal;
-    }
+        public ItemCarrinho() {}
 
-    public String getCliente_id() {
-        return cliente_id;
-    }
+        public ItemCarrinho(Long produtoId, String nome, Integer quantidade, Double preUnitario, Integer tempoPreparoEstimado)
+        {
+            this.produtoId = produtoId;
+            this.nome = nome;
+            this.quantidade = quantidade;
+            this.precoUnitario = preUnitario;
+            this.tempoPreparoEstimado = tempoPreparoEstimado;
 
-    public void setCliente_id(String cliente_id) {
-        this.cliente_id = cliente_id;
-    }
 
-    // Metodos
+        }
 
-    public void adicionarItem(ItemPedido itemPedido){
-        itens.add(itemPedido);
-    }
+        public Long getProdutoId() {
+            return produtoId;
+        }
 
-    public void removerItem(ItemPedido itemPedido){
-        itens.remove(itemPedido);
-    }
+        public void setProdutoId(Long produtoId) {
+            this.produtoId = produtoId;
+        }
 
-    public void alterarQuantidade(Long itenID, int quantidade){
+        public String getNome() {
+            return nome;
+        }
 
-        for(ItemPedido i : itens){
-            if(itenID.equals(i.getId_ItemPedido())){
-                i.setQuantidade(quantidade);
-                itens.set( itens.indexOf(i), i);
-            }
+        public void setNome(String nome) {
+            this.nome = nome;
+        }
+
+        public Integer getQuantidade() {
+            return quantidade;
+        }
+
+        public void setQuantidade(Integer quantidade) {
+            this.quantidade = quantidade;
+        }
+
+        public Double getPrecoUnitario() {
+            return precoUnitario;
+        }
+
+        public void setPrecoUnitario(Double precoUnitario) {
+            this.precoUnitario = precoUnitario;
+        }
+
+        public String getObservacao() {
+            return observacao;
+        }
+
+        public void setObservacao(String observacao) {
+            this.observacao = observacao;
+        }
+
+        public Integer getTempoPreparoEstimado() {
+            return tempoPreparoEstimado;
+        }
+
+        public void setTempoPreparoEstimado(Integer tempoPreparoEstimado) {
+            this.tempoPreparoEstimado = tempoPreparoEstimado;
+        }
+
+        public Double getSubTotal()
+        {
+            return quantidade * precoUnitario;
         }
     }
 
-    public ArrayList<ItemPedido> verItens(){
-
-    return itens;
+    public void adicionarItem(ItemCarrinho item)
+    {
+        for (ItemCarrinho i : itens)
+        {
+            if (i.getProdutoId().equals(item.getProdutoId()) &&
+                    (i.getObservacao() == null ? item.getObservacao() == null :
+                            i.getObservacao().equals(item.getObservacao())))
+            {
+                i.setQuantidade(i.getQuantidade() + item.getQuantidade());
+                this.dataAtualizacao = LocalDateTime.now();
+                return;
+            }
+        }
+        itens.add(item);
+        this.dataAtualizacao = LocalDateTime.now();
     }
 
-    public double calcularTotal(){
-
-    double total = 0;
-
-    for(ItemPedido i : itens){
-        total += i.getSubTotal();
+    public void removerItem(int index)
+    {
+        if (index >= 0 && index < itens.size())
+        {
+            itens.remove(index);
+            this.dataAtualizacao = LocalDateTime.now();
+        }
     }
 
-    return total;
-
+    public void atualizarQuantidade(int index, int quantidade)
+    {
+        if (index >= 0 && index < itens.size())
+        {
+            ItemCarrinho item = itens.get(index);
+            if (quantidade <= 0)
+            {
+                itens.remove(index);
+            }
+            this.dataAtualizacao = LocalDateTime.now();
+        }
     }
 
-    public void limpar(){
-
-    itens.clear();
-
+    public Double getValorTotal()
+    {
+        return itens.stream()
+                .mapToDouble(ItemCarrinho::getSubTotal)
+                .sum();
     }
 
-    public SubPedido converterParaSubPedido(Pedido pedidoHubId, String observacao, int tempo){
-
-        return new SubPedido(pedidoHubId,cliente_id,dataCriacao, StatusPedido.CONFIMADO,calcularTotal(), tempo,observacao);
-
+    public Integer getTotalItens()
+    {
+        return itens.stream()
+                .mapToInt(ItemCarrinho::getQuantidade)
+                .sum();
     }
 
+    public SubPedido converterParaSubPedido(Pedido pedido, Long clienteId)
+    {
+        SubPedido subPedido = new SubPedido(pedido, clienteId);
+        subPedido.setObsevacoes("Pedido via autoatendimento");
+
+        for (ItemCarrinho itemCarrinho : itens)
+        {
+            ItemPedido item = new ItemPedido(
+                    itemCarrinho.getProdutoId(),
+                    itemCarrinho.getQuantidade(),
+                    itemCarrinho.getPrecoUnitario(),
+                    itemCarrinho.getTempoPreparoEstimado()
+                    );
+            item.setObservacao(itemCarrinho.getObservacao());
+            subPedido.adicionarItem(item);
+        }
+        return subPedido;
+    }
+
+    public Boolean isExpirado()
+    {
+        return LocalDateTime.now().isAfter(dataAtualizacao.plusHours(1));
+    }
 }

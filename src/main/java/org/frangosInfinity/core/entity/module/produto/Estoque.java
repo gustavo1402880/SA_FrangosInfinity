@@ -1,66 +1,141 @@
 package org.frangosInfinity.core.entity.module.produto;
 
-public class Estoque {
+import jakarta.persistence.*;
+import org.frangosInfinity.core.entity.exception.BusinessException;
 
-    // Atributos
+import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "estoque")
+public class Estoque
+{
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Produto produto;
-    private int quantidadeAtual;
-    private int quantidadeMinima;
-    private int quantidadeMaxima;
 
-    // Construtor
+    @OneToOne
+    @JoinColumn(name = "produto_id", unique = true, nullable = false)
+    private Produto produto;
+
+    @Column(name = "quantidade_atual", nullable = false)
+    private Integer quantidadeAtual;
+
+    @Column(name = "quantidade_minima")
+    private Integer quantidadeMinima;
+
+    @Column(name = "quantidade_maxima")
+    private Integer quantidadeMaxima;
+
+    @Column(name = "ultima_atualizacao")
+    private LocalDateTime dataAtualizacao;
 
     public Estoque() {}
 
-    public Estoque(Long id, Produto produto, int quantidadeAtual, int quantidadeMinima, int quantidadeMaxima) {
-        this.id = id;
+    public Estoque(Produto produto)
+    {
+        this.produto = produto;
+        this.quantidadeAtual = 0;
+        this.quantidadeMinima = 5;
+        this.dataAtualizacao = LocalDateTime.now();
+    }
+
+    public Estoque(Produto produto, Integer quantidadeAtual, Integer quantidadeMinima, Integer quantidadeMaxima)
+    {
         this.produto = produto;
         this.quantidadeAtual = quantidadeAtual;
         this.quantidadeMinima = quantidadeMinima;
         this.quantidadeMaxima = quantidadeMaxima;
+        this.dataAtualizacao = LocalDateTime.now();
     }
 
-    // Getters & Setters
-
-    public Long getId() {
+    public Long getId()
+    {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Long id)
+    {
         this.id = id;
     }
 
-    public Produto getProduto() {
+    public Produto getProduto()
+    {
         return produto;
     }
 
-    public void setProduto(Produto produto) {
+    public void setProduto(Produto produto)
+    {
         this.produto = produto;
     }
 
-    public int getQuantidadeAtual() {
+    public Integer getQuantidadeAtual()
+    {
         return quantidadeAtual;
     }
 
-    public void setQuantidadeAtual(int quantidadeAtual) {
+    public void setQuantidadeAtual(Integer quantidadeAtual)
+    {
         this.quantidadeAtual = quantidadeAtual;
     }
 
-    public int getQuantidadeMinima() {
+    public Integer getQuantidadeMinima()
+    {
         return quantidadeMinima;
     }
 
-    public void setQuantidadeMinima(int quantidadeMinima) {
+    public void setQuantidadeMinima(Integer quantidadeMinima)
+    {
         this.quantidadeMinima = quantidadeMinima;
     }
 
-    public int getQuantidadeMaxima() {
+    public Integer getQuantidadeMaxima()
+    {
         return quantidadeMaxima;
     }
 
-    public void setQuantidadeMaxima(int quantidadeMaxima) {
+    public void setQuantidadeMaxima(Integer quantidadeMaxima)
+    {
         this.quantidadeMaxima = quantidadeMaxima;
+    }
+
+    public LocalDateTime getDataAtualizacao()
+    {
+        return dataAtualizacao;
+    }
+
+    public void setDataAtualizacao(LocalDateTime dataAtualizacao)
+    {
+        this.dataAtualizacao = dataAtualizacao;
+    }
+
+    public Boolean temEstoque(Integer quantidadeRequisitada)
+    {
+        return quantidadeAtual >= quantidadeRequisitada;
+    }
+
+    public void baixarEstoque(Integer quantidadade)
+    {
+        if (!temEstoque(quantidadade))
+        {
+            throw new BusinessException("Estoque insuficiente!");
+        }
+        this.quantidadeAtual -= quantidadade;
+        this.dataAtualizacao = LocalDateTime.now();
+    }
+
+    public void reporEstoque(Integer quantidade)
+    {
+        this.quantidadeAtual += quantidade;
+        this.dataAtualizacao = LocalDateTime.now();
+    }
+
+    public Boolean isEstoqueBaixo()
+    {
+        return quantidadeAtual <= quantidadeMinima;
+    }
+
+    public Boolean isEstoqueExcessivo()
+    {
+        return quantidadeAtual >= quantidadeMaxima;
     }
 }

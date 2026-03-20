@@ -1,36 +1,50 @@
 package org.frangosInfinity.core.entity.module.pedido;
+import jakarta.persistence.*;
 import org.frangosInfinity.core.enums.StatusPedido;
 
 import java.sql.Date;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
+@Entity
+@Table(name = "pedido")
 public class Pedido {
-
-    // Atributos
-
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "numero_pedido", unique = true, nullable = false, length = 20)
     private String numeroPedido;
-    private java.sql.Date dataHora;
-    private StatusPedido status;
-    private Long mesa_id;
-    private Long atendente_id;
+
+    @Column(name = "data_hora", nullable = false)
+    private LocalDateTime dataHora;
+
+    @Column(name = "mesa_id", nullable = false)
+    private Long mesaId;
+
+    @Column(name = "atendente_id", nullable = false)
+    private Long atendenteId;
+
+    @Column(nullable = false)
     private String tipo;
 
-    // Construtores
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<SubPedido> subPedidos;
 
-    public Pedido(){}
-
-    public Pedido(String numeroPedido, java.sql.Date dataHora, StatusPedido status, Long mesa, Long atendente, String tipo) {
-        this.numeroPedido = numeroPedido;
-        this.dataHora = dataHora;
-        this.status = status;
-        this.mesa_id = mesa;
-        this.atendente_id = atendente;
-        this.tipo = tipo;
+    public Pedido()
+    {
+        this.numeroPedido = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        this.dataHora = LocalDateTime.now();
     }
 
-    // Getters & Setters
-
+    public Pedido(String tipo, Long mesaId, Long atendenteId) {
+        this();
+        this.tipo = tipo;
+        this.mesaId = mesaId;
+        this.atendenteId = atendenteId;
+    }
 
     public Long getId() {
         return id;
@@ -40,20 +54,20 @@ public class Pedido {
         this.id = id;
     }
 
-    public Long getAtendente_id() {
-        return atendente_id;
+    public Long getAtendenteId() {
+        return atendenteId;
     }
 
-    public void setAtendente_id(Long atendente_id) {
-        this.atendente_id = atendente_id;
+    public void setAtendenteId(Long atendenteId) {
+        this.atendenteId = atendenteId;
     }
 
-    public Long getMesa_id() {
-        return mesa_id;
+    public Long getMesaId() {
+        return mesaId;
     }
 
-    public void setMesa_id(Long mesa_id) {
-        this.mesa_id = mesa_id;
+    public void setMesaId(Long mesa_id) {
+        this.mesaId = mesa_id;
     }
 
     public String getNumeroPedido() {
@@ -64,36 +78,12 @@ public class Pedido {
         this.numeroPedido = numeroPedido;
     }
 
-    public java.sql.Date getDataHora() {
+    public LocalDateTime getDataHora() {
         return dataHora;
     }
 
-    public void setDataHora(java.sql.Date dataHora) {
+    public void setDataHora(LocalDateTime dataHora) {
         this.dataHora = dataHora;
-    }
-
-    public StatusPedido getStatus() {
-        return status;
-    }
-
-    public void setStatus(StatusPedido status) {
-        this.status = status;
-    }
-
-    public Long getMesa() {
-        return mesa_id;
-    }
-
-    public void setMesa(Long mesa) {
-        this.mesa_id = mesa;
-    }
-
-    public Long getAtendente() {
-        return atendente_id;
-    }
-
-    public void setAtendente(Long atendente) {
-        this.atendente_id = atendente;
     }
 
     public String getTipo() {
@@ -104,6 +94,31 @@ public class Pedido {
         this.tipo = tipo;
     }
 
-    // Métodos
+    public List<SubPedido> getSubPedidos()
+    {
+        return subPedidos;
+    }
 
+    public void setSubPedidos(List<SubPedido> subPedidos)
+    {
+        this.subPedidos = subPedidos;
+    }
+
+    public void adicionarSubPedido(SubPedido subPedido)
+    {
+        subPedidos.add(subPedido);
+        subPedido.setPedido(this);
+    }
+
+    public Double getValorTotal()
+    {
+        return subPedidos.stream()
+                .mapToDouble(SubPedido::getValorTotal)
+                .sum();
+    }
+
+    public Boolean isPedidoCompartilhado()
+    {
+        return subPedidos.size() > 1;
+    }
 }

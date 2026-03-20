@@ -1,99 +1,130 @@
 package org.frangosInfinity.core.entity.module.pedido;
 
-public class ItemPedido {
+import jakarta.persistence.*;
 
-    // Atributos
+@Entity
+@Table(name = "item_pedido")
+public class ItemPedido
+{
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    private Long id_ItemPedido;
-    private Long subPedidoID;
-    private Long produtoid;
+    @ManyToOne()
+    @JoinColumn(name = "sub_pedido_id", nullable = false)
+    private SubPedido subPedido;
+
+    @Column(name = "produto_id", nullable = false)
+    private Long produtoId;
+
+    @Column(nullable = false)
     private Integer quantidade;
-    private Double precoUnitario;
+
+    @Column(length = 500)
     private String Observacao;
+
+    @Column(name = "preco_unitario", nullable = false)
+    private Double precoUnitario;
+
+    @Column(name = "sub_total", nullable = false)
     private Double subTotal;
 
-    // Construtores
-
+    @Column(name = "tempo_preparo_minutos", nullable = false)
+    private Integer tempoPreparoEstimado;
 
     public ItemPedido() {}
 
-    public ItemPedido(Long id_ItemPedido,Long subPedido,Long produto, Integer quantidade, Double precoUnitario, String observacao, Double subTotal) {
-        this.id_ItemPedido = id_ItemPedido;
-        this.subPedidoID = subPedido;
-        this.produtoid = produto;
+    public ItemPedido(Long produtoId, Integer quantidade, Double precoUnitario, Integer tempoPreparoEstimado)
+    {
+        this.produtoId = produtoId;
         this.quantidade = quantidade;
         this.precoUnitario = precoUnitario;
-        Observacao = observacao;
-        this.subTotal = subTotal;
+        this.tempoPreparoEstimado = tempoPreparoEstimado;
+        this.subTotal = calcularSubTotal();
     }
 
-    // Getters & Setters
-
-
-    public Long getId_ItemPedido() {
-        return id_ItemPedido;
+    public Long getId() {
+        return id;
     }
 
-    public void setId_ItemPedido(Long id_ItemPedido) {
-        this.id_ItemPedido = id_ItemPedido;
+    public void setId(Long id)
+    {
+        this.id = id;
     }
 
-    public Long getProduto() {
-        return produtoid;
+    public SubPedido getSubPedido()
+    {
+        return subPedido;
     }
 
-    public void setProduto(Long produto) {
-        this.produtoid = produto;
+    public void setSubPedido(SubPedido subPedido)
+    {
+        this.subPedido = subPedido;
     }
 
-    public Long getSubPedido() {
-        return subPedidoID;
+    public Long getProdutoId()
+    {
+        return produtoId;
     }
 
-    public void setSubPedido(Long subPedido) {
-        this.subPedidoID = subPedido;
+    public void setProdutoId(Long produtoId)
+    {
+        this.produtoId = produtoId;
     }
 
-    public Integer getQuantidade() {
+    public Integer getQuantidade()
+    {
         return quantidade;
     }
 
-    public void setQuantidade(Integer quantidade) {
+    public void setQuantidade(Integer quantidade)
+    {
         this.quantidade = quantidade;
+        this.subTotal = calcularSubTotal();
     }
 
-    public Double getPrecoUnitario() {
-        return precoUnitario;
-    }
-
-    public void setPrecoUnitario(Double precoUnitario) {
-        this.precoUnitario = precoUnitario;
-    }
-
-    public String getObservacao() {
+    public String getObservacao()
+    {
         return Observacao;
     }
 
-    public void setObservacao(String observacao) {
+    public void setObservacao(String observacao)
+    {
         Observacao = observacao;
     }
 
-    public Double getSubTotal() {
+    public Double getPrecoUnitario()
+    {
+        return precoUnitario;
+    }
+
+    public void setPrecoUnitario(Double precoUnitario)
+    {
+        this.precoUnitario = precoUnitario;
+    }
+
+    public Double getSubTotal()
+    {
         return subTotal;
     }
 
-    public void setSubTotal(Double subTotal) {
+    public void setSubTotal(Double subTotal)
+    {
         this.subTotal = subTotal;
     }
 
-    // Metodos
+    public Integer getTempoPreparoEstimado()
+    {
+        return tempoPreparoEstimado;
+    }
 
-    public Double calcularSubTotal(){
+    public void setTempoPreparoEstimado(Integer tempoPreparoEstimado)
+    {
+        this.tempoPreparoEstimado = tempoPreparoEstimado;
+    }
 
-        double Subtotal;
-
-        subTotal = quantidade * precoUnitario;
-
-        return subTotal;
+    public Double calcularSubTotal()
+    {
+        return quantidade * precoUnitario;
     }
 }

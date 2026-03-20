@@ -19,7 +19,7 @@ public class ComprovanteResponseDTO
     {
         ComprovanteResponseDTO response = new ComprovanteResponseDTO();
         response.setId(comprovante.getId());
-        response.setPagamentoId(comprovante.getIdPagamento());
+        response.setPagamentoId(comprovante.getPagamento().getId_Pagamento());
         response.setNumero(comprovante.getNumero());
         response.setDataHora(comprovante.getDataHora().toString());
         response.setValorTotal(comprovante.getValorTotal());
