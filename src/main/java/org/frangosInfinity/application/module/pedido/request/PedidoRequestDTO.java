@@ -14,9 +14,8 @@ public class PedidoRequestDTO {
     private final Long atendente_id;
     private final String tipo;
 
-    public PedidoRequestDTO(Long id, String numeroPedido, Date dataHora, StatusPedido status, Long mesa_id, Long atendente_id, String tipo) {
-        if(id >= 1 && !numeroPedido.isEmpty() && dataHora.after(Date.valueOf("1900-1-1")) && status != null && mesa_id >= 1 && atendente_id >= 1 && tipo.isEmpty()) {
-            this.id = id;
+    public PedidoRequestDTO( String numeroPedido, Date dataHora, StatusPedido status, Long mesa_id, Long atendente_id, String tipo) {
+        if( !numeroPedido.isEmpty() && dataHora.after(Date.valueOf("1900-1-1")) && status != null && mesa_id >= 1 && atendente_id >= 1 && tipo.isEmpty()) {
             this.numeroPedido = numeroPedido;
             this.dataHora = dataHora;
             this.status = status;

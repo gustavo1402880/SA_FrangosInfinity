@@ -116,6 +116,82 @@ public class PedidoDAO {
 
     }
 
+    public ArrayList<Pedido> listarPedidosPorStatus(String query){
+
+        ArrayList<Pedido> pedidos = new ArrayList<>();
+
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(query))
+        {
+            while (rs.next())
+            {
+                pedidos.add(mapearPedido(rs));
+            }
+
+            return pedidos;
+        }
+        catch (SQLException e)
+        {
+            System.out.println("Erro ao listar pedidos pendentes: " + e.getMessage());
+        }
+
+        return null;
+
+    }
+
+    public ArrayList<Pedido> listarPedidoPorTempo(){
+
+        ArrayList<Pedido> pedidos = new ArrayList<>();
+
+        String querySQL = "select * from pedido\n" +
+                "        order by data_hora";
+
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(querySQL))
+        {
+            while (rs.next())
+            {
+                pedidos.add(mapearPedido(rs));
+            }
+
+            return pedidos;
+        }
+        catch (SQLException e)
+        {
+            System.out.println("Erro ao listar pedidos: " + e.getMessage());
+        }
+
+        return null;
+
+    }
+
+    public boolean AtualizarPedido(Long id, int statusPedido){
+
+        String querySQL = "update pedido set status_id = ? where id = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(querySQL))
+        {
+            stmt.setLong(1,statusPedido);
+            stmt.setLong(2,id);
+
+            int linhasAfetadas = stmt.executeUpdate();
+
+            if (linhasAfetadas > 0)
+            {
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        catch (SQLException e)
+        {
+            System.out.println("Erro ao atualizar pedido: " + e.getMessage());
+        }
+        return false;
+
+    }
+
     public boolean deletarPedido(Long id){
 
         String querySQL = "delete from pedido\n" +
