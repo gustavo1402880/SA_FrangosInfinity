@@ -7,10 +7,14 @@ import java.util.Scanner;
 public class BuscarProdutosView
 {
 
+    //╚ ╝  ╣  ╠   ═ ╔  ╗  ║
+
     private Scanner sc = new Scanner(System.in);
     public void BuscarProduto()
     {
-        System.out.println("\n=== BUSCAR PRODUTOS ===");
+        System.out.println("╔════════════════════════════════════════╗");
+        System.out.println("║             BUSCAR PRODUTO             ║");
+        System.out.println("╚════════════════════════════════════════╝");
 
         System.out.print("Digite o nome ou termo de busca: ");
 
@@ -19,10 +23,11 @@ public class BuscarProdutosView
         System.out.println("\nBuscando produtos por: " + termo);
 
 
-
         System.out.println("Resultados encontrados:");
 
-        for(int i = 0 ; i < Cardapio.size())// isso e so o rascunho
+
+
+        for()// isso e so o rascunho
         {
             System.out.println(i);
         }
