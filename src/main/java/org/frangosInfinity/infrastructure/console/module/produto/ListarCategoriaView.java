@@ -20,11 +20,12 @@ public class ListarCategoriaView
 
         List<Categoria> categorias = controller.ListarCategorias();
 
+        System.out.println("╔════════════════════════════════════════╗");
         for(Categoria c : categorias)
         {
-            System.out.println(c.getId()+ " - "+ c.getNome());
+
+            System.out.println("║ "+c.getId()+ " - "+ c.getNome()+" ");
         }
-
-
+        System.out.println("╚════════════════════════════════════════╝");
     }
 }

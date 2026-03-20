@@ -10,6 +10,11 @@ public class AcessarCardapioView
 
     public void Acessarcardapio()
     {
-        // preciso mostrar o cardapio, alguem faz o metodo do caradapio, tmj
+
+        System.out.println("╔════════════════════════════════════════╗");
+        System.out.println("║                CARDAPIO                ║");
+        System.out.println("╚════════════════════════════════════════╝");
+
+        // preciso mostrar o cardapio
     }
 }

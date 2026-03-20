@@ -16,21 +16,16 @@ public class ProdutoView
    public void ExibirMenu()
    {
 
-
-       System.out.println("╔════════════════════════════════════════╗");
-       System.out.println("║        FILTRAR PREÇO DE PRODUTO        ║");
-       System.out.println("╔════════════════════════════════════════╗");
-
-       System.out.println("\n╔════════════════════════════════════════╗    ");
-       System.out.println("║              MENU CARDÁPIO              ║");
+       System.out.println("\n╔════════════════════════════════════════╗ ");
+       System.out.println("║              MENU CARDÁPIO              ║  ");
        System.out.println("╠═════════════════════════════════════════╣  ");
-       System.out.println("║    1 - Acessar Cardápio                 ║");
-       System.out.println("║    2 - Listar Categorias                ║");
-       System.out.println("║    3 - Listar Produtos                  ║");
-       System.out.println("║    4 - Buscar Produtos                  ║");
-       System.out.println("║    5 - Filtrar por Categoria            ║");
-       System.out.println("║    6 - Filtrar por Preço                ║");
-       System.out.println("║    0 - Sair                             ║");
+       System.out.println("║       1 - Acessar Cardápio              ║  ");
+       System.out.println("║       2 - Listar Categorias             ║  ");
+       System.out.println("║       3 - Listar Produtos               ║  ");
+       System.out.println("║       4 - Buscar Produtos               ║  ");
+       System.out.println("║       5 - Filtrar por Categoria         ║  ");
+       System.out.println("║       6 - Filtrar por Preço             ║  ");
+       System.out.println("║       0 - Sair                          ║  ");
        System.out.println("╚═════════════════════════════════════════╝  ");
 
        int opcao = Front.lInteiro();
