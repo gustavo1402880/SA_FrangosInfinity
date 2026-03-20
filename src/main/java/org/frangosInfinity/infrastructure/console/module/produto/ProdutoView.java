@@ -26,9 +26,11 @@ public class ProdutoView
        System.out.println("║       5 - Filtrar por Categoria         ║  ");
        System.out.println("║       6 - Filtrar por Preço             ║  ");
        System.out.println("║       0 - Sair                          ║  ");
-       System.out.println("╚═════════════════════════════════════════╝  ");
+       System.out.println("╠═════════════════════════════════════════╣  ");
 
+       System.out.println("║ %-34s║%n Escolha a opção que deseja: ");
        int opcao = Front.lInteiro();
+       System.out.println("╚════════════════════════════════════════╝");
 
        switch (opcao) {
            case 1:

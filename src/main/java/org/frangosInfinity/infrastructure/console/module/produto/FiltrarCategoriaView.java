@@ -1,6 +1,7 @@
 package org.frangosInfinity.infrastructure.console.module.produto;
 
 import org.frangosInfinity.core.entity.module.produto.Categoria;
+import org.frangosInfinity.core.entity.module.produto.Produto;
 import org.frangosInfinity.infrastructure.util.Front;
 
 import java.util.List;
@@ -16,22 +17,25 @@ public class FiltrarCategoriaView
     {
         System.out.println("╔════════════════════════════════════════╗");
         System.out.println("║         FILTRAR POR CATEGORIA          ║");
-        System.out.println("╚════════════════════════════════════════╝");
-
-        System.out.println(" Digite o id da categoria que deseja: ");
+        System.out.println("╠════════════════════════════════════════╣");
+        System.out.println("║ %-34s║%n Digite o id da categoria que deseja: ");
 
         Long opcao = (long) Front.lInteiro();
+        System.out.println("╚════════════════════════════════════════╝");
 
-        List<Categoria> categorias = controller.ListarCategorias();
+        List<Produto> produtos = controller.ListarCategorias();
 
         System.out.println(" Produtos encotrados");
-        for(Categoria c : categorias)
+
+        System.out.println("╔════════════════════════════════════════╗");
+        for(Produto p : produtos)
         {
-            if(c.getId().equals(opcao))
+            if(p.getId().equals(opcao))
             {
-                System.out.println("Nome: "+c.getNome());
+                System.out.printf("║ Nome: %-34s║%n", p.getNome());
             }
         }
+        System.out.println("╚════════════════════════════════════════╝");
 
 
     }

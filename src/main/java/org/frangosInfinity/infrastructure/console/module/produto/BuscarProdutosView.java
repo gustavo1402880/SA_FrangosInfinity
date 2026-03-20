@@ -1,7 +1,11 @@
 package org.frangosInfinity.infrastructure.console.module.produto;
 
 import org.frangosInfinity.core.entity.module.produto.Cardapio;
+import org.frangosInfinity.core.entity.module.produto.Categoria;
+import org.frangosInfinity.core.entity.module.produto.Produto;
+import org.frangosInfinity.infrastructure.util.Front;
 
+import java.util.List;
 import java.util.Scanner;
 
 public class BuscarProdutosView
@@ -9,27 +13,33 @@ public class BuscarProdutosView
 
     //╚ ╝  ╣  ╠   ═ ╔  ╗  ║
 
+    private ProdutoController controller;
     private Scanner sc = new Scanner(System.in);
     public void BuscarProduto()
     {
         System.out.println("╔════════════════════════════════════════╗");
         System.out.println("║             BUSCAR PRODUTO             ║");
+        System.out.println("╠════════════════════════════════════════╣");
+
+        System.out.printf("║ %-34s║%n Digite o nome do Produto: ");
+
+        String nomeProduto = Front.lString();
+        System.out.println("╚════════════════════════════════════════╝\n");
+
+        System.out.println("╔════════════════════════════════════════╗");
+        System.out.println("║         RESULTADOS ENCONTRADOS         ║");
         System.out.println("╚════════════════════════════════════════╝");
 
-        System.out.print("Digite o nome ou termo de busca: ");
+        List<Produto> produtos = controller.ListarProduto();
 
-        String termo = sc.nextLine();
-
-        System.out.println("\nBuscando produtos por: " + termo);
-
-
-        System.out.println("Resultados encontrados:");
-
-
-
-        for()// isso e so o rascunho
+        for(Produto p : produtos)
         {
-            System.out.println(i);
+            System.out.println("╔════════════════════════════════════════╗");
+            if(p.getNome().contains(nomeProduto))
+            {
+                System.out.printf("║ NOME PRODUTOS: %-25s║%n", p.getNome());
+            }
         }
+        System.out.println("╚════════════════════════════════════════╝");
     }
 }

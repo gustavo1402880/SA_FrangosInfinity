@@ -24,7 +24,7 @@ public class ListarCategoriaView
         for(Categoria c : categorias)
         {
 
-            System.out.println("║ "+c.getId()+ " - "+ c.getNome()+" ");
+            System.out.println("║ %-41s║%n"+c.getId()+ " - "+ c.getNome()+" ");
         }
         System.out.println("╚════════════════════════════════════════╝");
     }
