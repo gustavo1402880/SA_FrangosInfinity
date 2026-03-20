@@ -14,7 +14,7 @@ public class ProdutoRespondeDTO
     private Boolean disponivel;
     private String imagemUrl;
     private Integer vendasUltimos30dias;
-    private Boolean precoPendente;
+    private Double precoPendente;
     private String nomeCategoria;
     private Long categoriaId;
     private Integer estoqueAtual;
@@ -37,7 +37,31 @@ public class ProdutoRespondeDTO
         response.setDisponivel(produto.getDisponivel());
         response.setImagemUrl(produto.getImagemUrl());
         response.setVendasUltimos30dias(produto.getVendasUltimos30dias());
-        response.setPrecoPendente();
+        response.setPrecoPendente(produto.getPrecoPendenteAprovacao());
+
+        if (produto.getCategoria() != null)
+        {
+             response.setCategoriaId(produto.getCategoria().getId());
+             response.setNomeCategoria(produto.getCategoria().getNome());
+        }
+
+        if (produto.getEstoque() != null)
+        {
+            response.setEstoqueAtual(produto.getEstoque().getQuantidadeAtual());
+            response.setEstoqueBaixo(produto.getEstoque().isEstoqueBaixo());
+            response.setEstoqueAlto(produto.getEstoque().isEstoqueExcessivo());
+        }
+
+        response.setSucesso(true);
+        return response;
+    }
+
+    public static ProdutoRespondeDTO erro(String mensagem)
+    {
+        ProdutoRespondeDTO response = new ProdutoRespondeDTO();
+        response.setSucesso(false);
+        response.setMensagem(mensagem);
+        return response;
     }
 
     public Long getId() {
@@ -112,11 +136,11 @@ public class ProdutoRespondeDTO
         this.vendasUltimos30dias = vendasUltimos30dias;
     }
 
-    public Boolean getPrecoPendente() {
+    public Double getPrecoPendente() {
         return precoPendente;
     }
 
-    public void setPrecoPendente(Boolean precoPendente) {
+    public void setPrecoPendente(Double precoPendente) {
         this.precoPendente = precoPendente;
     }
 

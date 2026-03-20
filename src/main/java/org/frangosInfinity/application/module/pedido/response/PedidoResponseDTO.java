@@ -16,7 +16,7 @@ public class PedidoResponseDTO
     private Long mesaId;
     private Long atendenteId;
     private Double valorTotal;
-    private List<SubPedidoRequestDTO> subPedidos;
+    private List<SubPedidoResponseDTO> subPedidos;
     private String tipo;
     private Boolean sucesso;
     private String mensagem;
@@ -101,11 +101,11 @@ public class PedidoResponseDTO
         this.valorTotal = valorTotal;
     }
 
-    public List<SubPedidoRequestDTO> getSubPedidos() {
+    public List<SubPedidoResponseDTO> getSubPedidos() {
         return subPedidos;
     }
 
-    public void setSubPedidos(List<SubPedidoRequestDTO> subPedidos) {
+    public void setSubPedidos(List<SubPedidoResponseDTO> subPedidos) {
         this.subPedidos = subPedidos;
     }
 
