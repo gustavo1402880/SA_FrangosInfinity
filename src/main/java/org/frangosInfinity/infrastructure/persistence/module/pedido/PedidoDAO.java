@@ -90,6 +90,32 @@ public class PedidoDAO {
 
     }
 
+    public ArrayList<Pedido> listarPedidosPendentes(){
+
+        ArrayList<Pedido> pedidos = new ArrayList<>();
+
+        String querySQL = "select * from pedido\n" +
+                "        where status_id = 2";
+
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(querySQL))
+        {
+            while (rs.next())
+            {
+                pedidos.add(mapearPedido(rs));
+            }
+
+            return pedidos;
+        }
+        catch (SQLException e)
+        {
+            System.out.println("Erro ao listar pedido pendentes: " + e.getMessage());
+        }
+
+        return null;
+
+    }
+
     public boolean deletarPedido(Long id){
 
         String querySQL = "delete from pedido\n" +
