@@ -21,7 +21,7 @@ public class BuscarProdutosView
         System.out.println("║             BUSCAR PRODUTO             ║");
         System.out.println("╠════════════════════════════════════════╣");
 
-        System.out.printf("║ %-34s║%n Digite o nome do Produto: ");
+        System.out.println("║  Digite o nome do Produto: ");
 
         String nomeProduto = Front.lString();
         System.out.println("╚════════════════════════════════════════╝\n");

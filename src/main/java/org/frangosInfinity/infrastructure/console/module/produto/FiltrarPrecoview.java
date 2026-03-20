@@ -17,7 +17,7 @@ public class FiltrarPrecoview
         System.out.println("║        FILTRAR PREÇO DE PRODUTO        ║");
         System.out.println("╚════════════════════════════════════════╝");
 
-        System.out.println("║ %-34s║%n  Digite o preço minimo para os produtos: ");
+        System.out.println("║  Digite o preço minimo para os produtos: ");
 
         double minimo = Front.lDouble();
         System.out.println("╠════════════════════════════════════════╣ ");

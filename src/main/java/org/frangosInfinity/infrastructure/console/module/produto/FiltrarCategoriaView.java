@@ -18,7 +18,7 @@ public class FiltrarCategoriaView
         System.out.println("╔════════════════════════════════════════╗");
         System.out.println("║         FILTRAR POR CATEGORIA          ║");
         System.out.println("╠════════════════════════════════════════╣");
-        System.out.println("║ %-34s║%n Digite o id da categoria que deseja: ");
+        System.out.println("║ Digite o id da categoria que deseja: ");
 
         Long opcao = (long) Front.lInteiro();
         System.out.println("╚════════════════════════════════════════╝");
