@@ -18,6 +18,9 @@ public class UsuarioRequestDTO
 
     public UsuarioRequestDTO() {}
 
+    public UsuarioRequestDTO(String cpf, String senhaLogin) {
+    }
+
     public String getNome() {
         return nome;
     }

@@ -5,7 +5,8 @@ public enum NivelAcesso
     ATENDENTE(1),
     CAIXA(2),
     COZINHEIRO(3),
-    ADMINISTRADOR(4);
+    ADMINISTRADOR(4),
+    CLIENTE(5);
 
     private int codigo;
 

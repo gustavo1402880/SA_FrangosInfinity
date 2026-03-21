@@ -16,14 +16,13 @@ public class Notificacao
 
     public Notificacao(){}
 
-    public Notificacao(Long id, TipoNotificacao tipoNotificacao, String mensagem, LocalDateTime dataHora, boolean lida, String destinatario)
-    {
-        id = this.id;
-        tipoNotificacao = this.tipoNotificacao;
-        mensagem = this.mensagem;
-        dataHora = this.dataHora;
-        lida = this.lida;
-        destinatario = this.destinatario;
+    public Notificacao(Long id, TipoNotificacao tipoNotificacao, String mensagem, LocalDateTime dataHora, boolean lida, String destinatario) {
+        this.id = id;
+        this.tipoNotificacao = tipoNotificacao;
+        this.mensagem = mensagem;
+        this.dataHora = dataHora;
+        this.lida = lida;
+        this.destinatario = destinatario;
     }
 
     public Long getId() {
