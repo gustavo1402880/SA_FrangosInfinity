@@ -2,9 +2,11 @@ package org.frangosInfinity.infrastructure.console.module.pedido;
 
 import org.frangosInfinity.core.entity.module.pedido.Pedido;
 
-public class CriarPedidoHub
+import java.util.List;
+
+public class ListarPedidosPendentes
 {
-    public Pedido CriarPedido(Long idMesa , String ClienteSessao)
+    public List<Pedido> listarPedidosPendentes()
     {
 
     }

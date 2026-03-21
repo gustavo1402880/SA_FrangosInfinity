@@ -1,8 +1,8 @@
 package org.frangosInfinity.infrastructure.console.module.pedido;
 
-public class GerarLinkConvite
+public class ReordernarPedidos
 {
-    public String GerarLinkConvite(Long PedidoID)
+    public void ReordenarPedidos(String criterios)
     {
 
     }
