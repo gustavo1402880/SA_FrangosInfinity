@@ -2,186 +2,139 @@ package org.frangosInfinity.core.service.module.pedido;
 import org.frangosInfinity.application.module.pedido.request.CarrinhoRequestDTO;
 import org.frangosInfinity.application.module.pedido.request.ItemPedidoRequestDTO;
 import org.frangosInfinity.application.module.pedido.response.CarrinhoResponseDTO;
+import org.frangosInfinity.core.entity.exception.ResourceNotFoundException;
 import org.frangosInfinity.core.entity.module.pedido.Carrinho;
 import org.frangosInfinity.core.entity.module.pedido.ItemPedido;
 import org.frangosInfinity.core.entity.module.pedido.SubPedido;
+import org.frangosInfinity.core.entity.module.produto.Produto;
 import org.frangosInfinity.infrastructure.persistence.connection.ConnectionFactory;
 import org.frangosInfinity.infrastructure.persistence.module.pedido.ItemPedidoRepository;
+import org.frangosInfinity.infrastructure.persistence.module.produto.ProdutoRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
-public class CarrinhoService {
+@Service
+public class CarrinhoService
+{
+    @Autowired
+    private RedisTemplate<String, Carrinho> redisTemplate;
 
-    public CarrinhoResponseDTO adicionarItem(ItemPedidoRequestDTO itemPedidoRequestDTO, CarrinhoRequestDTO carrinhoRequestDTO) throws Exception
+    @Autowired
+    private ProdutoRepository produtoRepository;
+
+    private static String CARRINHO_KEY = "carrinho:";
+    private static long CARRINHO_TTL = 3600;
+
+    public CarrinhoResponseDTO obterCarrinho(String sessaoId)
     {
+        String key = CARRINHO_KEY + sessaoId;
+        Carrinho carrinho = redisTemplate.opsForValue().get(key);
 
-        ArrayList<ItemPedido> pedidos;
-        Double valortotal = 0.0;
-        ItemPedido itemPedido = new ItemPedido(itemPedidoRequestDTO.getId_ItemPedido(),
-                itemPedidoRequestDTO.getSubPedidoID(),
-                itemPedidoRequestDTO.getProdutoid(),
-                itemPedidoRequestDTO.getQuantidade(),
-                itemPedidoRequestDTO.getPrecoUnitario(),
-                itemPedidoRequestDTO.getObservacao(),
-                itemPedidoRequestDTO.getSubTotal());
-
-        if (itemPedidoRequestDTO != null) {
-
-            pedidos = carrinhoRequestDTO.getItens();
-
-            pedidos.add(itemPedido);
-
-
-            for(ItemPedido i : pedidos){
-                valortotal += i.getSubTotal();
-            }
-
-            CarrinhoResponseDTO carrinho = new CarrinhoResponseDTO(carrinhoRequestDTO.getId_carrinho(),carrinhoRequestDTO.getCliente_id(),
-                    carrinhoRequestDTO.getDataCriacao(),pedidos,valortotal);
-
-            return carrinho;
-
-        }else {
-
-            throw new Exception("Erro ao adicionar item no carrinho");
-
+        if (carrinho == null)
+        {
+            carrinho = new Carrinho();
+            redisTemplate.opsForValue().set(key, carrinho, CARRINHO_TTL, TimeUnit.SECONDS);
         }
+
+        return CarrinhoResponseDTO.fromEntity(carrinho);
     }
 
-    public CarrinhoResponseDTO removerItem(ItemPedidoRequestDTO itemPedidoRequestDTO, CarrinhoRequestDTO carrinhoRequestDTO) throws Exception
+    public CarrinhoResponseDTO adicionarItem(String sessaoId, CarrinhoRequestDTO request)
     {
+        Produto produto = produtoRepository.findById(request.getProdutoId()).orElseThrow(() -> new ResourceNotFoundException("Produto "+request.getProdutoId()+" não encontrado"));
 
-        ArrayList<ItemPedido> pedidos;
+        String key = CARRINHO_KEY + sessaoId;
+        Carrinho carrinho = redisTemplate.opsForValue().get(key);
 
-        if (itemPedidoRequestDTO != null) {
-
-            pedidos = carrinhoRequestDTO.getItens();
-
-            pedidos.removeIf(item -> item.getId_ItemPedido().equals(itemPedidoRequestDTO.getId_ItemPedido()));
-
-            Double valortotal = 0.0;
-
-            for(ItemPedido i : pedidos){
-                valortotal += i.getSubTotal();
-            }
-
-            CarrinhoResponseDTO carrinho = new CarrinhoResponseDTO(carrinhoRequestDTO.getId_carrinho(),carrinhoRequestDTO.getCliente_id(),
-                    carrinhoRequestDTO.getDataCriacao(),pedidos,valortotal);
-
-            return carrinho;
-
-        }else {
-
-            throw new Exception("Erro ao remover produto");
-
-        }
-    }
-
-    public CarrinhoResponseDTO alterarQuantidade(ItemPedidoRequestDTO itemPedidoRequestDTO, int quantidade, CarrinhoRequestDTO carrinhoRequestDTO) throws Exception{
-
-        ArrayList<ItemPedido> pedidos;
-        ItemPedido itemPedido = new ItemPedido(itemPedidoRequestDTO.getId_ItemPedido(),
-                itemPedidoRequestDTO.getSubPedidoID(),
-                itemPedidoRequestDTO.getProdutoid(),
-                itemPedidoRequestDTO.getQuantidade(),
-                itemPedidoRequestDTO.getPrecoUnitario(),
-                itemPedidoRequestDTO.getObservacao(),
-                itemPedidoRequestDTO.getSubTotal());
-
-        try{
-
-            ItemPedidoRepository itemPedidoRepository = new ItemPedidoRepository(ConnectionFactory.getConnection());
-
-            if (itemPedidoRequestDTO != null && quantidade > 0) {
-
-                pedidos = carrinhoRequestDTO.getItens();
-
-                pedidos.removeIf(item -> item.getId_ItemPedido().equals(itemPedidoRequestDTO.getId_ItemPedido()));
-
-                ItemPedido itemPedido1 = itemPedidoRepository.updateQuantidade(itemPedido,quantidade);
-
-                pedidos.add(itemPedido1);
-
-                Double valortotal = 0.0;
-
-                for(ItemPedido i : pedidos){
-                    valortotal += i.getSubTotal();
-                }
-
-                CarrinhoResponseDTO carrinho = new CarrinhoResponseDTO(carrinhoRequestDTO.getId_carrinho(),carrinhoRequestDTO.getCliente_id(),
-                        carrinhoRequestDTO.getDataCriacao(),pedidos,valortotal);
-
-                return carrinho;
-
-            }
-
-        } catch (SQLException e) {
-
-            throw new Exception("Erro ao alterar quantidade");
-
+        if (carrinho == null)
+        {
+            carrinho = new Carrinho();
+            redisTemplate.opsForValue().set(key, carrinho, CARRINHO_TTL, TimeUnit.SECONDS);
         }
 
-        throw new Exception("Erro ao alterar quantidade");
+        Carrinho.ItemCarrinho itemCarrinho = new Carrinho.ItemCarrinho(
+                produto.getId(),
+                produto.getNome(),
+                produto.getEstoque().getQuantidadeAtual(),
+                produto.getPreco(),
+                produto.getTempoPreparoMinuto()
+        );
 
+        carrinho.adicionarItem(itemCarrinho);
+
+        salvarCarrinho(sessaoId, carrinho);
+
+        return CarrinhoResponseDTO.fromEntity(carrinho);
     }
 
-    public Double calcularTotal(CarrinhoRequestDTO carrinho) throws Exception{
+    public CarrinhoResponseDTO removerItem(String sessaoId, Integer index)
+    {
+        String key = CARRINHO_KEY + sessaoId;
+        Carrinho carrinho = redisTemplate.opsForValue().get(key);
 
-        ArrayList<ItemPedido> pedidos = carrinho.getItens();
-
-        if(carrinho != null){
-
-            Double valortotal = 0.0;
-
-            for(ItemPedido i : pedidos){
-                valortotal += i.getSubTotal();
-            }
-
-            return valortotal;
-
-        }else {
-
-            throw new Exception("Erro ao calcular total");
-
-        }
-    }
-
-    public CarrinhoResponseDTO limpar(CarrinhoRequestDTO carrinhoRequestDTO) throws Exception{
-
-        if (carrinhoRequestDTO != null) {
-            ArrayList<ItemPedido> pedidos = carrinhoRequestDTO.getItens();
-
-            pedidos.clear();
-
-            Double valortotal = 0.0;
-
-            for(ItemPedido i : pedidos){
-                valortotal += i.getSubTotal();
-            }
-
-            CarrinhoResponseDTO carrinho = new CarrinhoResponseDTO(carrinhoRequestDTO.getId_carrinho(),carrinhoRequestDTO.getCliente_id(),
-                    carrinhoRequestDTO.getDataCriacao(),pedidos,valortotal);
-
-
-            return carrinho;
+        if (carrinho == null)
+        {
+            carrinho = new Carrinho();
+            redisTemplate.opsForValue().set(key, carrinho, CARRINHO_TTL, TimeUnit.SECONDS);
         }
 
-        throw new Exception("Erro ao limpar o carrinho");
+        carrinho.removerItem(index);
+        salvarCarrinho(sessaoId, carrinho);
+        return CarrinhoResponseDTO.fromEntity(carrinho);
     }
 
-    public SubPedido converterParaSubPedido(Carrinho carrinho)throws Exception{
+    public CarrinhoResponseDTO atualizarQuantidade(String sessaoId, Integer index, Integer quantidade)
+    {
+        String key = CARRINHO_KEY + sessaoId;
+        Carrinho carrinho = redisTemplate.opsForValue().get(key);
 
-        if(carrinho != null) {
-
-            SubPedido subPedido = new SubPedido();
-
-            // FAZER
-
+        if (carrinho == null)
+        {
+            carrinho = new Carrinho();
         }
 
-        throw new Exception("Erro ao converter para SubPedido");
-
+        carrinho.atualizarQuantidade(index, quantidade);
+        salvarCarrinho(sessaoId, carrinho);
+        return CarrinhoResponseDTO.fromEntity(carrinho);
     }
 
+    public CarrinhoResponseDTO limparCarrinho(String sessaoId)
+    {
+        String key = CARRINHO_KEY + sessaoId;
+        Carrinho carrinho = redisTemplate.opsForValue().get(key);
+
+        if (carrinho == null)
+        {
+            carrinho = new Carrinho();
+        }
+
+        carrinho.limpar();
+        salvarCarrinho(sessaoId, carrinho);
+        return CarrinhoResponseDTO.fromEntity(carrinho);
+    }
+
+    public void definirMesa(String sessaoId, Long mesaId)
+    {
+        String key = CARRINHO_KEY + sessaoId;
+        Carrinho carrinho = redisTemplate.opsForValue().get(key);
+
+        if (carrinho == null)
+        {
+            carrinho = new Carrinho();
+        }
+
+        carrinho.setMesaId(mesaId);
+        salvarCarrinho(sessaoId, carrinho);
+    }
+
+    public void salvarCarrinho(String sessaoId, Carrinho carrinho)
+    {
+        String key = CARRINHO_KEY + sessaoId;
+        redisTemplate.opsForValue().set(key, carrinho);
+    }
 }

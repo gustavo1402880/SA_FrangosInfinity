@@ -37,9 +37,10 @@ public class ItemPedido
 
     public ItemPedido() {}
 
-    public ItemPedido(Long produtoId, Integer quantidade, Double precoUnitario, Integer tempoPreparoEstimado)
+    public ItemPedido(Long produtoId, String nome, Integer quantidade, Double precoUnitario, Integer tempoPreparoEstimado)
     {
         this.produtoId = produtoId;
+        this.nomeProduto = nome;
         this.quantidade = quantidade;
         this.precoUnitario = precoUnitario;
         this.tempoPreparoEstimado = tempoPreparoEstimado;

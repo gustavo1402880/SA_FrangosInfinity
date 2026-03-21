@@ -133,8 +133,6 @@ public class Carrinho implements Serializable
             this.quantidade = quantidade;
             this.precoUnitario = preUnitario;
             this.tempoPreparoEstimado = tempoPreparoEstimado;
-
-
         }
 
         public Long getProdutoId() {
@@ -228,6 +226,12 @@ public class Carrinho implements Serializable
             }
             this.dataAtualizacao = LocalDateTime.now();
         }
+    }
+
+    public void limpar()
+    {
+        itens.clear();
+        this.dataAtualizacao = LocalDateTime.now();
     }
 
     public Double getValorTotal()

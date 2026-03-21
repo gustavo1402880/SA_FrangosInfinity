@@ -25,7 +25,7 @@ public class CarrinhoResponseDTO
 
     public CarrinhoResponseDTO() {}
 
-    public CarrinhoResponseDTO fromEntity(Carrinho carrinho)
+    public static CarrinhoResponseDTO fromEntity(Carrinho carrinho)
     {
         CarrinhoResponseDTO response = new CarrinhoResponseDTO();
         response.setId(carrinho.getId());

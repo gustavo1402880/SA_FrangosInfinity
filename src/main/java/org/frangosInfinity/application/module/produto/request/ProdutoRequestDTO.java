@@ -11,6 +11,7 @@ public class ProdutoRequestDTO
     private Long categoriaId;
     private Integer estoqueInicial;
     private Integer estoqueMinimo;
+    private Integer estoqueMaximo;
 
     public ProdutoRequestDTO() {}
 
@@ -102,5 +103,15 @@ public class ProdutoRequestDTO
     public void setEstoqueMinimo(Integer estoqueMinimo)
     {
         this.estoqueMinimo = estoqueMinimo;
+    }
+
+    public Integer getEstoqueMaximo()
+    {
+        return estoqueMaximo;
+    }
+
+    public void setEstoqueMaximo(Integer estoqueMaximo)
+    {
+        this.estoqueMaximo = estoqueMaximo;
     }
 }

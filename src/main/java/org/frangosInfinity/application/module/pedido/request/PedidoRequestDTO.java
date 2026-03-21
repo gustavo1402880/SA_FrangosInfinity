@@ -5,6 +5,7 @@ public class PedidoRequestDTO
     private Long mesaId;
     private Long atendenteId;
     private String obervacao;
+    private String tipo;
 
     public PedidoRequestDTO() {}
 
@@ -36,5 +37,15 @@ public class PedidoRequestDTO
     public void setObervacao(String obervacao)
     {
         this.obervacao = obervacao;
+    }
+
+    public String getTipo()
+    {
+        return tipo;
+    }
+
+    public void setTipo(String tipo)
+    {
+        this.tipo = tipo;
     }
 }
