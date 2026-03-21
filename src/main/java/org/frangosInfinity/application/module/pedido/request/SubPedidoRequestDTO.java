@@ -12,7 +12,7 @@ public class SubPedidoRequestDTO
     private Long clienteId;
     private List<ItemPedidoRequestDTO> itens;
 
-    SubPedidoRequestDTO() {}
+    public SubPedidoRequestDTO() {}
 
     public Long getPedidoId()
     {
