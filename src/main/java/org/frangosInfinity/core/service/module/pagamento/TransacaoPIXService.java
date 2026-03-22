@@ -1,266 +1,160 @@
 package org.frangosInfinity.core.service.module.pagamento;
 
+import org.frangosInfinity.application.module.pagamento.request.PIXRequestDTO;
 import org.frangosInfinity.application.module.pagamento.response.PIXResponseDTO;
+import org.frangosInfinity.core.entity.exception.BusinessException;
+import org.frangosInfinity.core.entity.exception.ResourceNotFoundException;
 import org.frangosInfinity.core.entity.module.pagamento.Pagamento;
 import org.frangosInfinity.core.entity.module.pagamento.TransacaoPIX;
 import org.frangosInfinity.core.enums.TipoPagamento;
-import org.frangosInfinity.infrastructure.persistence.connection.ConnectionFactory;
 import org.frangosInfinity.infrastructure.persistence.module.pagamento.PagamentoRepository;
 import org.frangosInfinity.infrastructure.persistence.module.pagamento.TransacaoPIXRepository;
 import org.frangosInfinity.infrastructure.util.GeradorQRCode;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.List;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
-public class TransacaoPIXService
-{
-    private final GeradorQRCode geradorQRCode;
+@Service
+public class TransacaoPIXService {
+    @Autowired
+    private TransacaoPIXRepository pixRepository;
 
-    public TransacaoPIXService()
-    {
-        this.geradorQRCode = new GeradorQRCode();
-    }
+    @Autowired
+    private PagamentoRepository pagamentoRepository;
 
-    private Boolean validarId(Long id)
-    {
+    @Autowired
+    private GeradorQRCode geradorQRCode;
+
+    @Value("${app.baseUrl:http://localhost:8082}")
+    private String baseUrl;
+
+    private Boolean validarId(Long id) {
         return id != null && id > 0;
     }
 
-    public PIXResponseDTO gerarPix(Long pagamentoId)
-    {
-        return gerarPix(pagamentoId, 600);
+    @Transactional
+    @CacheEvict(value = "pix")
+    public PIXResponseDTO gerarPix(PIXRequestDTO request) {
+        if (request.getPagamentoId() == null || request.getPagamentoId() <= 0) {
+            throw new BusinessException("ID do pagamento inválido");
+        }
+
+        Pagamento pagamento = pagamentoRepository.findById(request.getPagamentoId()).orElseThrow(() -> new ResourceNotFoundException("Pagamento não encontrado"));
+
+        if (pagamento.getTipoPagamento() != TipoPagamento.PIX) {
+            throw new BusinessException("Este pagamento não é do tipo PIX");
+        }
+
+        var pixEsistente = pixRepository.findByPagamentoId(request.getPagamentoId());
+
+        if (pixEsistente.isPresent()) {
+            TransacaoPIX pix = pixEsistente.get();
+            if (!pix.idExpirado()) {
+                PIXResponseDTO response = PIXResponseDTO.fromEntity(pix);
+
+                response.setMensagem("PIX já existente e válido");
+
+                String caminhoImagem = gerarQRCodeImagem(pix);
+                response.setQrCode(caminhoImagem);
+
+                return response;
+            }
+        }
+
+        TransacaoPIX pix = new TransacaoPIX();
+        pix.setPagamento(pagamento);
+
+        String codigoPix = gerarCodigoPix(pagamento.getValor());
+        pix.setCodigoCopiaCola(codigoPix);
+
+        Integer tempoExpiracao = request.getTempoExpiracaoSegundos() != null ? request.getTempoExpiracaoSegundos() : 600;
+        pix.setTempoExpiracaoSegundos(tempoExpiracao);
+        pix.setDataExpiracao(LocalDateTime.now().plusSeconds(tempoExpiracao));
+
+        String qrCodeUrl = baseUrl + "/pagamentos/pix/ " + pagamento.getId_Pagamento() + "/confimar";
+
+        String nomeArquivo = String.format("pix_pagamento_%d.png", pagamento.getId_Pagamento());
+
+        String caminhoImagem = geradorQRCode.gerarQRCode(qrCodeUrl, nomeArquivo);
+
+        if (caminhoImagem != null) {
+            pix.setQrCode(caminhoImagem);
+        } else {
+            pix.setQrCode(null);
+        }
+
+        TransacaoPIX pixSalvo = pixRepository.save(pix);
+
+        PIXResponseDTO response = PIXResponseDTO.fromEntity(pixSalvo);
+        response.setQrCode(caminhoImagem);
+
+        return response;
     }
 
-    public PIXResponseDTO gerarPix(Long pagamentoId, Integer tempoExpiracaoSegundos)
-    {
-        Connection connection = null;
-        try
-        {
-            if (!validarId(pagamentoId))
-            {
-                return criarRespostaErro("ID do pagamento inválido");
-            }
-
-            connection = ConnectionFactory.getConnection();
-            connection.setAutoCommit(false);
-
-            PagamentoRepository pagamentoRepository = new PagamentoRepository(connection);
-            TransacaoPIXRepository transacaoPIXRepository = new TransacaoPIXRepository(connection);
-
-            var pagamentoOpt = pagamentoRepository.buscarPorId(pagamentoId);
-            if (pagamentoOpt.isEmpty())
-            {
-                return criarRespostaErro("Pix não encontrado");
-            }
-
-            Pagamento pagamento = pagamentoOpt.get();
-
-            if (pagamento.getTipoPagamento() != TipoPagamento.PIX)
-            {
-                return criarRespostaErro("Tipo de pagamento não é PIX");
-            }
-
-            var pixExistente = transacaoPIXRepository.buscarPorPagamentoId(pagamentoId);
-            if (pixExistente.isPresent())
-            {
-                TransacaoPIX pix = pixExistente.get();
-                if (!pix.idExpirado())
-                {
-                    PIXResponseDTO response = PIXResponseDTO.fromEntity(pix);
-                    response.setMensagem("PIX já existente e válido");
-                    return response;
-                }
-            }
-
-            String codigoPix = gerarCodigoPix(pagamento.getValor());
-            String qrCode = "QR_"+ UUID.randomUUID().toString().substring(0,8);
-
-            TransacaoPIX pix = new TransacaoPIX(pagamentoId, qrCode, codigoPix);
-            if (tempoExpiracaoSegundos != null && tempoExpiracaoSegundos > 0)
-            {
-                pix.setTempoExpiracaoSegundos(tempoExpiracaoSegundos);
-            }
-
-            TransacaoPIX pixSalvo = transacaoPIXRepository.salvar(pix);
-
-            connection.commit();
-
-            PIXResponseDTO response = PIXResponseDTO.fromEntity(pixSalvo);
-            response.setMensagem("PIX gerado com sucesso");
-            return response;
+    @Transactional(readOnly = true)
+    @Cacheable(value = "pix", key = "#id")
+    public PIXResponseDTO buscarPorId(Long id) {
+        if (!validarId(id)) {
+            throw new BusinessException("ID inválido");
         }
-        catch (SQLException e)
-        {
-            if (connection != null)
-            {
-                try
-                {
-                    connection.rollback();
-                }
-                catch (SQLException ex)
-                {
-                    throw new RuntimeException("Erro no rollback: "+ex.getMessage());
-                }
-            }
-            return criarRespostaErro("Erro ao gerar PIX:" + e.getMessage());
-        }
-        finally
-        {
-            if (connection != null)
-            {
-                try
-                {
-                    connection.close();
-                }
-                catch (SQLException e)
-                {
-                    throw new RuntimeException("Erro ao fechar conexão: "+e.getMessage());
-                }
-            }
-        }
+
+        TransacaoPIX pix = pixRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("PIX não encontrado"));
+
+        return PIXResponseDTO.fromEntity(pix);
     }
 
-    public TransacaoPIX buscarPorId(Long id)
-    {
-        try (Connection connection = ConnectionFactory.getConnection())
-        {
-            if (!validarId(id))
-            {
-                return null;
-            }
+    @Transactional
+    @Cacheable(value = "pix", key = "#pagamentoId")
+    public PIXResponseDTO buscarPorPagamentoId(Long pagamentoId) {
+        if (!validarId(pagamentoId)) {
+            throw new BusinessException("ID inválido");
+        }
 
-            TransacaoPIXRepository pixDAO = new TransacaoPIXRepository(connection);
-            return pixDAO.buscarPorId(id).orElse(null);
-        }
-        catch (SQLException e)
-        {
-            return null;
-        }
+        TransacaoPIX pix = pixRepository.findByPagamentoId(pagamentoId).orElseThrow(() -> new ResourceNotFoundException("PIX não encontrado"));
+
+        return PIXResponseDTO.fromEntity(pix);
     }
 
-    public TransacaoPIX buscarPorPagamentoId(Long pagamentoId)
-    {
-        try (Connection connection = ConnectionFactory.getConnection())
-        {
-            if(!validarId(pagamentoId))
-            {
-                return null;
-            }
-
-            TransacaoPIXRepository transacaoPIXRepository = new TransacaoPIXRepository(connection);
-
-            return transacaoPIXRepository.buscarPorPagamentoId(pagamentoId).orElse(null);
+    @Transactional
+    @CacheEvict(value = "pix")
+    public PIXResponseDTO renovarPix(Long pagamentoId, Integer novoTempoSegundos) {
+        if (!validarId(pagamentoId)) {
+            return criarRespostaErro("ID do pagamento inválido");
         }
-        catch (SQLException e)
-        {
-            return null;
+
+        TransacaoPIX pix = pixRepository.findByPagamentoId(pagamentoId).orElseThrow(() -> new ResourceNotFoundException("PIX não encontrado"));
+
+        if (novoTempoSegundos != null && novoTempoSegundos > 0) {
+            pix.setTempoExpiracaoSegundos(novoTempoSegundos);
         }
+        pix.renovar();
+
+        pixRepository.save(pix);
+
+        return PIXResponseDTO.fromEntity(pix);
     }
 
-    public List<TransacaoPIX> listarPorPagamentoId(Long pagamentoId)
-    {
-        try (Connection connection = ConnectionFactory.getConnection())
-        {
-            if(!validarId(pagamentoId))
-            {
-                return List.of();
-            }
-
-            TransacaoPIXRepository transacaoPIXRepository = new TransacaoPIXRepository(connection);
-
-            return transacaoPIXRepository.listarPorPagamentoId(pagamentoId);
-        }
-        catch (SQLException e)
-        {
-            return List.of();
-        }
-    }
-
-    public PIXResponseDTO renovarPix(Long pagamentoId)
-    {
-        Connection connection = null;
-        try
-        {
-            if(!validarId(pagamentoId))
-            {
-                return criarRespostaErro("ID do pagamento inválido");
-            }
-
-            connection = ConnectionFactory.getConnection();
-            connection.setAutoCommit(false);
-
-            TransacaoPIXRepository transacaoPIXRepository = new TransacaoPIXRepository(connection);
-
-            var pixOpt = transacaoPIXRepository.buscarPorPagamentoId(pagamentoId);
-            if (pixOpt.isEmpty())
-            {
-                return criarRespostaErro("PIX não encontrado para este pagamento");
-            }
-
-            TransacaoPIX pix = pixOpt.get();
-            pix.renovar();
-            transacaoPIXRepository.atualizar(pix);
-
-            connection.commit();
-
-            PIXResponseDTO response = PIXResponseDTO.fromEntity(pix);
-            return response;
-        }
-        catch (SQLException e)
-        {
-            if (connection != null)
-            {
-                try
-                {
-                    connection.rollback();
-                }
-                catch (SQLException ex)
-                {
-                    return criarRespostaErro("Erro no rollback "+ ex.getMessage());
-                }
-            }
-            return criarRespostaErro("Erro ao renovar Pix: "+e.getMessage());
-        }
-        finally
-        {
-            if (connection != null)
-            {
-                try
-                {
-                    connection.close();
-                }
-                catch (SQLException e)
-                {
-                    return criarRespostaErro("Erro ao fechar conexão: "+ e.getMessage());
-                }
-            }
-        }
-    }
-
+    @Transactional(readOnly = true)
     public Boolean verificarExpiracao(Long pagamentoId)
     {
-        try(Connection connection = ConnectionFactory.getConnection())
-        {
-            if (!validarId(pagamentoId))
-            {
-                return true;
-            }
+        return pixRepository.findByPagamentoId(pagamentoId)
+                .map(TransacaoPIX::idExpirado)
+                .orElse(true);
+    }
 
-            TransacaoPIXRepository transacaoPIXRepository = new TransacaoPIXRepository(connection);
-
-            var pixopt = transacaoPIXRepository.buscarPorPagamentoId(pagamentoId);
-            if (pixopt.isEmpty())
-            {
-                return true;
-            }
-            return pixopt.get().idExpirado();
-        }
-        catch (SQLException e)
-        {
-            return true;
-        }
+    @Scheduled(fixedDelay = 300000)
+    @Transactional
+    public void limparPIXExpirados()
+    {
+        LocalDateTime dataLimite = LocalDateTime.now().minusHours(24);
+        Integer deletados = pixRepository.deleteExpiradoAntigos(dataLimite);
     }
 
     private String gerarCodigoPix(Double valor)
@@ -268,6 +162,15 @@ public class TransacaoPIXService
         String chave = UUID.randomUUID().toString().replace("-","").substring(0,20);
 
         return String.format("00020126580014br.gov.bcb.pix0136%s520400005303986540%.2f5802BR5903WEG6014JARAGUA DO SUL62290525%s6304",chave, valor, chave.substring(0,10));
+    }
+
+    private String gerarQRCodeImagem(TransacaoPIX pix)
+    {
+        String qrCodeUrl = baseUrl + "/pagamentos/pix/" + pix.getPagamento().getId_Pagamento() + "/confirmar";
+
+        String nomeArquivo = String.format("pix_pagamento_%d.png",pix.getPagamento().getId_Pagamento());
+
+        return geradorQRCode.gerarQRCode(qrCodeUrl, nomeArquivo);
     }
 
     private PIXResponseDTO criarRespostaErro(String mensagem)
