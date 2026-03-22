@@ -7,9 +7,9 @@ import org.frangosInfinity.core.entity.module.pagamento.Pagamento;
 import org.frangosInfinity.core.enums.StatusPagamento;
 import org.frangosInfinity.core.enums.TipoPagamento;
 import org.frangosInfinity.infrastructure.persistence.connection.ConnectionFactory;
-import org.frangosInfinity.infrastructure.persistence.module.pagamento.ComprovanteDAO;
-import org.frangosInfinity.infrastructure.persistence.module.pagamento.PagamentoDAO;
-import org.frangosInfinity.infrastructure.persistence.module.pagamento.TransacaoDAO;
+import org.frangosInfinity.infrastructure.persistence.module.pagamento.ComprovanteRepository;
+import org.frangosInfinity.infrastructure.persistence.module.pagamento.PagamentoRepository;
+import org.frangosInfinity.infrastructure.persistence.module.pagamento.TransacaoPIXRepository;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -64,11 +64,11 @@ public class PagamentoService
             connection = ConnectionFactory.getConnection();
             connection.setAutoCommit(false);
 
-            PagamentoDAO pagamentoDAO = new PagamentoDAO(connection);
-            ComprovanteDAO comprovanteDAO = new ComprovanteDAO(connection);
-            TransacaoDAO transacaoDAO = new TransacaoDAO(connection);
+            PagamentoRepository pagamentoRepository = new PagamentoRepository(connection);
+            ComprovanteRepository comprovanteRepository = new ComprovanteRepository(connection);
+            TransacaoPIXRepository transacaoPIXRepository = new TransacaoPIXRepository(connection);
 
-            var pagamentoExistente = pagamentoDAO.buscarPorSubPedidoId(request.getSubPedidoId());
+            var pagamentoExistente = pagamentoRepository.buscarPorSubPedidoId(request.getSubPedidoId());
             if (pagamentoExistente.isPresent())
             {
                 return criarRespostaErro("Já existe um pagamento para este pedido");
@@ -81,7 +81,7 @@ public class PagamentoService
             pagamento.setStatusPagamento(StatusPagamento.PENDENTE);
             pagamento.setCodigoTransacao(UUID.randomUUID().toString());
 
-            Pagamento pagamentoSalvo = pagamentoDAO.salvar(pagamento);
+            Pagamento pagamentoSalvo = pagamentoRepository.salvar(pagamento);
 
             if (request.getTipo() == TipoPagamento.PIX)
             {
@@ -89,7 +89,7 @@ public class PagamentoService
             }
 
             Comprovante comprovante = gerarComprovante(pagamentoSalvo);
-            comprovanteDAO.salvar(comprovante);
+            comprovanteRepository.salvar(comprovante);
 
             connection.commit();
 
@@ -135,8 +135,8 @@ public class PagamentoService
                 return null;
             }
 
-            PagamentoDAO pagamentoDAO = new PagamentoDAO(connection);
-            return pagamentoDAO.buscarPorId(id).orElse(null);
+            PagamentoRepository pagamentoRepository = new PagamentoRepository(connection);
+            return pagamentoRepository.buscarPorId(id).orElse(null);
         }
         catch (SQLException e)
         {
@@ -153,8 +153,8 @@ public class PagamentoService
                 return null;
             }
 
-            PagamentoDAO pagamentoDAO = new PagamentoDAO(connection);
-            return pagamentoDAO.buscarPorSubPedidoId(id).orElse(null);
+            PagamentoRepository pagamentoRepository = new PagamentoRepository(connection);
+            return pagamentoRepository.buscarPorSubPedidoId(id).orElse(null);
         }
         catch (SQLException e)
         {
@@ -166,8 +166,8 @@ public class PagamentoService
     {
         try(Connection connection = ConnectionFactory.getConnection())
         {
-            PagamentoDAO pagamentoDAO = new PagamentoDAO(connection);
-            return pagamentoDAO.listarTodos();
+            PagamentoRepository pagamentoRepository = new PagamentoRepository(connection);
+            return pagamentoRepository.listarTodos();
         }
         catch(SQLException e)
         {
@@ -179,8 +179,8 @@ public class PagamentoService
     {
         try(Connection connection = ConnectionFactory.getConnection())
         {
-            PagamentoDAO pagamentoDAO = new PagamentoDAO(connection);
-            return pagamentoDAO.listarPorStatus(StatusPagamento.PENDENTE);
+            PagamentoRepository pagamentoRepository = new PagamentoRepository(connection);
+            return pagamentoRepository.listarPorStatus(StatusPagamento.PENDENTE);
         }
         catch (SQLException e)
         {
@@ -197,9 +197,9 @@ public class PagamentoService
             }
 
             connection = ConnectionFactory.getConnection();
-            PagamentoDAO pagamentoDAO = new PagamentoDAO(connection);
+            PagamentoRepository pagamentoRepository = new PagamentoRepository(connection);
 
-            var pagamentoOpt = pagamentoDAO.buscarPorId(pagamentoId);
+            var pagamentoOpt = pagamentoRepository.buscarPorId(pagamentoId);
             if (pagamentoOpt.isEmpty()) {
                 return criarRespostaErro("Pagamento não encontrado");
             }
@@ -211,7 +211,7 @@ public class PagamentoService
             }
 
             pagamento.setStatusPagamento(StatusPagamento.CONFIRMADO);
-            pagamentoDAO.atualizar(pagamento);
+            pagamentoRepository.atualizar(pagamento);
 
             return PagamentoResponseDTO.fromEntity(pagamento);
         }
@@ -246,9 +246,9 @@ public class PagamentoService
             }
 
             connection = ConnectionFactory.getConnection();
-            PagamentoDAO pagamentoDAO = new PagamentoDAO(connection);
+            PagamentoRepository pagamentoRepository = new PagamentoRepository(connection);
 
-            var pagamentoOpt = pagamentoDAO.buscarPorId(pagamentoId);
+            var pagamentoOpt = pagamentoRepository.buscarPorId(pagamentoId);
             if (pagamentoOpt.isEmpty())
             {
                 return criarRespostaErro("Pagamento não encontrado");
@@ -262,7 +262,7 @@ public class PagamentoService
             }
 
             pagamento.setStatusPagamento(StatusPagamento.CANCELADO);
-            pagamentoDAO.atualizar(pagamento);
+            pagamentoRepository.atualizar(pagamento);
 
             return PagamentoResponseDTO.fromEntity(pagamento);
         }
@@ -295,8 +295,8 @@ public class PagamentoService
                 return null;
             }
 
-            ComprovanteDAO comprovanteDAO = new ComprovanteDAO(connection);
-            return comprovanteDAO.buscarProPagamentoId(pagamentoId).orElse(null);
+            ComprovanteRepository comprovanteRepository = new ComprovanteRepository(connection);
+            return comprovanteRepository.buscarProPagamentoId(pagamentoId).orElse(null);
         }
         catch (SQLException e)
         {

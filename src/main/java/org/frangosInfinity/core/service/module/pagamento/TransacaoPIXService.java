@@ -5,8 +5,8 @@ import org.frangosInfinity.core.entity.module.pagamento.Pagamento;
 import org.frangosInfinity.core.entity.module.pagamento.TransacaoPIX;
 import org.frangosInfinity.core.enums.TipoPagamento;
 import org.frangosInfinity.infrastructure.persistence.connection.ConnectionFactory;
-import org.frangosInfinity.infrastructure.persistence.module.pagamento.PagamentoDAO;
-import org.frangosInfinity.infrastructure.persistence.module.pagamento.TransacaoDAO;
+import org.frangosInfinity.infrastructure.persistence.module.pagamento.PagamentoRepository;
+import org.frangosInfinity.infrastructure.persistence.module.pagamento.TransacaoPIXRepository;
 import org.frangosInfinity.infrastructure.util.GeradorQRCode;
 
 import java.sql.Connection;
@@ -46,10 +46,10 @@ public class TransacaoPIXService
             connection = ConnectionFactory.getConnection();
             connection.setAutoCommit(false);
 
-            PagamentoDAO pagamentoDAO = new PagamentoDAO(connection);
-            TransacaoDAO transacaoDAO = new TransacaoDAO(connection);
+            PagamentoRepository pagamentoRepository = new PagamentoRepository(connection);
+            TransacaoPIXRepository transacaoPIXRepository = new TransacaoPIXRepository(connection);
 
-            var pagamentoOpt = pagamentoDAO.buscarPorId(pagamentoId);
+            var pagamentoOpt = pagamentoRepository.buscarPorId(pagamentoId);
             if (pagamentoOpt.isEmpty())
             {
                 return criarRespostaErro("Pix não encontrado");
@@ -62,7 +62,7 @@ public class TransacaoPIXService
                 return criarRespostaErro("Tipo de pagamento não é PIX");
             }
 
-            var pixExistente = transacaoDAO.buscarPorPagamentoId(pagamentoId);
+            var pixExistente = transacaoPIXRepository.buscarPorPagamentoId(pagamentoId);
             if (pixExistente.isPresent())
             {
                 TransacaoPIX pix = pixExistente.get();
@@ -83,7 +83,7 @@ public class TransacaoPIXService
                 pix.setTempoExpiracaoSegundos(tempoExpiracaoSegundos);
             }
 
-            TransacaoPIX pixSalvo = transacaoDAO.salvar(pix);
+            TransacaoPIX pixSalvo = transacaoPIXRepository.salvar(pix);
 
             connection.commit();
 
@@ -131,7 +131,7 @@ public class TransacaoPIXService
                 return null;
             }
 
-            TransacaoDAO pixDAO = new TransacaoDAO(connection);
+            TransacaoPIXRepository pixDAO = new TransacaoPIXRepository(connection);
             return pixDAO.buscarPorId(id).orElse(null);
         }
         catch (SQLException e)
@@ -149,9 +149,9 @@ public class TransacaoPIXService
                 return null;
             }
 
-            TransacaoDAO transacaoDAO = new TransacaoDAO(connection);
+            TransacaoPIXRepository transacaoPIXRepository = new TransacaoPIXRepository(connection);
 
-            return transacaoDAO.buscarPorPagamentoId(pagamentoId).orElse(null);
+            return transacaoPIXRepository.buscarPorPagamentoId(pagamentoId).orElse(null);
         }
         catch (SQLException e)
         {
@@ -168,9 +168,9 @@ public class TransacaoPIXService
                 return List.of();
             }
 
-            TransacaoDAO transacaoDAO = new TransacaoDAO(connection);
+            TransacaoPIXRepository transacaoPIXRepository = new TransacaoPIXRepository(connection);
 
-            return transacaoDAO.listarPorPagamentoId(pagamentoId);
+            return transacaoPIXRepository.listarPorPagamentoId(pagamentoId);
         }
         catch (SQLException e)
         {
@@ -191,9 +191,9 @@ public class TransacaoPIXService
             connection = ConnectionFactory.getConnection();
             connection.setAutoCommit(false);
 
-            TransacaoDAO transacaoDAO = new TransacaoDAO(connection);
+            TransacaoPIXRepository transacaoPIXRepository = new TransacaoPIXRepository(connection);
 
-            var pixOpt = transacaoDAO.buscarPorPagamentoId(pagamentoId);
+            var pixOpt = transacaoPIXRepository.buscarPorPagamentoId(pagamentoId);
             if (pixOpt.isEmpty())
             {
                 return criarRespostaErro("PIX não encontrado para este pagamento");
@@ -201,7 +201,7 @@ public class TransacaoPIXService
 
             TransacaoPIX pix = pixOpt.get();
             pix.renovar();
-            transacaoDAO.atualizar(pix);
+            transacaoPIXRepository.atualizar(pix);
 
             connection.commit();
 
@@ -248,9 +248,9 @@ public class TransacaoPIXService
                 return true;
             }
 
-            TransacaoDAO transacaoDAO = new TransacaoDAO(connection);
+            TransacaoPIXRepository transacaoPIXRepository = new TransacaoPIXRepository(connection);
 
-            var pixopt = transacaoDAO.buscarPorPagamentoId(pagamentoId);
+            var pixopt = transacaoPIXRepository.buscarPorPagamentoId(pagamentoId);
             if (pixopt.isEmpty())
             {
                 return true;

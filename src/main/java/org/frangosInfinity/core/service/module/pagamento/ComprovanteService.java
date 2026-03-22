@@ -3,7 +3,7 @@ package org.frangosInfinity.core.service.module.pagamento;
 import org.frangosInfinity.application.module.pagamento.response.ComprovanteResponseDTO;
 import org.frangosInfinity.core.entity.module.pagamento.Comprovante;
 import org.frangosInfinity.infrastructure.persistence.connection.ConnectionFactory;
-import org.frangosInfinity.infrastructure.persistence.module.pagamento.ComprovanteDAO;
+import org.frangosInfinity.infrastructure.persistence.module.pagamento.ComprovanteRepository;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -25,8 +25,8 @@ public class ComprovanteService
                 return null;
             }
 
-            ComprovanteDAO comprovanteDAO = new ComprovanteDAO(connection);
-            return comprovanteDAO.buscarPorId(id).orElse(null);
+            ComprovanteRepository comprovanteRepository = new ComprovanteRepository(connection);
+            return comprovanteRepository.buscarPorId(id).orElse(null);
         }
         catch (SQLException e)
         {
@@ -43,8 +43,8 @@ public class ComprovanteService
                 return null;
             }
 
-            ComprovanteDAO comprovanteDAO = new ComprovanteDAO(connection);
-            return comprovanteDAO.buscarProPagamentoId(pagamentoId).orElse(null);
+            ComprovanteRepository comprovanteRepository = new ComprovanteRepository(connection);
+            return comprovanteRepository.buscarProPagamentoId(pagamentoId).orElse(null);
         }
         catch (SQLException e)
         {
@@ -56,8 +56,8 @@ public class ComprovanteService
     {
         try(Connection connection = ConnectionFactory.getConnection())
         {
-            ComprovanteDAO comprovanteDAO = new ComprovanteDAO(connection);
-            return comprovanteDAO.listarTodos();
+            ComprovanteRepository comprovanteRepository = new ComprovanteRepository(connection);
+            return comprovanteRepository.listarTodos();
         }
         catch (SQLException e)
         {
