@@ -121,6 +121,33 @@ public class ProdutoDAO {
         return false;
     }
 
+    public boolean alterarPreco(Long id, Double preco){
+
+        String querySQL = "update produto set custo = ? where id = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(querySQL))
+        {
+            stmt.setDouble(1,preco);
+            stmt.setLong(2,id);
+
+            int linhasAfetadas = stmt.executeUpdate();
+
+            if (linhasAfetadas > 0)
+            {
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        catch (SQLException e)
+        {
+            System.out.println("Erro ao atualizar produto: " + e.getMessage());
+        }
+        return false;
+
+    }
+
     private Produto mapearProduto(ResultSet rs) throws SQLException
     {
 

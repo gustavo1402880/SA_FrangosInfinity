@@ -5,14 +5,9 @@ import org.frangosInfinity.core.entity.module.produto.Produto;
 import org.frangosInfinity.infrastructure.persistence.connection.ConnectionFactory;
 import org.frangosInfinity.infrastructure.persistence.module.produto.ProdutoDAO;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 public class Produtoservice {
-
-    //  + edi tar(dados: Produto): void
-    //  + exclui r(id: int ): void
-    //  + l i star(): Li st<Produto>
-    //  + veri f i carDi sponibi l idade(): Boolean
-    //  + Al teracaoPreco(novoPreco: double): Boolean
 
     private ProdutoDAO produtoDAO;
 
@@ -22,6 +17,13 @@ public class Produtoservice {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+
+    public ArrayList<Produto> listarProdutos(){
+
+        return produtoDAO.buscarProduto();
+
     }
 
     public ProdutoRespondeDTO criarProduto(ProdutoRequestDTO produtoRequestDTO){
@@ -35,6 +37,24 @@ public class Produtoservice {
         return produtoRespondeDTO = new ProdutoRespondeDTO(produto.getId(),produtoRequestDTO.getCodigo(),produtoRequestDTO.getCodigo(),produtoRequestDTO.getNome(),produtoRequestDTO.getPreco(),produtoRequestDTO.getPreco(),produtoRequestDTO.getTempoPreparoMinuto(),true, produtoRequestDTO.getImagemUrl(),produtoRequestDTO.getVendasUltimos30dias(), produtoRequestDTO.getPrecoPendenteAprovacao(),produtoRequestDTO.getCategoria());
     }
 
+    public void excluirProduto(ProdutoRequestDTO produtoRequestDTO){
 
+        produtoDAO.deletarProduto(produtoRequestDTO.getId());
+
+    }
+
+    public Boolean verificarDisponibilidade(ProdutoRequestDTO produtoRequestDTO){
+
+        Produto produto = produtoDAO.buscarPorId(produtoRequestDTO.getId());
+
+        return produto.getDisponivel();
+
+    }
+
+    public void alterarPreco(ProdutoRequestDTO produtoRequestDTO){
+
+        produtoDAO.alterarPreco(produtoRequestDTO.getId(),produtoRequestDTO.getPreco());
+
+    }
 
 }
