@@ -1,316 +1,236 @@
 package org.frangosInfinity.infrastructure.console.module.pagamento;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.frangosInfinity.application.module.pagamento.request.PIXRequestDTO;
 import org.frangosInfinity.application.module.pagamento.request.PagamentoRequestDTO;
 import org.frangosInfinity.application.module.pagamento.response.ComprovanteResponseDTO;
 import org.frangosInfinity.application.module.pagamento.response.PIXResponseDTO;
 import org.frangosInfinity.application.module.pagamento.response.PagamentoResponseDTO;
-import org.frangosInfinity.core.entity.module.pagamento.Comprovante;
-import org.frangosInfinity.core.entity.module.pagamento.Pagamento;
-import org.frangosInfinity.core.entity.module.pagamento.TransacaoPIX;
+import org.frangosInfinity.core.enums.StatusPagamento;
+import org.frangosInfinity.core.enums.TipoPagamento;
 import org.frangosInfinity.core.service.module.pagamento.ComprovanteService;
 import org.frangosInfinity.core.service.module.pagamento.PagamentoService;
 import org.frangosInfinity.core.service.module.pagamento.TransacaoPIXService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
+@RestController
+@RequestMapping("/api/pagamentos")
+@Tag(name = "Pagamentos", description = "Gerenciamento de pagamentos e PIX")
 public class PagamentoController
 {
-    private final PagamentoService pagamentoService;
-    private final TransacaoPIXService pixService;
-    private final ComprovanteService comprovanteService;
+    @Autowired
+    private PagamentoService pagamentoService;
 
-    public PagamentoController()
+    @Autowired
+    private TransacaoPIXService pixService;
+
+    @Autowired
+    private ComprovanteService comprovanteService;
+
+    @PostMapping
+    @Operation(summary = "Processar novo pagamento")
+    public ResponseEntity<PagamentoResponseDTO> processarPagamento(@Valid @RequestBody PagamentoRequestDTO request)
     {
-        this.pagamentoService = new PagamentoService();
-        this.pixService = new TransacaoPIXService();
-        this.comprovanteService = new ComprovanteService();
-    }
-
-    public PagamentoResponseDTO processarPagamento(PagamentoRequestDTO request)
-    {
-        if (request == null)
-        {
-            throw new IllegalArgumentException("Request de pagamento não pode ser nulo");
-        }
-
-        if (request.getSubPedidoId() == null || request.getSubPedidoId() <= 0)
-        {
-            throw new IllegalArgumentException("ID do subpedido inválido");
-        }
-
-        if (request.getValor() == null || request.getValor() <= 0)
-        {
-            throw new IllegalArgumentException("Valor do pagamento inválido");
-        }
-
-        if (request.getTipo() == null)
-        {
-            throw  new IllegalArgumentException("Tipo de pagamento não especificado");
-        }
-
         PagamentoResponseDTO response = pagamentoService.processarPagamento(request);
 
-        if (!response.getSucesso())
-        {
-            throw new RuntimeException("Erro ao processar pagamento: "+response.getMensagem());
-        }
-
-        return response;
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    public PagamentoResponseDTO processarBuscarPagamentoPorId(Long id)
+    @GetMapping("/{id}")
+    @Operation(summary = "Processar novo pagamento")
+    public ResponseEntity<PagamentoResponseDTO> processarBuscarPagamentoPorId(@PathVariable Long id)
     {
-        if (id == null || id <= 0)
-        {
-            throw new IllegalArgumentException("ID do pagamento inválido");
-        }
+        PagamentoResponseDTO response = pagamentoService.buscarPorId(id);
 
-        Pagamento pagamento = pagamentoService.buscarPorId(id);
-
-        if (pagamento == null)
-        {
-            throw new RuntimeException("Pagamento com ID "+id+" não encontrado");
-        }
-
-        return PagamentoResponseDTO.fromEntity(pagamento);
+        return ResponseEntity.ok(response);
     }
 
-    public PagamentoResponseDTO processarBuscarPagamentoPorSubPedido(Long subPedidoId)
+    @GetMapping("/subpedido/{subPedidoId}")
+    @Operation(summary = "Buscar pagamento por ID do subpedido")
+    public ResponseEntity<PagamentoResponseDTO> processarBuscarPagamentoPorSubPedido(@PathVariable Long subPedidoId)
     {
-        if (subPedidoId == null || subPedidoId <= 0)
-        {
-            throw new IllegalArgumentException("ID do subpedido inválido");
-        }
+        PagamentoResponseDTO response = pagamentoService.buscarPorsubPedidoId(subPedidoId);
 
-        Pagamento pagamento = pagamentoService.buscarPorsubPedidoId(subPedidoId);
-
-        if (pagamento == null)
-        {
-            throw new RuntimeException("Pagamento para o subpedido "+subPedidoId+" não encontrado");
-        }
-
-        return PagamentoResponseDTO.fromEntity(pagamento);
+        return ResponseEntity.ok(response);
     }
 
-    public List<PagamentoResponseDTO> processarListarTodosPagamentos()
+    @GetMapping
+    @Operation(summary = "Buscar pagamento por ID do subpedido")
+    public ResponseEntity<List<PagamentoResponseDTO>> processarListarTodosPagamentos()
     {
-        List<Pagamento> pagamentos = pagamentoService.listarTodos();
+        List<PagamentoResponseDTO> response = pagamentoService.listarTodos();
 
-        if (pagamentos.isEmpty())
-        {
-            throw new RuntimeException("Nenhum pagamento encontrado");
-        }
-
-        return pagamentos.stream()
-                .map(PagamentoResponseDTO::fromEntity)
-                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
     }
 
-    public List<PagamentoResponseDTO> processarListarPagamentosPendentes()
+    @GetMapping("/status/{status}")
+    @Operation(summary = "Listar pagamentos por status")
+    public ResponseEntity<List<PagamentoResponseDTO>> processarListarPorStatus(@PathVariable StatusPagamento status)
     {
-        List<Pagamento> pagamentos = pagamentoService.listarPendetes();
+        List<PagamentoResponseDTO> response = pagamentoService.listarPorStatus(status);
 
-        if (pagamentos.isEmpty())
-        {
-            throw new RuntimeException("Nenhum pagamento pendente encontrado");
-        }
-
-        return pagamentos.stream()
-                .map(PagamentoResponseDTO::fromEntity)
-                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
     }
 
-    public PagamentoResponseDTO processarConfirmarPagamento(Long pagamentoId)
+    @GetMapping("/periodo")
+    @Operation(summary = "Listar pagamentos por período")
+    public ResponseEntity<List<PagamentoResponseDTO>> processarListarPorPeriodo(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)LocalDateTime inicio, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)LocalDateTime fim)
     {
-        if (pagamentoId == null || pagamentoId <= 0)
-        {
-            throw new IllegalArgumentException("ID do pagamento inválido");
-        }
+        List<PagamentoResponseDTO> response = pagamentoService.listarPorPeriodo(inicio, fim);
 
+        return response.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{id}/confirmar")
+    @Operation(summary = "Confirmar pagamento")
+    public ResponseEntity<PagamentoResponseDTO> processarConfirmarPagamento(Long pagamentoId)
+    {
         PagamentoResponseDTO response = pagamentoService.confirmarPagamento(pagamentoId);
 
-
-        if (!response.getSucesso())
-        {
-            throw new RuntimeException("Erro ao confirmar pagamento: "+ response.getMensagem());
-        }
-
-        return response;
+        return ResponseEntity.ok(response);
     }
 
-    public PagamentoResponseDTO processarCancelarPagamento(Long pagamentoId)
+    @PatchMapping("/{id}/cancelar")
+    @Operation(summary = "Cancelar pagamento")
+    public ResponseEntity<PagamentoResponseDTO> processarCancelarPagamento(Long pagamentoId)
     {
-        if(pagamentoId == null || pagamentoId <= 0)
-        {
-            throw new IllegalArgumentException("ID do pagamento inválido");
-        }
-
         PagamentoResponseDTO response = pagamentoService.cancelarPagamento(pagamentoId);
 
-        if (!response.getSucesso())
-        {
-            throw new RuntimeException("Erro ao cancelar pagamento: "+response.getMensagem());
-        }
-
-        return response;
+        return ResponseEntity.ok(response);
     }
 
-    public PIXResponseDTO processarGerarPix(Long pagamentoId, Integer tempoExpiracaoSegundos)
+    @PatchMapping("/{id}/reembolsar")
+    @Operation(summary = "Reembolsar pagamento")
+    public ResponseEntity<PagamentoResponseDTO> processarReembolsarPagamento(Long pagamentoId)
     {
-        if (pagamentoId == null || pagamentoId <= 0)
-        {
-            throw new IllegalArgumentException("ID do pagamento inválido");
-        }
+        PagamentoResponseDTO response = pagamentoService.reembolsarPagamento(pagamentoId);
 
-        PIXResponseDTO response;
-
-        if (tempoExpiracaoSegundos != null && tempoExpiracaoSegundos > 0)
-        {
-            response = pixService.gerarPix(pagamentoId, tempoExpiracaoSegundos);
-        }
-        else
-        {
-            response = pixService.gerarPix(pagamentoId);
-        }
-
-        if (!response.getSucesso())
-        {
-            throw new RuntimeException("Erro ao gerar Pix: "+response.getMensagem());
-        }
-
-        return response;
+        return ResponseEntity.ok(response);
     }
 
-    public PIXResponseDTO processarBuscarPixPorId(Long id)
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Deletar pagamento")
+    public ResponseEntity<Void> deletarPagamento(@PathVariable Long id)
     {
-        if (id == null || id <= 0)
-        {
-            throw new IllegalArgumentException("ID do PIX inválido");
-        }
+        pagamentoService.deletarPagamento(id);
 
-        TransacaoPIX pix = pixService.buscarPorId(id);
-
-        if (pix == null)
-        {
-            throw new RuntimeException("PIX: "+id+" não encontrado");
-        }
-
-        return PIXResponseDTO.fromEntity(pix);
+        return ResponseEntity.noContent().build();
     }
 
-    public PIXResponseDTO processarBuscarPixPorPagamento(Long pagamentoId)
+    @GetMapping("/pix")
+    @Operation(summary = "Gerar PIX para pagamento")
+    public ResponseEntity<PIXResponseDTO> processarGerarPix(@Valid @RequestBody PIXRequestDTO request)
     {
-        if (pagamentoId == null || pagamentoId <= 0)
-        {
-            throw new IllegalArgumentException("ID do pagamento inválido");
-        }
+        PIXResponseDTO response = pixService.gerarPix(request);
 
-        TransacaoPIX pix = pixService.buscarPorPagamentoId(pagamentoId);
-
-        if (pix == null)
-        {
-            throw new RuntimeException("PIX para o pagamento "+pagamentoId+" não encontrado");
-        }
-
-        return PIXResponseDTO.fromEntity(pix);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    public PIXResponseDTO processarRenovarPix(Long pagamentoId)
+    @GetMapping("/pix/{id}")
+    @Operation(summary = "Buscar PIX por ID")
+    public ResponseEntity<PIXResponseDTO> processarBuscarPixPorId(@PathVariable Long id)
     {
-        if (pagamentoId == null || pagamentoId <= 0)
-        {
-            throw new IllegalArgumentException("ID do pagamento inválido");
-        }
+        PIXResponseDTO response = pixService.buscarPorId(id);
 
-        PIXResponseDTO response = pixService.renovarPix(pagamentoId);
-
-        if (!response.getSucesso())
-        {
-            throw new RuntimeException("Erro ao renovar PIX: "+response.getMensagem());
-        }
-
-        return response;
+        return ResponseEntity.ok(response);
     }
 
-    public Boolean processarVerifiacarExpiracaoPix(Long pagamentoId)
+    @GetMapping("/pix/pagamento/{pagamentoId}")
+    @Operation(summary = "Buscar PIX por ID do pagamento")
+    public ResponseEntity<PIXResponseDTO> processarBuscarPixPorPagamento(@PathVariable Long pagamentoId)
     {
-        if (pagamentoId == null || pagamentoId <= 0)
-        {
-            throw new IllegalArgumentException("ID do pagamento inválido");
-        }
+        PIXResponseDTO response = pixService.buscarPorPagamentoId(pagamentoId);
 
-        return pixService.verificarExpiracao(pagamentoId);
+        return ResponseEntity.ok(response);
     }
 
-    public ComprovanteResponseDTO processarBuscarComprovantePorId(Long id)
+    @PatchMapping("/pix/{pagamentoId}/renovar")
+    @Operation(summary = "Renovar PIX")
+    public ResponseEntity<PIXResponseDTO> processarRenovarPix(@PathVariable Long pagamentoId, @RequestParam(required = false) Integer tempoSegundos)
     {
-        if (id == null || id <= 0)
-        {
-            throw new IllegalArgumentException("ID do comprovante inválido");
-        }
+        PIXResponseDTO response = pixService.renovarPix(pagamentoId, tempoSegundos);
 
-        Comprovante comprovante = comprovanteService.buscarPorId(id);
-
-        if (comprovante == null)
-        {
-            throw new RuntimeException("Comprovante com ID: "+id+" não encontrado");
-        }
-
-        return ComprovanteResponseDTO.fromEntity(comprovante);
+        return ResponseEntity.ok(response);
     }
 
-    public ComprovanteResponseDTO processarBuscarComprovantePorPagamento(Long pagamentoId)
+    @GetMapping("/pix/{pagamentoId}/expirado")
+    @Operation(summary = "Verificar se PIX está expirado")
+    public ResponseEntity<Boolean> processarVerifiacarExpiracaoPix(@PathVariable Long pagamentoId)
     {
-        if (pagamentoId == null || pagamentoId <= 0)
-        {
-            throw new IllegalArgumentException("ID do pagamento inválido");
-        }
+        Boolean expirado = pixService.verificarExpiracao(pagamentoId);
 
-        Comprovante comprovante = comprovanteService.buscarporPagamentoId(pagamentoId);
-
-        if (comprovante == null)
-        {
-            throw new RuntimeException("Comprovante para o pagamento "+pagamentoId+" não encontrado");
-        }
-
-        return ComprovanteResponseDTO.fromEntity(comprovante);
+        return ResponseEntity.ok(expirado);
     }
 
-    public List<ComprovanteResponseDTO> processasrListarTodosComprovantes()
+    @GetMapping("/comprovantes/{id}")
+    @Operation(summary = "Buscar comprovante por ID")
+    public ResponseEntity<ComprovanteResponseDTO> processarBuscarComprovantePorId(Long id)
     {
-        List<Comprovante> comprovantes = comprovanteService.listarTodos();
+        ComprovanteResponseDTO response = comprovanteService.buscarPorId(id);
 
-        if (comprovantes.isEmpty())
-        {
-            throw new RuntimeException("Nenhum comprovante encontrado");
-        }
-
-        return comprovantes.stream()
-                .map(ComprovanteResponseDTO::fromEntity)
-                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
     }
 
-    public ComprovanteResponseDTO processarGerarComprovanteParaPagamento(Long pagamentoId)
+    @GetMapping("/comprovantes/pagamento/{pagamentoId}")
+    @Operation(summary = "Buscar comprovante por ID do pagamento")
+    public ResponseEntity<ComprovanteResponseDTO> processarBuscarComprovantePorPagamento(@PathVariable Long pagamentoId)
     {
-        if (pagamentoId == null || pagamentoId <= 0)
-        {
-            throw new IllegalArgumentException("ID do pagamento inválido");
-        }
+        ComprovanteResponseDTO response = comprovanteService.buscarPorPagamentoId(pagamentoId);
 
-        Pagamento pagamento = pagamentoService.buscarPorId(pagamentoId);
-        if (pagamento == null)
-        {
-            throw new RuntimeException("Pagamento não encontrado");
-        }
+        return ResponseEntity.ok(response);
+    }
 
-        Comprovante comprovante = comprovanteService.buscarporPagamentoId(pagamentoId);
+    @GetMapping("/comprovantes/numero/{numero}")
+    @Operation(summary = "Buscar comprovante por número")
+    public ResponseEntity<ComprovanteResponseDTO> processarBuscarComprovantePorNumero(@PathVariable String numero)
+    {
+        ComprovanteResponseDTO response = comprovanteService.buscarPorNumero(numero);
 
-        if (comprovante == null)
-        {
-            throw new RuntimeException("Comprovante não encontrado para este pagamento");
-        }
+        return ResponseEntity.ok(response);
+    }
 
-        return ComprovanteResponseDTO.fromEntity(comprovante);
+    @GetMapping("/comprovantes")
+    @Operation(summary = "Listar todos os comprovantes")
+    public ResponseEntity<List<ComprovanteResponseDTO>> processasrListarTodosComprovantes()
+    {
+        List<ComprovanteResponseDTO> response = comprovanteService.listarTodos();
+
+        return response.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/comprovantes/forma/{formaPagamento}")
+    @Operation(summary = "Listar comprovantes por forma de pagamento")
+    public ResponseEntity<List<ComprovanteResponseDTO>> processarListarComprovantesPorFormaPagamento(@PathVariable TipoPagamento formaPagamento)
+    {
+        List<ComprovanteResponseDTO> response = comprovanteService.listarPorFormaPagamento(formaPagamento);
+
+        return response.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/comprovantes/{id}/texto")
+    @Operation(summary = "Gerar texto do comprovante para impressão")
+    public ResponseEntity<String> processarImprimirComprovante(@PathVariable Long id)
+    {
+        ComprovanteResponseDTO response = comprovanteService.buscarPorId(id);
+
+        return ResponseEntity.ok(response.getTexto());
+    }
+
+    @GetMapping("/estatisticas/valor-periodo")
+    @Operation(summary = "Somar valor total de comprovantes no período")
+    public ResponseEntity<Double> somarValorNoPeriodo(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)LocalDateTime inicio, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)LocalDateTime fim )
+    {
+        Double total = comprovanteService.somarValorTotalNoPeriodo(inicio, fim);
+
+        return ResponseEntity.ok(total);
     }
 }
