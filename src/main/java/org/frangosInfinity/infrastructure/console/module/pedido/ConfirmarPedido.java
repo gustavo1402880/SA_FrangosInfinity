@@ -1,0 +1,28 @@
+package org.frangosInfinity.infrastructure.console.module.pedido;
+
+import org.frangosInfinity.infrastructure.util.Front;
+
+import java.sql.SQLOutput;
+import java.util.Scanner;
+
+public class ConfirmarPedido
+{
+
+    private Scanner sc = new Scanner(System.in);
+    private PedidoController controller;
+
+    public boolean confirmarPedido()
+    {
+        System.out.println("╔════════════════════════════════════════╗");
+        System.out.println("║            CONFIRMAR PEDIDO            ║");
+        System.out.println("╚════════════════════════════════════════╝");
+
+        System.out.println(" Digite o id do Pedido: ");
+
+        Long id = (long) Front.lInteiro();
+
+        boolean ok = controller.ConfirmarSubPedido(id);
+
+        return ok;
+    }
+}
