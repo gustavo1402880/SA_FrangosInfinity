@@ -1,29 +1,49 @@
 package org.frangosInfinity.core.entity.module.notificacao;
 
+import jakarta.persistence.*;
 import org.frangosInfinity.core.enums.TipoNotificacao;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "notificacao")
 public class Notificacao
 {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_notificacao", nullable = false)
     private TipoNotificacao tipoNotificacao;
+
+    @Column(nullable = false, length = 500)
     private String mensagem;
+
+    @CreatedDate
+    @Column(name = "data_hora", nullable = false, updatable = false)
     private LocalDateTime dataHora;
-    private boolean lida;
+
+    @Column(nullable = false)
+    private Boolean lida;
+
+    @Column(length = 250)
     private String destinatario;
+
+    @Column(name = "email_enviado")
+    private Boolean emailEnviado;
 
     public Notificacao(){}
 
-    public Notificacao(Long id, TipoNotificacao tipoNotificacao, String mensagem, LocalDateTime dataHora, boolean lida, String destinatario)
+    public Notificacao(TipoNotificacao tipo, String mensagem, String destinatario)
     {
-        id = this.id;
-        tipoNotificacao = this.tipoNotificacao;
-        mensagem = this.mensagem;
-        dataHora = this.dataHora;
-        lida = this.lida;
-        destinatario = this.destinatario;
+        this.tipoNotificacao = tipo;
+        this.mensagem = mensagem;
+        this.destinatario = destinatario;
+        this.lida = false;
+        this.emailEnviado = false;
     }
 
     public Long getId() {
@@ -58,11 +78,11 @@ public class Notificacao
         this.dataHora = dataHora;
     }
 
-    public boolean isLida() {
+    public Boolean getLida() {
         return lida;
     }
 
-    public void setLida(boolean lida) {
+    public void setLida(Boolean lida) {
         this.lida = lida;
     }
 
@@ -72,5 +92,23 @@ public class Notificacao
 
     public void setDestinatario(String destinatario) {
         this.destinatario = destinatario;
+    }
+
+    public Boolean getEmailEnviado() {
+        return emailEnviado;
+    }
+
+    public void setEmailEnviado(Boolean emailEnviado) {
+        this.emailEnviado = emailEnviado;
+    }
+
+    public void marcarComoLida()
+    {
+        this.lida = true;
+    }
+
+    public void marcarEmailEnviado()
+    {
+        this.emailEnviado = true;
     }
 }
