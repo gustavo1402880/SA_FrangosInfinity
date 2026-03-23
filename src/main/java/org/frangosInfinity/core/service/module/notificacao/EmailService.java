@@ -56,8 +56,6 @@ public class EmailService
             message.setContent(mensagem, "text/html; charset=utf-8");
 
             Transport.send(message);
-
-            System.out.println("Email enviado!");
         }
         catch(MessagingException e)
         {
@@ -103,6 +101,24 @@ public class EmailService
         enviarEmail(destinatario, assunto, message);
     }
 
+    public void enviarEmailPedidoPreparando(String destinatario, String numeroPedido)
+    {
+        String assunto = "Preparando Pedido: - "+numeroPedido;
+        String message = String.format("""
+                <html>
+                <body style="font-family: Arial, sans-serif;">
+                     <h2 style="color: #28a745;">Seu pedido está pronto!</h2>
+                     <p><strong>Número do pedido:</strong> %s</p>
+                     <p>Seu pedido está sendo preparado</p>
+                     <p>Agradecemos pela preferência!</p>
+                     <br>
+                     <p>Atenciosamente,<br>Equipe Frango's Infinity</p>
+                </body>
+                </html>
+                """, numeroPedido);
+        enviarEmail(destinatario, assunto, message);
+    }
+
     public void enviarEmailPedidoPronto(String destinatario, String numeroPedido)
     {
         String assunto = "Pedido Pronto! - "+numeroPedido;
@@ -112,6 +128,24 @@ public class EmailService
                      <h2 style="color: #28a745;">Seu pedido está pronto!</h2>
                      <p><strong>Número do pedido:</strong> %s</p>
                      <p>Seu pedido já está pronto para retirada/entrega.</p>
+                     <p>Agradecemos pela preferência!</p>
+                     <br>
+                     <p>Atenciosamente,<br>Equipe Frango's Infinity</p>
+                </body>
+                </html>
+                """, numeroPedido);
+        enviarEmail(destinatario, assunto, message);
+    }
+
+    public void enviarEmailPagamentoConfirmado(String destinatario, String numeroPedido)
+    {
+        String assunto = "Pagamento Confirmado - "+numeroPedido;
+        String message = String.format("""
+                <html>
+                <body style="font-family: Arial, sans-serif;">
+                     <h2 style="color: #28a745;">Pagamento confirmado</h2>
+                     <p><strong>Número do pedido:</strong> %s</p>
+                     <p>Sua transferência foi confirmada com sucesso.</p>
                      <p>Agradecemos pela preferência!</p>
                      <br>
                      <p>Atenciosamente,<br>Equipe Frango's Infinity</p>

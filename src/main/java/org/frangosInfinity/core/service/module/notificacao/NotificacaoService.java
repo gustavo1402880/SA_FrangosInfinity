@@ -5,8 +5,11 @@ import org.frangosInfinity.core.enums.TipoNotificacao;
 import org.frangosInfinity.infrastructure.persistence.module.notificacao.NotificacaoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 public class NotificacaoService
@@ -25,65 +28,88 @@ public class NotificacaoService
 
         Notificacao notSalva = notificacaoRepository.save(notificacao);
 
-        if (destinatario != null && destinatario.contains("@") && (tipo == TipoNotificacao.INFO_PEDIDO))
+        if (destinatario != null && destinatario.contains("@") &&
+                (tipo == TipoNotificacao.INFO_PEDIDO ||
+                 tipo == TipoNotificacao.PEDIDO_CONFIRMADO ||
+                 tipo == TipoNotificacao.PEDIDO_PRONTO))
+        {
+            emailService.enviarEmail(destinatario, tipo.name(), mensagem);
+            notSalva.marcarEmailEnviado();
+            notificacaoRepository.save(notSalva);
+        }
+
+        return notSalva;
     }
 
-
-    public static void notificacaoEmail()
+    @Transactional(readOnly = true)
+    @Cacheable(value = "notificacoes", key = "#destinatario")
+    public List<Notificacao> buscarPorDestinatario(String destinatario)
     {
-        String destinatario = "email_destinatario@estudante.sesisenai.org.br";
-        String assunto = "Frango's Fritos - Cadastro";
-        String mensagem = """
-                        <html>
-                        <body style="margin:0; padding:0; background-color:#f2f2f2; font-family:Arial, Helvetica, sans-serif;">
-                        
-                        <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                        <tr>
-                        <td align="center" style="padding:40px 0;">
-                        
-                        <table width="500" cellpadding="0" cellspacing="0" border="0" 
-                        style="background-color:#ffffff; padding:30px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
-                        
-                        <tr>
-                        <td>
-                        
-                        <h2 style="color:green; margin-top:0;">Implementação concluída ✅</h2>
-                        
-                        <p>Olá,</p>
-                        
-                        <p>
-                        A implementação do sistema de <b>notificações por e-mail</b> foi realizada com sucesso.
-                        </p>
-                        
-                        <p>
-                        Este e-mail foi enviado utilizando um <b>endereço alternativo configurado no sistema</b>.
-                        </p>
-                        
-                        <p style="color:blue;">
-                        Caso você tenha recebido esta mensagem, significa que o envio está funcionando corretamente.
-                        </p>
-                        
-                        <br>
-                        
-                        <p>
-                        Atenciosamente,<br>
-                        <b>Equipe de Desenvolvimento</b><br>
-                        Frangos Infinity
-                        </p>
-                        
-                        </td>
-                        </tr>
-                        
-                        </table>
-                        
-                        </td>
-                        </tr>
-                        </table>
-                        
-                        </body>
-                        </html>
-                        """;
+        return notificacaoRepository.findByDestinatarioOrderByDataHoraDesc(destinatario);
+    }
 
-        EmailService.enviarEmail(destinatario, assunto, mensagem);
+    @Transactional(readOnly = true)
+    public List<Notificacao> buscarNaoLidas(String destinatario)
+    {
+        return notificacaoRepository.findByLidaFalseAndDestinatarioOrderByDataHoraDesc(destinatario);
+    }
+
+    @Transactional(readOnly = true)
+    public Long contarNaoLidas(String destinatario)
+    {
+        return notificacaoRepository.countNaoLidasPorDestinatario(destinatario);
+    }
+
+    @Transactional
+    @CacheEvict(value = "notificacoes")
+    public void marcarComoLida(Long id)
+    {
+        notificacaoRepository.marcarComoLida(id);
+    }
+
+    @Transactional
+    @CacheEvict(value = "notificacoes")
+    public void  marcarTodasComoLidas(String destinatario)
+    {
+        notificacaoRepository.marcarTodasComoLidas(destinatario);
+    }
+
+    public void notificarBoasVindas(String email, String nome)
+    {
+        emailService.enviarEmailBoasVindas(email, nome);
+    }
+
+    public void notificarPedidoConfirmado(String email, String numeroPedido, Double valor)
+    {
+        emailService.enviarEmailPedidoConfirmado(email, numeroPedido, valor);
+    }
+
+    public void notificarPedidoPronto(String email, String numeroPedido)
+    {
+        emailService.enviarEmailPedidoPronto(email, numeroPedido);
+    }
+
+    public void notificarPedidoPreparando(String email, String numeroPedido)
+    {
+        emailService.enviarEmailPedidoPreparando(email, numeroPedido);
+    }
+
+    public void notificarPagamentoConfirmado(String email, String numeroPedido)
+    {
+        emailService.enviarEmailPagamentoConfirmado(email, numeroPedido);
+    }
+
+    public void alertarDemora(String destinatario, Long pedidoId)
+    {
+        String mensagem = String.format("Pedido #%d está atrasado! Verifique a cozinha. ", pedidoId);
+
+        criarNotificacao(TipoNotificacao.ALERTA_DEMORA, mensagem, destinatario);
+    }
+
+    public void alertarEstoqueBaixo(String destinatario, String produtoNome, Integer quantidade)
+    {
+        String mensagem = String.format("Estoque baixo: %s - Disponível: %d unidades", produtoNome, quantidade);
+
+        criarNotificacao(TipoNotificacao.ESTOQUE_BAIXO, mensagem, destinatario);
     }
 }

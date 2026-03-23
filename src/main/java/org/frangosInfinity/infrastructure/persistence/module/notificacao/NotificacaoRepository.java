@@ -14,7 +14,7 @@ import java.util.List;
 @Repository
 public interface NotificacaoRepository extends JpaRepository<Notificacao, Long>
 {
-    List<Notificacao> findByDestinatarioorderByDataHoraDesc(String destinatario);
+    List<Notificacao> findByDestinatarioOrderByDataHoraDesc(String destinatario);
 
     List<Notificacao> findByLidaFalseAndDestinatarioOrderByDataHoraDesc(String destinatario);
 

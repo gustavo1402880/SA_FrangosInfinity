@@ -1,5 +1,7 @@
 package org.frangosInfinity.infrastructure.console.module.relatorio;
 
+import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import org.frangosInfinity.application.module.mesa.response.MesaResponseDTO;
 import org.frangosInfinity.application.module.relatorio.request.RelatorioRequestDTO;
 import org.frangosInfinity.application.module.relatorio.response.RelatorioResponseDTO;
@@ -7,134 +9,102 @@ import org.frangosInfinity.core.entity.module.mesa.Mesa;
 import org.frangosInfinity.core.entity.module.relatorio.RelatorioVendas;
 import org.frangosInfinity.core.service.module.relatorio.RelatorioVendasService;
 import org.frangosInfinity.core.service.module.relatorio.RelatorioVendasService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RelatorioController {
+@RestController
+@RequestMapping("/relatorios")
+public class RelatorioController
+{
+    @Autowired
+    private RelatorioVendasService relatorioService;
 
-    private final RelatorioVendasService relatorioService;
-
-    public RelatorioController() {
-        this.relatorioService = new RelatorioVendasService();
-    }
-
-
-    public RelatorioResponseDTO processarGerarRelatorio(RelatorioRequestDTO request) {
-        if (request == null)
-        {
-            throw new IllegalArgumentException("Dados do relatório não podem ser nulos");
-        }
-
-        try
-        {
-            RelatorioResponseDTO responseDTO = relatorioService.gerarRelatorio(request);
-
-            if (!responseDTO.isSucesso())
-            {
-                throw new RuntimeException(responseDTO.getMensagem());
-            }
-
-            return responseDTO;
-
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException("Erro ao processar geração de relatório: " + e.getMessage());
-        }
-    }
-
-    public RelatorioResponseDTO processarBuscarPorId(Long id)
+    @PostMapping
+    @Operation(summary = "Gerar novo relatório")
+    public ResponseEntity<RelatorioResponseDTO> processarGerarRelatorio(@Valid @RequestBody RelatorioRequestDTO request)
     {
-        if(id == null)
-        {
-            throw new IllegalArgumentException("ID inválido");
-        }
+        RelatorioResponseDTO response = relatorioService.gerarRelatorio(request);
 
-        RelatorioVendas relatorioVendas = relatorioService.buscarPorId(id);
-
-        if (relatorioVendas == null) {
-            throw new RuntimeException("Mesa com ID "+ id +" não encontrada");
-        }
-
-        return RelatorioResponseDTO.fromEntity(relatorioVendas);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    public List<RelatorioResponseDTO> processarListarTodos()
+    @GetMapping("/{id}")
+    @Operation(summary = "Buscar relatório por ID")
+    public ResponseEntity<RelatorioResponseDTO> processarBuscarPorId(@PathVariable Long id)
     {
-        List<RelatorioVendas> relatorios = relatorioService.listarTodos();
-        List<RelatorioResponseDTO> relatoriosDTO = new ArrayList<>();
+        RelatorioResponseDTO response = relatorioService.buscarPorId(id);
 
-        if (relatoriosDTO.isEmpty()) {
-            throw new RuntimeException("Nenhum relatório encontrado");
-        }
-
-        for (RelatorioVendas relatorioVendas : relatorios)
-        {
-            RelatorioResponseDTO response = RelatorioResponseDTO.fromEntity(relatorioVendas);
-            relatoriosDTO.add(response);
-        }
-
-        return relatoriosDTO;
+        return ResponseEntity.ok(response);
     }
 
-
-    public List<RelatorioResponseDTO> processarListarPorPeriodo(LocalDateTime inicio, LocalDateTime fim)
+    @GetMapping("/ultimo")
+    @Operation(summary = "Buscar úlitmo relatório")
+    public ResponseEntity<RelatorioResponseDTO> processarBuscarUltimo()
     {
-        if (inicio == null || fim == null)
-        {
-            throw new IllegalArgumentException("As datas de início e fim devem ser informadas");
-        }
-        if (inicio.isAfter(fim)) {
-            throw new IllegalArgumentException("Data inicial não pode ser após a final");
-        }
+        RelatorioResponseDTO response = relatorioService.buscarUltimo();
 
-        List<RelatorioVendas> relatorios = relatorioService.buscarPorPeriodo(inicio, fim);
-
-        if (relatorios.isEmpty()) {
-            throw new RuntimeException("Nenhum relatório encontrado para o período informado");
-        }
-
-        return relatorios.stream().map(RelatorioResponseDTO::fromEntity).toList();
+        return ResponseEntity.ok(response);
     }
 
-    public List<RelatorioResponseDTO> buscarPorDataGeracao(LocalDateTime dataGeracao) throws SQLException
+    @GetMapping
+    @Operation(summary = "Listar todos os relatórios")
+    public ResponseEntity<List<RelatorioResponseDTO>> processarListarTodos()
     {
-        if (dataGeracao.isBefore(LocalDateTime.now()))
-        {
-            throw new IllegalArgumentException("A data de geração não pode ser antes da data atual");
-        }
+        List<RelatorioResponseDTO> responses = relatorioService.listarTodos();
 
-        if(dataGeracao == null)
-        {
-            throw new IllegalArgumentException("A data de geração não pode ser nulo");
-        }
-
-        List<RelatorioVendas> relatorios = relatorioService.buscarPorDataGeracao(dataGeracao);
-
-        if(relatorios.isEmpty())
-        {
-            throw new RuntimeException("Nenhum relatório encontrado para a data de geração informada");
-        }
-
-        return relatorios.stream().map(RelatorioResponseDTO::fromEntity).toList();
+        return responses.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(responses);
     }
 
-    public boolean processarExcluirRelatorio(Long id)
+    @GetMapping("/data-geracao")
+    @Operation(summary = "Listar relatórios por data de geração")
+    public ResponseEntity<List<RelatorioResponseDTO>> processarBuscarPorDataGeracao(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dataGeracao)
     {
-        if(id == null)
-        {
-            throw new IllegalArgumentException("O id do relatório não pode ser nula");
-        }
+        List<RelatorioResponseDTO> response = relatorioService.buscarPorDataGeracao(dataGeracao);
 
-        boolean removido = relatorioService.excluirRelatorio(id);
+        return response.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(response);
+    }
 
-        if (!removido) {
-            throw new RuntimeException("Erro ao excluir relatório");
-        }
+    @GetMapping("/{id}/pdf")
+    @Operation(summary = "Exportar relatório para PDF")
+    public ResponseEntity<byte[]> processarExportarPdfPorId(@PathVariable Long id)
+    {
+        byte[] pdf = relatorioService.gerarRelatorioPdfPorId(id);
 
-        return removido;
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_PDF).header(HttpHeaders.CONTENT_DISPOSITION,
+                "inline; filename=\"relatorio_" + id + ".pdf\"")
+                .body(pdf);
+    }
+
+    @GetMapping("/periodo/pdf")
+    @Operation(summary = "Exportar relatórios do período para PDF")
+    public ResponseEntity<byte[]> processarExportarPdfPorPeriodo(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fim)
+    {
+        byte[] pdf = relatorioService.gerarRelatorioPdfPorPeriodo(inicio, fim);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"relatorio_" + inicio.toLocalDate() + "_a_" + fim.toLocalDate() + ".pdf\"")
+                .body(pdf);
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Excluir relatório")
+    public ResponseEntity<Void> processarExcluirRelatorio(@PathVariable Long id)
+    {
+        relatorioService.excluirRelatorio(id);
+
+        return ResponseEntity.noContent().build();
     }
 }
