@@ -5,7 +5,12 @@ public enum TipoNotificacao
     ALERTA_DEMORA(1),
     INFO_PEDIDO(2),
     ERRO_SISTEMA(3),
-    ESTOQUE_BAIXO(4);
+    ESTOQUE_BAIXO(4),
+    PEDIDO_CONFIRMADO(5),
+    PEDIDO_PREPERANDO(6),
+    PEDIDO_PRONTO(7),
+    PAGAMENTO_CONFIRMADO(8);
+
 
     private int codigo;
 

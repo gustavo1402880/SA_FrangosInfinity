@@ -2,172 +2,151 @@ package org.frangosInfinity.core.service.module.relatorio;
 
 import org.frangosInfinity.application.module.relatorio.request.RelatorioRequestDTO;
 import org.frangosInfinity.application.module.relatorio.response.RelatorioResponseDTO;
+import org.frangosInfinity.core.entity.exception.BusinessException;
+import org.frangosInfinity.core.entity.exception.ResourceNotFoundException;
 import org.frangosInfinity.core.entity.module.relatorio.RelatorioVendas;
 import org.frangosInfinity.infrastructure.persistence.connection.ConnectionFactory;
 import org.frangosInfinity.infrastructure.persistence.module.relatorio.RelatorioRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
+@Service
 public class RelatorioVendasService
 {
+    @Autowired
+    private RelatorioRepository relatorioRepository;
+
+    @Autowired
+    private PDFService pdfService;
+
+    @Transactional
+    @CacheEvict(value = "relatorios")
     public RelatorioResponseDTO gerarRelatorio(RelatorioRequestDTO request)
     {
-        Connection conn = null;
-
-        try
+        if (request.getPeriodoInicio().isAfter(request.getPeriodoFim()))
         {
-            conn = ConnectionFactory.getConnection();
-
-            conn.setAutoCommit(false);
-
-            RelatorioRepository relatorioRepository = new RelatorioRepository(conn);
-
-            RelatorioVendas relatorioVendas = new RelatorioVendas(null, request.getPeriodoInicio(), request.getDataGeracao(), request.getPeriodoFim(),
-                    request.getTotalPedidor(), request.getTotalVendas(), request.getTicketMedio());
-
-            relatorioRepository.salvar(relatorioVendas);
-
-            conn.commit();
-
-            RelatorioResponseDTO response = RelatorioResponseDTO.fromEntity(relatorioVendas);
-            response.setMensagem("Relatorio gerado com sucesso!");
-            return response;
+            throw new BusinessException("Data de início e fim inválidas");
         }
-        catch (SQLException e)
+
+        RelatorioVendas relatorio = new RelatorioVendas(
+                request.getPeriodoInicio(),
+                request.getPeriodoFim(),
+                request.getTotalVendas(),
+                request.getTotalPedidor(),
+                request.getTicketMedio()
+        );
+        relatorio.calcularTicketMedio();
+
+        RelatorioVendas relSalvo = relatorioRepository.save(relatorio);
+
+        return RelatorioResponseDTO.fromEntity(relSalvo);
+    }
+
+    @Transactional
+    public RelatorioResponseDTO gerarRelatorioAutomatico(LocalDateTime inicio, LocalDateTime fim)
+    {
+        RelatorioRequestDTO request = new RelatorioRequestDTO();
+        request.setPeriodoInicio(inicio);
+        request.setPeriodoFim(fim);
+        request.setTotalVendas(0.0);
+        request.setTotalPedidor(0);
+        request.setTicketMedio(0.0);
+
+        return gerarRelatorio(request);
+    }
+
+    @Transactional(readOnly = true)
+    @Cacheable(value = "relatorios", key = "#id")
+    public RelatorioResponseDTO buscarPorId(Long id)
+    {
+        if (id == null || id <= 0)
         {
-            if (conn != null)
-            {
-                try
-                {
-                    conn.rollback();
-                }
-                catch (SQLException ex)
-                {
-                    ex.printStackTrace();
-                }
-            }
-            throw new RuntimeException(e);
+            throw new BusinessException("ID inválido");
         }
+
+        RelatorioVendas relatorio = relatorioRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Relatório não encontrdao"));
+
+        return RelatorioResponseDTO.fromEntity(relatorio);
+    }
+
+    @Transactional(readOnly = true)
+    @Cacheable(cacheManager = "relatorios")
+    public List<RelatorioResponseDTO> listarTodos()
+    {
+        return relatorioRepository.findAll().stream()
+                .map(RelatorioResponseDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<RelatorioResponseDTO> buscarPorPeriodo(LocalDateTime inicio, LocalDateTime fim)
+    {
+        if (inicio.isAfter(fim))
+        {
+            throw new BusinessException("Data de início e fim inválidas");
+        }
+
+        return relatorioRepository.findByPeriodo(inicio, fim).stream()
+                .map(RelatorioResponseDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<RelatorioResponseDTO> buscarPorDataGeracao(LocalDateTime dataGeracao)
+    {
+        return relatorioRepository.findByDataGeracaoBetween(
+        dataGeracao.withHour(0).withMinute(0).withSecond(0),
+        dataGeracao.withHour(23).withMinute(59).withSecond(39)
+        ).stream()
+                .map(RelatorioResponseDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public RelatorioResponseDTO buscarUltimo()
+    {
+        RelatorioVendas relatorio = relatorioRepository.findFirstByOrderByDataGeracaoDesc().orElseThrow(() -> new ResourceNotFoundException("Relatório não encontrado"));
+
+        return RelatorioResponseDTO.fromEntity(relatorio);
     }
 
     public byte[] gerarRelatorioPdfPorPeriodo(LocalDateTime inicio, LocalDateTime fim)
     {
-        try (Connection conn = ConnectionFactory.getConnection())
+        List<RelatorioVendas> relatorios = relatorioRepository.findByPeriodo(inicio, fim);
+
+        if (relatorios.isEmpty())
         {
-            RelatorioRepository relatorioRepository = new RelatorioRepository(conn);
-
-            List<RelatorioVendas> relatorios = relatorioRepository.buscarPorPeriodo(inicio, fim);
-
-            if (relatorios.isEmpty())
-            {
-                throw new RuntimeException("Nenhum relatório encontrado para o período");
-            }
-
-            // chama o PDF service
-            PDFService pdfService = new PDFService();
-            return pdfService.gerarPdf(relatorios);
+            throw new ResourceNotFoundException("Nenhum relatório encontrado para o período");
         }
-        catch (SQLException e)
-        {
-            throw new RuntimeException("Erro ao gerar PDF", e);
-        }
+
+        return pdfService.gerarPdf(relatorios);
     }
 
-    public List<RelatorioVendas> listarTodos()
+    public byte[] gerarRelatorioPdfPorId(Long id)
     {
-        try(Connection conn = ConnectionFactory.getConnection())
-        {
-            RelatorioRepository relatorioRepository = new RelatorioRepository(conn);
+        RelatorioVendas relatorio = relatorioRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Relatório não encontrado"));
 
-            return relatorioRepository.listarTodos();
-        }
-        catch (SQLException e)
-        {
-            return List.of();
-        }
+        return pdfService.gerarPdf(List.of(relatorio));
     }
 
-    public RelatorioVendas buscarPorId(Long id)
+    @Transactional
+    @CacheEvict(value = "relatorios")
+    public void excluirRelatorio(Long id)
     {
-        try(Connection conn = ConnectionFactory.getConnection())
+        if (!relatorioRepository.existsById(id))
         {
-            RelatorioRepository relatorioRepository = new RelatorioRepository(conn);
-
-            return relatorioRepository.buscarPorId(id).orElse(null);
+            throw new ResourceNotFoundException("Relatório não encontrado");
         }
-        catch(SQLException e)
-        {
-            return null;
-        }
-    }
 
-    public List<RelatorioVendas> buscarPorPeriodo(LocalDateTime inicio, LocalDateTime fim)
-    {
-        try(Connection conn = ConnectionFactory.getConnection())
-        {
-            RelatorioRepository relatorioRepository = new RelatorioRepository(conn);
-
-            return relatorioRepository.buscarPorPeriodo(inicio, fim);
-        }
-        catch(SQLException e)
-        {
-            throw new RuntimeException("Erro ao buscar relatórios" + e);
-        }
-    }
-
-    public List<RelatorioVendas> buscarPorDataGeracao(LocalDateTime dataGeracao)
-    {
-        try(Connection conn = ConnectionFactory.getConnection())
-        {
-            RelatorioRepository relatorioRepository = new RelatorioRepository(conn);
-
-            return relatorioRepository.buscarPorDataGeracao(dataGeracao);
-        }
-        catch(SQLException e)
-        {
-            throw new RuntimeException("Erro ao buscar relatórios "+ e);
-        }
-    }
-
-    public boolean excluirRelatorio(Long id)
-    {
-        Connection conn = null;
-        try
-        {
-            conn = ConnectionFactory.getConnection();
-            conn.setAutoCommit(false);
-
-            RelatorioRepository relatorioRepository = new RelatorioRepository(conn);
-
-            var relatorioVendas = relatorioRepository.buscarPorId(id);
-
-            if(relatorioVendas.isEmpty())
-            {
-                return false;
-            }
-
-            relatorioRepository.deletar(id);
-
-            conn.commit();
-            return true;
-        }
-        catch(SQLException e)
-        {
-            if (conn != null)
-            {
-                try
-                {
-                    conn.rollback();
-                }
-                catch (SQLException ex)
-                {
-                    return false;
-                }
-            }
-            return false;
-        }
+        relatorioRepository.deleteById(id);
     }
 }

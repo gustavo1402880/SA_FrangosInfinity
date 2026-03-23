@@ -1,7 +1,34 @@
 package org.frangosInfinity.core.service.module.notificacao;
 
+import org.frangosInfinity.core.entity.module.notificacao.Notificacao;
+import org.frangosInfinity.core.enums.TipoNotificacao;
+import org.frangosInfinity.infrastructure.persistence.module.notificacao.NotificacaoRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
 public class NotificacaoService
 {
+    @Autowired
+    private NotificacaoRepository notificacaoRepository;
+
+    @Autowired
+    private EmailService emailService;
+
+    @Transactional
+    @CacheEvict(value = "notificacoes")
+    public Notificacao criarNotificacao(TipoNotificacao tipo, String mensagem, String destinatario)
+    {
+        Notificacao notificacao = new Notificacao(tipo, mensagem, destinatario);
+
+        Notificacao notSalva = notificacaoRepository.save(notificacao);
+
+        if (destinatario != null && destinatario.contains("@") && (tipo == TipoNotificacao.INFO_PEDIDO))
+    }
+
+
     public static void notificacaoEmail()
     {
         String destinatario = "email_destinatario@estudante.sesisenai.org.br";
