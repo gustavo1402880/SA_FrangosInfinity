@@ -1,4 +1,5 @@
 package org.frangosInfinity.core.service.module.produto;
+import org.frangosInfinity.application.module.produto.request.CategoriaRequestDTO;
 import org.frangosInfinity.core.entity.module.produto.Categoria;
 import org.frangosInfinity.core.entity.module.produto.Produto;
 import org.frangosInfinity.infrastructure.persistence.connection.ConnectionFactory;
@@ -53,7 +54,7 @@ public class CardapioService {
         return produto;
     }
 
-    public ArrayList<Produto> filtrarPorCategoria(int categoria){
+    public ArrayList<Produto> filtrarPorCategoria(CategoriaRequestDTO categoria){
 
         ArrayList<Produto> produtos = new ArrayList<>();
         ArrayList<Produto>  produtos1 = new ArrayList<>();
@@ -61,7 +62,7 @@ public class CardapioService {
         produtos = produtoDAO.buscarProduto();
 
         for(Produto produto : produtos){
-            if(produto.getCategoria().getId() == categoria ){
+            if(produto.getCategoria().getId() == categoria.getId() ){
                 produtos1.add(produto);
             }
         }
