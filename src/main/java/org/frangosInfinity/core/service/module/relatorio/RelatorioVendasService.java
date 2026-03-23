@@ -4,7 +4,7 @@ import org.frangosInfinity.application.module.relatorio.request.RelatorioRequest
 import org.frangosInfinity.application.module.relatorio.response.RelatorioResponseDTO;
 import org.frangosInfinity.core.entity.module.relatorio.RelatorioVendas;
 import org.frangosInfinity.infrastructure.persistence.connection.ConnectionFactory;
-import org.frangosInfinity.infrastructure.persistence.module.relatorio.RelatorioDAO;
+import org.frangosInfinity.infrastructure.persistence.module.relatorio.RelatorioRepository;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -23,12 +23,12 @@ public class RelatorioVendasService
 
             conn.setAutoCommit(false);
 
-            RelatorioDAO relatorioDAO = new RelatorioDAO(conn);
+            RelatorioRepository relatorioRepository = new RelatorioRepository(conn);
 
             RelatorioVendas relatorioVendas = new RelatorioVendas(null, request.getPeriodoInicio(), request.getDataGeracao(), request.getPeriodoFim(),
                     request.getTotalPedidor(), request.getTotalVendas(), request.getTicketMedio());
 
-            relatorioDAO.salvar(relatorioVendas);
+            relatorioRepository.salvar(relatorioVendas);
 
             conn.commit();
 
@@ -57,9 +57,9 @@ public class RelatorioVendasService
     {
         try (Connection conn = ConnectionFactory.getConnection())
         {
-            RelatorioDAO relatorioDAO = new RelatorioDAO(conn);
+            RelatorioRepository relatorioRepository = new RelatorioRepository(conn);
 
-            List<RelatorioVendas> relatorios = relatorioDAO.buscarPorPeriodo(inicio, fim);
+            List<RelatorioVendas> relatorios = relatorioRepository.buscarPorPeriodo(inicio, fim);
 
             if (relatorios.isEmpty())
             {
@@ -80,9 +80,9 @@ public class RelatorioVendasService
     {
         try(Connection conn = ConnectionFactory.getConnection())
         {
-            RelatorioDAO relatorioDAO = new RelatorioDAO(conn);
+            RelatorioRepository relatorioRepository = new RelatorioRepository(conn);
 
-            return relatorioDAO.listarTodos();
+            return relatorioRepository.listarTodos();
         }
         catch (SQLException e)
         {
@@ -94,9 +94,9 @@ public class RelatorioVendasService
     {
         try(Connection conn = ConnectionFactory.getConnection())
         {
-            RelatorioDAO relatorioDAO = new RelatorioDAO(conn);
+            RelatorioRepository relatorioRepository = new RelatorioRepository(conn);
 
-            return relatorioDAO.buscarPorId(id).orElse(null);
+            return relatorioRepository.buscarPorId(id).orElse(null);
         }
         catch(SQLException e)
         {
@@ -108,9 +108,9 @@ public class RelatorioVendasService
     {
         try(Connection conn = ConnectionFactory.getConnection())
         {
-            RelatorioDAO relatorioDAO = new RelatorioDAO(conn);
+            RelatorioRepository relatorioRepository = new RelatorioRepository(conn);
 
-            return relatorioDAO.buscarPorPeriodo(inicio, fim);
+            return relatorioRepository.buscarPorPeriodo(inicio, fim);
         }
         catch(SQLException e)
         {
@@ -122,9 +122,9 @@ public class RelatorioVendasService
     {
         try(Connection conn = ConnectionFactory.getConnection())
         {
-            RelatorioDAO relatorioDAO = new RelatorioDAO(conn);
+            RelatorioRepository relatorioRepository = new RelatorioRepository(conn);
 
-            return relatorioDAO.buscarPorDataGeracao(dataGeracao);
+            return relatorioRepository.buscarPorDataGeracao(dataGeracao);
         }
         catch(SQLException e)
         {
@@ -140,16 +140,16 @@ public class RelatorioVendasService
             conn = ConnectionFactory.getConnection();
             conn.setAutoCommit(false);
 
-            RelatorioDAO relatorioDAO = new RelatorioDAO(conn);
+            RelatorioRepository relatorioRepository = new RelatorioRepository(conn);
 
-            var relatorioVendas = relatorioDAO.buscarPorId(id);
+            var relatorioVendas = relatorioRepository.buscarPorId(id);
 
             if(relatorioVendas.isEmpty())
             {
                 return false;
             }
 
-            relatorioDAO.deletar(id);
+            relatorioRepository.deletar(id);
 
             conn.commit();
             return true;
