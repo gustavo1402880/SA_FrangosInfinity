@@ -49,12 +49,11 @@ public class CardapioController {
         throw new RuntimeException("Erro - o id precisa ser positivo!");
     }
 
-    public ArrayList<Produto> filtrarPorCategoria(Long id, String nome, String decricao, int ordemExibicao){
+    public ArrayList<Produto> filtrarPorCategoria(Long id){
 
-        if(id >= 1 && nome != null && decricao != null && ordemExibicao >= 1) {
-            CategoriaRequestDTO categoriaRequestDTO = new CategoriaRequestDTO(id, nome, decricao, ordemExibicao);
+        if(id >= 1 ) {
 
-            return cardapioService.filtrarPorCategoria(categoriaRequestDTO);
+            return cardapioService.filtrarPorCategoria(id);
         }
 
         throw new RuntimeException("Erro - os valores estão incorretos!");

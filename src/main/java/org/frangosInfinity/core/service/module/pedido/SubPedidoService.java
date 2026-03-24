@@ -1,11 +1,10 @@
 package org.frangosInfinity.core.service.module.pedido;
-
-import org.frangosInfinity.application.module.pedido.request.PedidoRequestDTO;
 import org.frangosInfinity.application.module.pedido.request.SubPedidoRequestDTO;
 import org.frangosInfinity.application.module.pedido.response.SubPedidoResponseDTO;
 import org.frangosInfinity.core.entity.module.pedido.SubPedido;
 import org.frangosInfinity.core.enums.StatusPedido;
 import org.frangosInfinity.infrastructure.persistence.connection.ConnectionFactory;
+import org.frangosInfinity.infrastructure.persistence.module.pedido.PedidoDAO;
 import org.frangosInfinity.infrastructure.persistence.module.pedido.SubPedidoDAO;
 
 import java.sql.SQLException;
@@ -13,6 +12,18 @@ import java.util.ArrayList;
 
 public class SubPedidoService {
 
+    static SubPedidoDAO subPedidoDAO;
+
+    private PedidoDAO pedidoDAO;
+
+    {
+        try {
+            pedidoDAO = new PedidoDAO(ConnectionFactory.getConnection());
+            subPedidoDAO = new SubPedidoDAO(ConnectionFactory.getConnection());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public SubPedidoResponseDTO criarSubPedido(SubPedidoRequestDTO subPedidoRequestDTO ){
 
@@ -32,23 +43,14 @@ public class SubPedidoService {
             return true;
         }
 
-        return false;
+        throw new RuntimeException("Erro - valor digitedo incorreto");
+
     }
     public StatusPedido consultarStatus(Long id){
 
         SubPedido subPedido = subPedidoDAO.buscarPorId(id);
 
         return subPedido.getStatus();
-    }
-
-    static SubPedidoDAO subPedidoDAO;
-
-    {
-        try {
-            subPedidoDAO = new SubPedidoDAO(ConnectionFactory.getConnection());
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public void cancelarSubPedido(Long id ){
@@ -82,7 +84,7 @@ public class SubPedidoService {
 
     }
 
-    public void AtualizarStatusPreparo(Long id, StatusPedido statusPedido){
+    public void atualizarStatusPreparo(Long id, StatusPedido statusPedido){
 
         subPedidoDAO.AtualizarStatusPedido(id,statusPedido.getCodigo());
 

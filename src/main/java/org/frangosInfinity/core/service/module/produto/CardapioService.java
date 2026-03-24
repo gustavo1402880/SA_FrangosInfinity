@@ -54,7 +54,7 @@ public class CardapioService {
         return produto;
     }
 
-    public ArrayList<Produto> filtrarPorCategoria(CategoriaRequestDTO categoria){
+    public ArrayList<Produto> filtrarPorCategoria(Long id){
 
         ArrayList<Produto> produtos = new ArrayList<>();
         ArrayList<Produto>  produtos1 = new ArrayList<>();
@@ -62,7 +62,7 @@ public class CardapioService {
         produtos = produtoDAO.buscarProduto();
 
         for(Produto produto : produtos){
-            if(produto.getCategoria().getId() == categoria.getId() ){
+            if(produto.getCategoria().getId() == id){
                 produtos1.add(produto);
             }
         }
