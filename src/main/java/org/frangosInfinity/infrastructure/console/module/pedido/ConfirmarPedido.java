@@ -9,7 +9,7 @@ public class ConfirmarPedido
 {
 
     private Scanner sc = new Scanner(System.in);
-    private PedidoController controller;
+
 
     public boolean confirmarPedido()
     {

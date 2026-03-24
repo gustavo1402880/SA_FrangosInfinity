@@ -10,7 +10,7 @@ public class ProdutoView
 
     //╚ ╝  ╣  ╠   ═ ╔  ╗  ║
 
-    private ProdutoController produtoController;
+
     private Scanner sc = new Scanner(System.in);
 
    public void ExibirMenu()

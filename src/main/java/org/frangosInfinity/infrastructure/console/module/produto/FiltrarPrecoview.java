@@ -28,14 +28,13 @@ public class FiltrarPrecoview
         System.out.println("╔════════════════════════════════════════╗");
         for(Produto p : produtos)
         {
-            if(p.getPreco().equals(preco);
+            if(p.getPreco().equals(preco))
             {
                 System.out.printf("║ Nome Produto: %-34s║", p.getNome() + "\nPreço: %-34s║ "+ p.getPreco());
                 System.out.println("\n\n");
             }
+
         }
         System.out.println("╚════════════════════════════════════════╝");
-
-
     }
 }

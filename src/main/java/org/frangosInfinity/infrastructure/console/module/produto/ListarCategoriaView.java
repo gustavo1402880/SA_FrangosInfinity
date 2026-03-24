@@ -1,6 +1,7 @@
 package org.frangosInfinity.infrastructure.console.module.produto;
 
 import org.frangosInfinity.core.entity.module.produto.Categoria;
+import org.frangosInfinity.infrastructure.console.module.produto.controller.CardapioController;
 
 import java.util.List;
 
@@ -10,7 +11,7 @@ public class ListarCategoriaView
     //╚ ╝  ╣  ╠   ═ ╔  ╗  ║
 
 
-    private ProdutoController controller;
+    private CardapioController controller;
     public void ListaCategoria()
     {
 
@@ -18,7 +19,7 @@ public class ListarCategoriaView
         System.out.println("║           LISTA DE CATEGORIAS          ║");
         System.out.println("╚════════════════════════════════════════╝");
 
-        List<Categoria> categorias = controller.ListarCategorias();
+        List<Categoria> categorias = controller.verCategorias();
 
         System.out.println("╔════════════════════════════════════════╗");
         for(Categoria c : categorias)

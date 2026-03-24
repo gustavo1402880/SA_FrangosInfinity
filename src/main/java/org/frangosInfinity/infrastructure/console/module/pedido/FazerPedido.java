@@ -10,7 +10,6 @@ public class FazerPedido
 
     //╚ ╝  ╣  ╠   ═ ╔  ╗  ║
 
-    private PedidoController controller;
     private Scanner sc = new Scanner(System.in);
 
     public SubPedido fazerPedido()

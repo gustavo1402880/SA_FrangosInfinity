@@ -1,6 +1,9 @@
 package org.frangosInfinity.infrastructure.console.module.produto;
 
 import org.frangosInfinity.core.entity.module.produto.Produto;
+import org.frangosInfinity.core.service.module.produto.CardapioService;
+import org.frangosInfinity.core.service.module.produto.Produtoservice;
+import org.frangosInfinity.infrastructure.console.module.produto.controller.ProdutoController;
 
 import java.util.List;
 
@@ -8,15 +11,24 @@ public class ListarProdutosView
 {
 
     //╚ ╝  ╣  ╠   ═ ╔  ╗  ║
-    private ProdutoController controller;
+    private org.frangosInfinity.infrastructure.console.module.produto.controller.ProdutoController produtoController;
 
+    {
+        try {
+
+            produtoController = new ProdutoController();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
     public void ListarProdutos()
     {
         System.out.println("╔════════════════════════════════════════╗");
         System.out.println("║           LISTA DE PRODUTOS            ║");
         System.out.println("╚════════════════════════════════════════╝");
 
-        List<Produto> produtos = controller.ListarProduto();
+        List<Produto> produtos = produtoController.
 
         System.out.println("╔════════════════════════════════════════╗");
         for(Produto p : produtos)
