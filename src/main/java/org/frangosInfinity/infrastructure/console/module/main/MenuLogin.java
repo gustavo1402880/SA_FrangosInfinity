@@ -25,27 +25,27 @@ public class MenuLogin
         if(response.getSucesso())
         {
             Front.mensagemSucesso(response.getMensagem());
-            if(response.getNivelAcesso().equals(NivelAcesso.ADMINISTRADOR)) {
+            if (NivelAcesso.ADMINISTRADOR.equals(response.getNivelAcesso())) {
                 MenuAdministrador.menuIniciar(response.getId(), response.getNivelAcesso());
                 Front.limpaTerminal();
             }
 
-            if(response.getNivelAcesso().equals(NivelAcesso.COZINHEIRO)) {
+            if(NivelAcesso.COZINHEIRO.equals(response.getNivelAcesso())) {
                 MenuCozinheiro.menuInicial(response.getId(), response.getNivelAcesso());
                 Front.limpaTerminal();
             }
 
-            if(response.getNivelAcesso().equals(NivelAcesso.ATENDENTE)) {
+            if(NivelAcesso.ATENDENTE.equals(response.getNivelAcesso())) {
                 MenuAtendente.menuInicial(response.getId(), response.getNivelAcesso());
                 Front.limpaTerminal();
             }
 
-            if(response.getNivelAcesso().equals(NivelAcesso.CAIXA)) {
+            if(NivelAcesso.CAIXA.equals(response.getNivelAcesso())) {
                 MenuCaixa.menuInicial(response.getId(), response.getNivelAcesso());
                 Front.limpaTerminal();
             }
 
-            if(response.getNivelAcesso().equals(NivelAcesso.CLIENTE)) {
+            if(NivelAcesso.CLIENTE.equals(response.getNivelAcesso())) {
                 MenuCliente.menuInicial(response.getId(), response.getNivelAcesso());
                 Front.limpaTerminal();
             }

@@ -606,11 +606,6 @@ public class UsuarioService
                 return UsuarioResponseDTO.erro("Email inválido");
             }
 
-            if (!validarSenha(senha))
-            {
-                return UsuarioResponseDTO.erro("Senha inválida");
-            }
-
             UsuarioDAO usuarioDAO = new UsuarioDAO(connection);
             var usuarioOpt = usuarioDAO.buscarPorEmail(email);
 

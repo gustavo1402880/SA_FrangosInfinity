@@ -9,7 +9,7 @@ import java.util.List;
 
 public class RegistrarPedidoManual
 {
-    public static Pedido RegistrarPedidoManual(Cliente cliente , Mesa mesa , List<ItemPedido> itens)
+    public static void RegistrarPedidoManual(Cliente cliente , Mesa mesa , List<ItemPedido> itens)
     {
 
     }

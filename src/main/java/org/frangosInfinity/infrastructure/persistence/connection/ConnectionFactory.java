@@ -22,9 +22,9 @@ public class ConnectionFactory
             throw new SQLException("Errou ao tentar estabelecer ");
         }
 
-        String url = properties.getProperty("db.url");
+        String url = properties.getProperty("db.url.banco");
         String user = properties.getProperty("db.user");
-        String senha = properties.getProperty("db.senha");
+        String senha = properties.getProperty("db.password");
 
         try
         {

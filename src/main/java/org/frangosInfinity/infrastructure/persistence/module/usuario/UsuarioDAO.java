@@ -56,7 +56,7 @@ public class UsuarioDAO {
     }
 
     private void salvarFuncioario(Funcionario funcionario) throws SQLException {
-        String sql = "INSERT INTO funcionario (id, matricula, data_contratacao, turno, nivel_acesso, salario) VALUES (?,?,?,?,?,?)";
+        String sql = "INSERT INTO funcionario (id, matricula, data_contratacao, turno, nivel_acesso_id, salario) VALUES (?,?,?,?,?,?)";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setLong(1, funcionario.getId());
@@ -426,7 +426,7 @@ public class UsuarioDAO {
         }
         else
         {
-            NivelAcesso nivelAcesso = NivelAcesso.fromCodigo(rs.getInt("nivel_acesso"));
+            NivelAcesso nivelAcesso = NivelAcesso.fromCodigo(rs.getInt("nivel_acesso_id"));
 
             switch (nivelAcesso)
             {
@@ -453,14 +453,13 @@ public class UsuarioDAO {
         cliente.setNome(rs.getString("nome"));
         cliente.setEmail(rs.getString("email"));
         cliente.setTelefone(rs.getString("telefone"));
-        cliente.setSenha(rs.getString(" senha"));
+        cliente.setSenha(rs.getString("senha"));
         cliente.setDataCadastro(rs.getTimestamp("data_cadastro").toLocalDateTime());
         cliente.setAtivo(rs.getBoolean("ativo"));
         cliente.setUsuario(TipoUsuario.CLIENTE);
         cliente.setIdSessao(rs.getString("id_sessao"));
         cliente.setDataNascimento(LocalDate.from(rs.getTimestamp("data_nascimento").toLocalDateTime()));
         cliente.setTotalGasto(rs.getDouble("total_gasto"));
-        cliente.setPontosFidelidade(rs.getInt("pontos_fidelidade"));
 
         return cliente;
     }
@@ -474,7 +473,7 @@ public class UsuarioDAO {
         administrador.setNome(rs.getString("nome"));
         administrador.setEmail(rs.getString("email"));
         administrador.setTelefone(rs.getString("telefone"));
-        administrador.setSenha(rs.getString(" senha"));
+        administrador.setSenha(rs.getString("senha"));
         administrador.setDataCadastro(rs.getTimestamp("data_cadastro").toLocalDateTime());
         administrador.setAtivo(rs.getBoolean("ativo"));
         administrador.setUsuario(TipoUsuario.FUNCIONARIO);
@@ -482,7 +481,6 @@ public class UsuarioDAO {
         administrador.setDataContratacao(rs.getTimestamp("data_contratacao") != null ? rs.getTimestamp("data_contratacao").toLocalDateTime() : LocalDateTime.now());
         administrador.setTurno(rs.getString("turno"));
         administrador.setNivelAcesso(NivelAcesso.ADMINISTRADOR);
-        administrador.setSalario(rs.getDouble("salario"));
 
         return administrador;
     }
@@ -495,7 +493,7 @@ public class UsuarioDAO {
         cozinheiro.setNome(rs.getString("nome"));
         cozinheiro.setEmail(rs.getString("email"));
         cozinheiro.setTelefone(rs.getString("telefone"));
-        cozinheiro.setSenha(rs.getString(" senha"));
+        cozinheiro.setSenha(rs.getString("senha"));
         cozinheiro.setDataCadastro(rs.getTimestamp("data_cadastro").toLocalDateTime());
         cozinheiro.setAtivo(rs.getBoolean("ativo"));
         cozinheiro.setUsuario(TipoUsuario.FUNCIONARIO);
@@ -503,7 +501,6 @@ public class UsuarioDAO {
         cozinheiro.setDataContratacao(rs.getTimestamp("data_contratacao") != null ? rs.getTimestamp("data_contratacao").toLocalDateTime() : LocalDateTime.now());
         cozinheiro.setTurno(rs.getString("turno"));
         cozinheiro.setNivelAcesso(NivelAcesso.COZINHEIRO);
-        cozinheiro.setSalario(rs.getDouble("salario"));
 
         return cozinheiro;
     }
@@ -517,7 +514,7 @@ public class UsuarioDAO {
         caixa.setNome(rs.getString("nome"));
         caixa.setEmail(rs.getString("email"));
         caixa.setTelefone(rs.getString("telefone"));
-        caixa.setSenha(rs.getString(" senha"));
+        caixa.setSenha(rs.getString("senha"));
         caixa.setDataCadastro(rs.getTimestamp("data_cadastro").toLocalDateTime());
         caixa.setAtivo(rs.getBoolean("ativo"));
         caixa.setUsuario(TipoUsuario.FUNCIONARIO);
@@ -525,7 +522,6 @@ public class UsuarioDAO {
         caixa.setDataContratacao(rs.getTimestamp("data_contratacao") != null ? rs.getTimestamp("data_contratacao").toLocalDateTime() : LocalDateTime.now());
         caixa.setTurno(rs.getString("turno"));
         caixa.setNivelAcesso(NivelAcesso.CAIXA);
-        caixa.setSalario(rs.getDouble("salario"));
 
         return caixa;
     }
@@ -539,7 +535,7 @@ public class UsuarioDAO {
         atendente.setNome(rs.getString("nome"));
         atendente.setEmail(rs.getString("email"));
         atendente.setTelefone(rs.getString("telefone"));
-        atendente.setSenha(rs.getString(" senha"));
+        atendente.setSenha(rs.getString("senha"));
         atendente.setDataCadastro(rs.getTimestamp("data_cadastro").toLocalDateTime());
         atendente.setAtivo(rs.getBoolean("ativo"));
         atendente.setUsuario(TipoUsuario.FUNCIONARIO);
@@ -547,7 +543,6 @@ public class UsuarioDAO {
         atendente.setDataContratacao(rs.getTimestamp("data_contratacao") != null ? rs.getTimestamp("data_contratacao").toLocalDateTime() : LocalDateTime.now());
         atendente.setTurno(rs.getString("turno"));
         atendente.setNivelAcesso(NivelAcesso.ATENDENTE);
-        atendente.setSalario(rs.getDouble("salario"));
 
         return atendente;
     }
