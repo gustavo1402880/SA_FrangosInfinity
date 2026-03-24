@@ -22,13 +22,13 @@ public class ListarProdutosView
             throw new RuntimeException(e);
         }
     }
-    public void ListarProdutos()
+    public static void ListarProdutos()
     {
         System.out.println("╔════════════════════════════════════════╗");
         System.out.println("║           LISTA DE PRODUTOS            ║");
         System.out.println("╚════════════════════════════════════════╝");
 
-        List<Produto> produtos = produtoController.
+        List<Produto> produtos = produtoController.listarProduto();
 
         System.out.println("╔════════════════════════════════════════╗");
         for(Produto p : produtos)

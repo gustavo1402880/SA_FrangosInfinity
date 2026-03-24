@@ -36,40 +36,27 @@ public class ProdutoView
 
            switch (opcao) {
                case 1:
-                   AcessarCardapioView acessarCardapioView = new AcessarCardapioView();
-
-                   acessarCardapioView.Acessarcardapio();
-
+                   AcessarCardapioView.Acessarcardapio();
                    break;
 
                case 2:
-                   ListarCategoriaView listarCategoriaView = new ListarCategoriaView();
-
-                   listarCategoriaView.ListaCategoria();
+                   ListarCategoriaView.ListaCategoria();
                    break;
 
                case 3:
-                   ListarProdutosView listarProdutosView = new ListarProdutosView();
-
-                   listarProdutosView.ListarProdutos();
+                   ListarProdutosView.ListarProdutos();
                    break;
 
                case 4:
-                   BuscarProdutosView buscarProdutosView = new BuscarProdutosView();
-
-                   buscarProdutosView.BuscarProduto();
+                   BuscarProdutosView.BuscarProduto();
                    break;
 
                case 5:
-                   FiltrarCategoriaView filtrarCategoriaView = new FiltrarCategoriaView();
-
-                   filtrarCategoriaView.FiltrarCategoria();
+                   FiltrarCategoriaView.FiltrarCategoria();
                    break;
 
                case 6:
-                   FiltrarPrecoview filtrarPrecoview = new FiltrarPrecoview();
-
-                   filtrarPrecoview.Filtrarpreco();
+                   FiltrarPrecoview.Filtrarpreco();
                    break;
 
                case 0:

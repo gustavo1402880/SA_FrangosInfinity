@@ -17,7 +17,7 @@ public class BuscarProdutosView
 
     private CardapioController controller;
     private Scanner sc = new Scanner(System.in);
-    public void BuscarProduto()
+    public static void BuscarProduto()
     {
         System.out.println("╔════════════════════════════════════════╗");
         System.out.println("║             BUSCAR PRODUTO             ║");

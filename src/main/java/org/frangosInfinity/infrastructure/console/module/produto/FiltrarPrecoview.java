@@ -13,7 +13,7 @@ public class FiltrarPrecoview
     //╚ ╝  ╣  ╠   ═ ╔  ╗  ║
 
     private CardapioController controller;
-    public void Filtrarpreco()
+    public static void Filtrarpreco()
     {
         System.out.println("╔════════════════════════════════════════╗");
         System.out.println("║        FILTRAR PREÇO DE PRODUTO        ║");

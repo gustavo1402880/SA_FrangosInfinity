@@ -12,7 +12,7 @@ public class ListarCategoriaView
 
 
     private CardapioController controller;
-    public void ListaCategoria()
+    public static void ListaCategoria()
     {
 
         System.out.println("╔════════════════════════════════════════╗");

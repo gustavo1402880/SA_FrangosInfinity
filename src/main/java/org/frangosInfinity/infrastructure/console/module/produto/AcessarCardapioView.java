@@ -9,7 +9,7 @@ public class AcessarCardapioView
     //╚ ╝  ╣  ╠   ═ ╔  ╗  ║
 
 
-    public void Acessarcardapio()
+    public static void Acessarcardapio()
     {
 
         System.out.println("╔════════════════════════════════════════╗");

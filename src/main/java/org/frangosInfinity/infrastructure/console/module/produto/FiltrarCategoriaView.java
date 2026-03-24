@@ -14,7 +14,7 @@ public class FiltrarCategoriaView
 
     private CardapioController controller;
 
-    public void FiltrarCategoria()
+    public static void FiltrarCategoria()
     {
         System.out.println("╔════════════════════════════════════════╗");
         System.out.println("║         FILTRAR POR CATEGORIA          ║");
