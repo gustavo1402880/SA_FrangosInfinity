@@ -12,7 +12,7 @@ public class FiltrarPrecoview
 
     //╚ ╝  ╣  ╠   ═ ╔  ╗  ║
 
-    private CardapioController controller;
+    private static CardapioController controller;
     public static void Filtrarpreco()
     {
         System.out.println("╔════════════════════════════════════════╗");

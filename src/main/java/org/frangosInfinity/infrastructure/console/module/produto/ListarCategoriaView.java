@@ -11,7 +11,7 @@ public class ListarCategoriaView
     //╚ ╝  ╣  ╠   ═ ╔  ╗  ║
 
 
-    private CardapioController controller;
+    private static CardapioController controller;
     public static void ListaCategoria()
     {
 

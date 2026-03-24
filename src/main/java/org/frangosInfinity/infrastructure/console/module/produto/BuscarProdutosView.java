@@ -15,7 +15,7 @@ public class BuscarProdutosView
 
     //╚ ╝  ╣  ╠   ═ ╔  ╗  ║
 
-    private CardapioController controller;
+    private static CardapioController controller;
     private Scanner sc = new Scanner(System.in);
     public static void BuscarProduto()
     {

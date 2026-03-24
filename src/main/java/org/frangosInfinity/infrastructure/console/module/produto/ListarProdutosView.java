@@ -11,7 +11,7 @@ public class ListarProdutosView
 {
 
     //╚ ╝  ╣  ╠   ═ ╔  ╗  ║
-    private org.frangosInfinity.infrastructure.console.module.produto.controller.ProdutoController produtoController;
+    private static org.frangosInfinity.infrastructure.console.module.produto.controller.ProdutoController produtoController;
 
     {
         try {

@@ -12,7 +12,7 @@ public class FiltrarCategoriaView
 
     //╚ ╝  ╣  ╠   ═ ╔  ╗  ║
 
-    private CardapioController controller;
+    private static CardapioController controller;
 
     public static void FiltrarCategoria()
     {
