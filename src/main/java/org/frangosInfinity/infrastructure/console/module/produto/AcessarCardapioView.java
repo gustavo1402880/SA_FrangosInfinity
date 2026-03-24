@@ -1,6 +1,7 @@
 package org.frangosInfinity.infrastructure.console.module.produto;
 
 import org.frangosInfinity.core.entity.module.produto.Cardapio;
+import org.frangosInfinity.infrastructure.console.module.produto.controller.CardapioController;
 
 public class AcessarCardapioView
 {
@@ -15,6 +16,9 @@ public class AcessarCardapioView
         System.out.println("║                CARDAPIO                ║");
         System.out.println("╚════════════════════════════════════════╝");
 
-        // preciso mostrar o cardapio
+        CardapioController cardapioController = new CardapioController();
+
+        cardapioController.verCardapio();
+
     }
 }
