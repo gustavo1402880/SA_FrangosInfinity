@@ -1,6 +1,5 @@
 package org.frangosInfinity.core.service.module.relatorio;
 
-import org.frangosInfinity.application.module.mesa.response.MesaResponseDTO;
 import org.frangosInfinity.application.module.relatorio.request.RelatorioRequestDTO;
 import org.frangosInfinity.application.module.relatorio.response.RelatorioResponseDTO;
 import org.frangosInfinity.core.entity.module.relatorio.RelatorioVendas;
@@ -9,7 +8,6 @@ import org.frangosInfinity.infrastructure.persistence.module.relatorio.Relatorio
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -69,7 +67,7 @@ public class RelatorioVendasService
             }
 
             // chama o PDF service
-            RelatorioPDFService pdfService = new RelatorioPDFService();
+            PDFService pdfService = new PDFService();
             return pdfService.gerarPdf(relatorios);
         }
         catch (SQLException e)

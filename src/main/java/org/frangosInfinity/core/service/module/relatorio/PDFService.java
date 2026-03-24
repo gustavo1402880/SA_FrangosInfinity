@@ -10,7 +10,7 @@ import org.frangosInfinity.core.entity.module.relatorio.RelatorioVendas;
 import java.io.ByteArrayOutputStream;
 import java.util.List;
 
-public class RelatorioPDFService {
+public class PDFService {
 
     public byte[] gerarPdf(List<RelatorioVendas> relatorios) {
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {

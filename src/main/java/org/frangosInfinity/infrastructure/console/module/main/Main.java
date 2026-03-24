@@ -55,8 +55,6 @@ public class Main
 
     private static UsuarioService usuarioService = new UsuarioService();
 
-    private Administrador administrador = new Administrador("Daniel", "danielerthaldapper2008@gmail.com", "Daniel2008@", TipoUsuario.FUNCIONARIO)
-
     public static UsuarioController usuarioController = new UsuarioController();
 
 
