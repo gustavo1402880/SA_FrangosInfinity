@@ -12,6 +12,7 @@ import org.frangosInfinity.infrastructure.persistence.module.pedido.SubPedidoDAO
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class SubPedidoController {
 
@@ -113,6 +114,25 @@ public class SubPedidoController {
 
             service.atualizarStatusPreparo(id,statusPedido);
 
+        }
+
+        throw new RuntimeException("Erro - valores invalidos");
+
+    }
+
+    public Double calcularTotal(SubPedido subPedido){
+
+        if(subPedido != null){
+
+            SubPedidoRequestDTO subPedidoRequestDTO = new SubPedidoRequestDTO(subPedido.getId(),
+                    subPedido.getPedidoHub(),subPedido.getClienteID(),subPedido.getDate(),subPedido.getStatus(),
+                    subPedido.getValorTotal(),subPedido.getTempo_em_minutos(), subPedido.getObsevacoes());
+
+            Double valor;
+
+            valor = service.calcularTotal(subPedidoRequestDTO);
+
+            return valor;
         }
 
         throw new RuntimeException("Erro - valores invalidos");
