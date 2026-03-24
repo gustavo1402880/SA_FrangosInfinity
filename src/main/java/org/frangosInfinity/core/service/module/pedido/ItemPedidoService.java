@@ -5,7 +5,7 @@ import org.frangosInfinity.core.entity.module.pedido.ItemPedido;
 
 public class ItemPedidoService {
 
-    public Double calcularSubtotal(ItemPedidoRequestDTO itemPedido)throws Exception{
+    public Double calcularSubTotal(ItemPedidoRequestDTO itemPedido){
 
         if(itemPedido != null){
 
@@ -13,6 +13,6 @@ public class ItemPedidoService {
 
         }
 
-        throw new Exception("Erro ao calcularSubtotal");
+        throw new RuntimeException("Erro ao calcularSubtotal");
     }
 }
