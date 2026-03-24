@@ -31,48 +31,48 @@ public class SecurityConfig
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/login", "/css/**", "/js/**", "/images/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/usuarios/clientes").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/usuarios/funcionarios").permitAll()
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/usuarios/funcionarios").authenticated()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 
-                        // ROTA DO CLIENTE
-                        .requestMatchers("/dashboard").authenticated()
-                        .requestMatchers("/api/**").authenticated()
-                        .requestMatchers("/usuarios/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/mesas/{id}/qrcode/validar").authenticated()
-                        .requestMatchers("/cardapio/**").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/contas/cliente/{clienteId}").authenticated()
-                        // ROTA DO ATENDENTE
-                        .requestMatchers(HttpMethod.GET, "/contas").hasAnyRole("ADMINISTRADOR", "ATENDENTE")
-                        .requestMatchers(HttpMethod.GET,"/mesas").hasAnyRole("ADMINISTRADOR", "ATENDENTE", "CAIXA")
+                        .requestMatchers("/auth/me", "auth/status", "/dashboard").authenticated()
+
+                        .requestMatchers(HttpMethod.GET, "/pedidos/cardapio/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/produtos/diponiveis").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/produtos/categoria/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/produtos/mais-vendidos").authenticated()
+
+                        .requestMatchers(HttpMethod.GET, "/mesas").hasAnyRole("ADMINISTRADOR", "ATENDENTE", "CAIXA")
                         .requestMatchers(HttpMethod.GET, "/mesas/disponiveis").hasAnyRole("ADMINISTRADOR", "ATENDENTE", "CAIXA")
-                        .requestMatchers(HttpMethod.GET,"/mesas/{id}").hasAnyRole("ADMINISTRADOR", "ATENDENTE", "CAIXA")
+                        .requestMatchers(HttpMethod.GET, "/mesas/{id}").hasAnyRole("ADMINISTRADOR", "ATENDENTE", "CAIXA")
                         .requestMatchers(HttpMethod.GET, "/mesas/numero/{numero}").hasAnyRole("ADMINISTRADOR", "ATENDENTE", "CAIXA")
-                        .requestMatchers(HttpMethod.POST,"/pedidos/manual").hasAnyRole("ADMINISTRADOR", "ATENDENTE", "CAIXA")
+
+                        .requestMatchers(HttpMethod.POST, "/mesas").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.GET, "/mesas/**").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.DELETE, "/mesas/**").hasRole("ADMINISTRADOR")
                         .requestMatchers(HttpMethod.PATCH, "/mesas/{id}/status").hasAnyRole("ADMINISTRADOR", "ATENDENTE", "CAIXA")
-                        // ROTA DO COZINHEIRO
-                        .requestMatchers(HttpMethod.GET, "/pedidos/em-preparo").hasAnyRole("ADMINISTRADOR", "COZINHEIRO")
-                        .requestMatchers(HttpMethod.POST, "/pedidos/{id}/pronto").hasAnyRole("ADMINISTRADOR", "COZINHEIRO")
-                        // ROTA CAIXA
-                        .requestMatchers(HttpMethod.GET, "/pagamentos/**").hasAnyRole("ADMINISTRADOR", "ATENDENTE", "CAIXA")
-                        .requestMatchers(HttpMethod.GET, "/pagamentos").hasAnyRole("ADMINISTRADOR", "ATENDENTE", "CAIXA")
-                        .requestMatchers(HttpMethod.PATCH,"/pagametnos/{id}/confirmar").hasAnyRole("ADMINISTRADOR", "ATENDENTE", "CAIXA")
-                        .requestMatchers(HttpMethod.POST, "/pontos/acumular").hasAnyRole("ADMINISTRADOR", "ATENDENTE", "CAIXA")
-                        .requestMatchers(HttpMethod.POST, "/pontos/resgatar").hasAnyRole("ADMINISTRADOR", "ATENDENTE", "CAIXA")
-                        // ROTA DO ADMINISTRADOR
-                        .requestMatchers(HttpMethod.POST,"/mesas").hasRole("ADMINISTRADOR")
-                        .requestMatchers(HttpMethod.PUT, "/mesas/**").hasRole("ADMINISTRADOR")
-                        .requestMatchers(HttpMethod.DELETE, "/mesas/**").hasRole("ADMINISITRADOR")
-                        .requestMatchers(HttpMethod.POST,"/mesas/{id}/qrcode").hasRole("ADMINISTRADOR")
-                        .requestMatchers(HttpMethod.POST,"/mesas/qrcode/limpar-expirados").hasRole("ADMINISTRADOR")
-                        .requestMatchers(HttpMethod.POST,"/mesas/{id}/iot").hasRole("ADMINISTRADOR")
-                        .requestMatchers(HttpMethod.PUT, "/mesas/iot/**").hasRole("ADMINISTRADOR")
-                        .requestMatchers(HttpMethod.DELETE,"/mesas/iot/**").hasRole("ADMINISTRADOR")
-                        .requestMatchers(HttpMethod.POST,"/mesas/iot/{idConfig}/comunicar").hasRole("ADMINISTRADOR")
+
+                        .requestMatchers(HttpMethod.POST, "/mesas/{id}/qrcode").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.POST, "/mesas/qrcode/limpar-expirados").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.GET, "/mesas/qrcodes/ativos").hasAnyRole("ADMINISTRADOR", "ATENDENTE")
+
+                        .requestMatchers(HttpMethod.POST, "/mesas/qrcode/{id}/validar").authenticated()
+
+                        .requestMatchers(HttpMethod.GET, "/mesas/iot").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.GET,"/mesas/iot/online").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.GET,"/mesas/{id}/iot").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.POST, "/mesas/iot/{idConfig}/comunicar").hasRole("ADMINISTRADOR")
                         .requestMatchers(HttpMethod.PATCH, "/mesas/iot/{idConfig}/firmware").hasRole("ADMINISTRADOR")
-                        .requestMatchers(HttpMethod.GET, "/mesas/iot").hasAnyRole("ADMINISTRADOR")
-                        .requestMatchers(HttpMethod.GET, "/mesas/iot/online").hasAnyRole("ADMINISTRADOR")
-                        .requestMatchers(HttpMethod.GET, "/mesas/{id}/iot").hasAnyRole("ADMINISTRADOR")
-                        .requestMatchers("/relatorios/**").hasAnyRole("ADMINISTRADOR")
+
+                        .requestMatchers(HttpMethod.GET, "/produtos").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/produtos/{id}").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/produtos/codigo/{codigo}").authenticated()
+
+                        .requestMatchers(HttpMethod.POST, "/produtos").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.PUT, "/produtos/{id}").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.PATCH, "/produtos/{id}/disponibilidade").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.PATCH, "/produtos/{id}/aprovar-preco").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.DELETE, "/produtos/{id}").hasRole("ADMINISTRADOR")
+
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
