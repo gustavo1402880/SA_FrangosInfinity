@@ -1,6 +1,8 @@
 package org.frangosInfinity.infrastructure.console.module.produto;
 
 import org.frangosInfinity.core.entity.module.produto.Produto;
+import org.frangosInfinity.infrastructure.console.module.pedido.controller.CarrinhoController;
+import org.frangosInfinity.infrastructure.console.module.produto.controller.CardapioController;
 import org.frangosInfinity.infrastructure.util.Front;
 
 import java.util.List;
@@ -10,28 +12,23 @@ public class FiltrarPrecoview
 
     //╚ ╝  ╣  ╠   ═ ╔  ╗  ║
 
-    private ProdutoController controller;
+    private CardapioController controller;
     public void Filtrarpreco()
     {
         System.out.println("╔════════════════════════════════════════╗");
         System.out.println("║        FILTRAR PREÇO DE PRODUTO        ║");
         System.out.println("╚════════════════════════════════════════╝");
 
-        System.out.println("║  Digite o preço minimo para os produtos: ");
+        System.out.println("║  Digite o preço para os produtos: ");
 
-        double minimo = Front.lDouble();
-        System.out.println("╠════════════════════════════════════════╣ ");
-
-        System.out.println("║ %-34s║%n  Digite o preço maximo para os produtos: ");
-
-        double maximo = Front.lDouble();
+        Double preco = Front.lDouble();
         System.out.println("╚════════════════════════════════════════╝");
 
-        List<Produto> produtos = controller.ListarProdutos();
+        List<Produto> produtos = controller.filtrarPorPreco(preco);
         System.out.println("╔════════════════════════════════════════╗");
         for(Produto p : produtos)
         {
-            if(p.getPreco() > minimo && p.getPreco() < maximo)
+            if(p.getPreco().equals(preco);
             {
                 System.out.printf("║ Nome Produto: %-34s║", p.getNome() + "\nPreço: %-34s║ "+ p.getPreco());
                 System.out.println("\n\n");
