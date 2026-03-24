@@ -1,6 +1,5 @@
 package org.frangosInfinity.infrastructure.console.module.main;
 
-import org.frangosInfinity.application.module.usuario.request.UsuarioRequestDTO;
 import org.frangosInfinity.application.module.usuario.response.UsuarioResponseDTO;
 import org.frangosInfinity.core.enums.NivelAcesso;
 import org.frangosInfinity.infrastructure.console.module.usuario.*;
