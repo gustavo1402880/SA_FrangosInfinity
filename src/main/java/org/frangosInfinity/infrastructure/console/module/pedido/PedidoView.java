@@ -1,6 +1,7 @@
 package org.frangosInfinity.infrastructure.console.module.pedido;
 
 import org.frangosInfinity.core.entity.module.mesa.Mesa;
+import org.frangosInfinity.infrastructure.console.module.main.EncerarSistema;
 import org.frangosInfinity.infrastructure.util.Front;
 
 import java.sql.SQLOutput;
@@ -10,9 +11,7 @@ public class PedidoView
 {
     //╚ ╝  ╣  ╠   ═ ╔  ╗  ║
 
-    private String espaco = " ";
-    private Scanner sc = new Scanner(System.in);
-    public void pedidosViewCliente()
+    public static void pedidosViewCliente()
     {
         System.out.println("╔════════════════════════════════════════╗");
         System.out.println("║             MENU DE PEDIDOS            ║");
@@ -24,75 +23,46 @@ public class PedidoView
         System.out.println("║       5 - Cancelar pedido              ║");
         System.out.println("║       6 - Vizualizar Historico         ║");
         System.out.println("║       7 - Solicitar Pagamento          ║");
-        System.out.println("║       8 - ver Pontos                   ║");
+        System.out.println("║       8 - Ver Pontos                   ║");
         System.out.println("║       9 Sair                           ║");
         System.out.println("╠════════════════════════════════════════╣");
-        System.out.printf("║   Qual opção deseja %-21s║%n ", espaco);
+        System.out.print("║   Qual opção deseja: ");
         int opcao = Front.lInteiro();
 
         switch (opcao)
         {
             case 1 :
-                VizualizarCardapio vizualizarCardapio = new VizualizarCardapio();
-
-                vizualizarCardapio.VizualizarCardapioo();
+                VizualizarCardapio.VizualizarCardapioo();
                 break;
-
             case 2 :
-                FazerPedido fazerPedido = new FazerPedido();
-
-                fazerPedido.fazerPedido();
+                FazerPedido.fazerPedido();
                 break;
-
             case 3 :
-                ConfirmarPedido confirmarPedido = new ConfirmarPedido();
-
-                confirmarPedido.confirmarPedido();
+                ConfirmarPedido.confirmarPedido();
 
                 break;
-
             case 4 :
-                AcompanharStatus acompanharStatus = new AcompanharStatus();
-
-                acompanharStatus.acompanharstatus();
-
+                AcompanharStatus.acompanharstatus();
 
                 break;
-
             case 5 :
-                CancelarPedido cancelarPedido = new CancelarPedido();
-
-                cancelarPedido.cancelarPedido();
+                CancelarPedido.cancelarPedido();
                 break;
 
             case 6 :
-                VizualizarHistorico vizualizarHistorico = new VizualizarHistorico();
-
-                vizualizarHistorico.vizualizarHistorico();
+                VizualizarHistorico.vizualizarHistorico();
                 break;
-
             case 7 :
-                SolicitarPagamento solicitarPagamento = new SolicitarPagamento();
-
-                solicitarPagamento.solicitarPagamento();
+                SolicitarPagamento.solicitarPagamento();
                 break;
-
             case 8 :
-                VerPontos verPontos = new VerPontos();
-
-                verPontos.verPontos();
+                VerPontos.verPontos();
                 break;
-
             case 9 :
-                System.out.println(" Obrigado pela Visita");
+                EncerarSistema.desligar();
                 break;
-
             default:
                 System.out.println(" Opção errada, tente novamente");
         }
-
-
-
-
     }
 }

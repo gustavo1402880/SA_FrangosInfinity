@@ -4,7 +4,7 @@ import org.frangosInfinity.core.enums.StatusPedido;
 
 public class AcompanharStatus
 {
-    public StatusPedido acompanharstatus()
+    public static void acompanharstatus()
     {
 
     }

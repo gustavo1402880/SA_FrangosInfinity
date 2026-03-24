@@ -2,7 +2,7 @@ package org.frangosInfinity.infrastructure.console.module.pedido;
 
 public class VerPontos
 {
-    public void verPontos()
+    public static void verPontos()
     {
 
     }

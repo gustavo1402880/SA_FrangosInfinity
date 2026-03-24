@@ -6,7 +6,7 @@ import java.util.List;
 
 public class VizualizarHistorico
 {
-    public List<SubPedido>  vizualizarHistorico()
+    public static void  vizualizarHistorico()
     {
 
     }
