@@ -50,7 +50,7 @@ public class PedidoService {
     public String gerarLinkConvite(Long id){
 
         if(id >= 1) {
-            String urlBase = "https://FroangosInfinity.com/convite/";
+            String urlBase = "https://FrangosInfinity.com/convite/";
             return urlBase + id;
         }
 
@@ -120,7 +120,7 @@ public class PedidoService {
 
     }
 
-    public void AtualizarStatusPedido(Long id, StatusPedido statusPedido){
+    public void atualizarStatusPedido(Long id, StatusPedido statusPedido){
 
         if(id >= 1 && statusPedido != null){
 
@@ -132,7 +132,7 @@ public class PedidoService {
 
     }
 
-    public void CancelarPedido(Long id){
+    public void cancelarPedido(Long id){
 
         if(id >= 1 ){
 
