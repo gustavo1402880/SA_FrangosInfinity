@@ -4,7 +4,7 @@ import org.frangosInfinity.core.entity.module.produto.Cardapio;
 
 public class VizualizarCardapio
 {
-    public Cardapio VizualizarCardapioo()
+    public static void VizualizarCardapioo()
     {
         System.out.println("╔════════════════════════════════════════╗");
         System.out.println("║                CARDAPIO                ║");

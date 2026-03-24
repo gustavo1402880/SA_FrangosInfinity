@@ -11,7 +11,7 @@ public class ConfirmarPedido
     private Scanner sc = new Scanner(System.in);
 
 
-    public boolean confirmarPedido()
+    public static void confirmarPedido()
     {
         System.out.println("╔════════════════════════════════════════╗");
         System.out.println("║            CONFIRMAR PEDIDO            ║");
@@ -21,8 +21,6 @@ public class ConfirmarPedido
 
         Long id = (long) Front.lInteiro();
 
-        boolean ok = controller.ConfirmarSubPedido(id);
 
-        return ok;
     }
 }

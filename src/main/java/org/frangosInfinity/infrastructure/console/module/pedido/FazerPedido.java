@@ -12,7 +12,7 @@ public class FazerPedido
 
     private Scanner sc = new Scanner(System.in);
 
-    public SubPedido fazerPedido()
+    public static void fazerPedido()
     {
         System.out.println("╔════════════════════════════════════════╗");
         System.out.println("║              FAZER PEDIDO              ║");
@@ -27,8 +27,5 @@ public class FazerPedido
         System.out.println("║  Digite o ID do Pedido:");
         Long idPedido = (long) Front.lInteiro();
         System.out.println("╚════════════════════════════════════════╝");
-
-        controller.criarSubPedido(idPedido);
-
     }
 }
