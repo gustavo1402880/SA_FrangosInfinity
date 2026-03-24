@@ -29,55 +29,61 @@ public class ProdutoView
        System.out.println("╠═════════════════════════════════════════╣  ");
 
        System.out.println("║ %-34s║%n Escolha a opção que deseja: ");
-       int opcao = Front.lInteiro();
-       System.out.println("╚════════════════════════════════════════╝");
+       try
+       {
+           int opcao = Front.lInteiro();
+           System.out.println("╚════════════════════════════════════════╝");
 
-       switch (opcao) {
-           case 1:
-               AcessarCardapioView acessarCardapioView = new AcessarCardapioView();
+           switch (opcao) {
+               case 1:
+                   AcessarCardapioView acessarCardapioView = new AcessarCardapioView();
 
-               acessarCardapioView.Acessarcardapio();
+                   acessarCardapioView.Acessarcardapio();
 
-               break;
+                   break;
 
-           case 2:
-               ListarCategoriaView listarCategoriaView = new ListarCategoriaView();
+               case 2:
+                   ListarCategoriaView listarCategoriaView = new ListarCategoriaView();
 
-               listarCategoriaView.ListaCategoria();
-               break;
+                   listarCategoriaView.ListaCategoria();
+                   break;
 
-           case 3:
-              ListarProdutosView listarProdutosView = new ListarProdutosView();
+               case 3:
+                   ListarProdutosView listarProdutosView = new ListarProdutosView();
 
-              listarProdutosView.ListarProdutos();
-               break;
+                   listarProdutosView.ListarProdutos();
+                   break;
 
-           case 4:
-               BuscarProdutosView buscarProdutosView = new BuscarProdutosView();
+               case 4:
+                   BuscarProdutosView buscarProdutosView = new BuscarProdutosView();
 
-               buscarProdutosView.BuscarProduto();
-               break;
+                   buscarProdutosView.BuscarProduto();
+                   break;
 
-           case 5:
-               FiltrarCategoriaView filtrarCategoriaView = new FiltrarCategoriaView();
+               case 5:
+                   FiltrarCategoriaView filtrarCategoriaView = new FiltrarCategoriaView();
 
-               filtrarCategoriaView.FiltrarCategoria();
-               break;
+                   filtrarCategoriaView.FiltrarCategoria();
+                   break;
 
-           case 6:
-               FiltrarPrecoview filtrarPrecoview = new FiltrarPrecoview();
+               case 6:
+                   FiltrarPrecoview filtrarPrecoview = new FiltrarPrecoview();
 
-               filtrarPrecoview.Filtrarpreco();
-               break;
+                   filtrarPrecoview.Filtrarpreco();
+                   break;
 
-           case 0:
-               System.out.println("Encerrando sistema...");
-               break;
+               case 0:
+                   System.out.println("Encerrando sistema...");
+                   break;
 
-           default:
-               System.out.println("Opção inválida! Tente novamente.");
+               default:
+                   System.out.println("Opção inválida! Tente novamente.");
+           }
        }
-
+       catch (Exception e)
+       {
+           System.out.println(e.getMessage());
+       }
    }
 
 }

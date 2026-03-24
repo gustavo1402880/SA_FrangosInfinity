@@ -4,9 +4,9 @@ import org.frangosInfinity.core.entity.module.pedido.SubPedido;
 
 import java.util.List;
 
-public class ListarSubPedido
+public class VizualizarHistorico
 {
-    public List<SubPedido> ListarSubpedido()
+    public List<SubPedido>  vizualizarHistorico()
     {
 
     }

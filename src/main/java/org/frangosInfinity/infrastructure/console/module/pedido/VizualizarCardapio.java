@@ -1,24 +1,15 @@
-package org.frangosInfinity.infrastructure.console.module.produto;
+package org.frangosInfinity.infrastructure.console.module.pedido;
 
 import org.frangosInfinity.core.entity.module.produto.Cardapio;
-import org.frangosInfinity.infrastructure.console.module.produto.controller.CardapioController;
 
-public class AcessarCardapioView
+public class VizualizarCardapio
 {
-
-    //╚ ╝  ╣  ╠   ═ ╔  ╗  ║
-
-
-    public void Acessarcardapio()
+    public Cardapio VizualizarCardapioo()
     {
-
         System.out.println("╔════════════════════════════════════════╗");
         System.out.println("║                CARDAPIO                ║");
         System.out.println("╚════════════════════════════════════════╝");
 
-        CardapioController cardapioController = new CardapioController();
-
-        cardapioController.verCardapio();
 
     }
 }
