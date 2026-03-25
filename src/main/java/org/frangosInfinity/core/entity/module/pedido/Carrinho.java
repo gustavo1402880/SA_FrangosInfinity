@@ -17,7 +17,6 @@ public class Carrinho {
     // Contrutores
 
 
-    public Carrinho() {}
 
     public Carrinho( Date dataCriacao,Long cliente_id, ArrayList<ItemPedido> itens, Double valorTotal) {
         this.cliente_id = cliente_id;

@@ -2,6 +2,7 @@ package org.frangosInfinity.core.service.module.pedido;
 import org.frangosInfinity.application.module.pedido.request.CarrinhoRequestDTO;
 import org.frangosInfinity.application.module.pedido.request.ItemPedidoRequestDTO;
 import org.frangosInfinity.application.module.pedido.response.CarrinhoResponseDTO;
+import org.frangosInfinity.application.module.pedido.response.SubPedidoResponseDTO;
 import org.frangosInfinity.core.entity.module.pedido.Carrinho;
 import org.frangosInfinity.core.entity.module.pedido.ItemPedido;
 import org.frangosInfinity.core.entity.module.pedido.SubPedido;
@@ -13,7 +14,7 @@ import java.util.ArrayList;
 
 public class CarrinhoService {
 
-    public CarrinhoResponseDTO adicionarItem(ItemPedidoRequestDTO itemPedidoRequestDTO, CarrinhoRequestDTO carrinhoRequestDTO) throws Exception
+    public CarrinhoResponseDTO adicionarItem(ItemPedidoRequestDTO itemPedidoRequestDTO, CarrinhoRequestDTO carrinhoRequestDTO)
     {
 
         ArrayList<ItemPedido> pedidos;
@@ -44,12 +45,12 @@ public class CarrinhoService {
 
         }else {
 
-            throw new Exception("Erro ao adicionar item no carrinho");
+            throw new RuntimeException("Erro ao adicionar item no carrinho");
 
         }
     }
 
-    public CarrinhoResponseDTO removerItem(ItemPedidoRequestDTO itemPedidoRequestDTO, CarrinhoRequestDTO carrinhoRequestDTO) throws Exception
+    public CarrinhoResponseDTO removerItem(ItemPedidoRequestDTO itemPedidoRequestDTO, CarrinhoRequestDTO carrinhoRequestDTO)
     {
 
         ArrayList<ItemPedido> pedidos;
@@ -73,12 +74,12 @@ public class CarrinhoService {
 
         }else {
 
-            throw new Exception("Erro ao remover produto");
+            throw new RuntimeException("Erro ao remover produto");
 
         }
     }
 
-    public CarrinhoResponseDTO alterarQuantidade(ItemPedidoRequestDTO itemPedidoRequestDTO, int quantidade, CarrinhoRequestDTO carrinhoRequestDTO) throws Exception{
+    public CarrinhoResponseDTO alterarQuantidade(ItemPedidoRequestDTO itemPedidoRequestDTO, int quantidade, CarrinhoRequestDTO carrinhoRequestDTO) {
 
         ArrayList<ItemPedido> pedidos;
         ItemPedido itemPedido = new ItemPedido(itemPedidoRequestDTO.getId_ItemPedido(),
@@ -118,15 +119,15 @@ public class CarrinhoService {
 
         } catch (SQLException e) {
 
-            throw new Exception("Erro ao alterar quantidade");
+            throw new RuntimeException("Erro ao alterar quantidade");
 
         }
 
-        throw new Exception("Erro ao alterar quantidade");
+        throw new RuntimeException("Erro ao alterar quantidade");
 
     }
 
-    public Double calcularTotal(CarrinhoRequestDTO carrinho) throws Exception{
+    public Double calcularTotal(CarrinhoRequestDTO carrinho)  {
 
         ArrayList<ItemPedido> pedidos = carrinho.getItens();
 
@@ -142,12 +143,12 @@ public class CarrinhoService {
 
         }else {
 
-            throw new Exception("Erro ao calcular total");
+            throw new RuntimeException("Erro ao calcular total");
 
         }
     }
 
-    public CarrinhoResponseDTO limpar(CarrinhoRequestDTO carrinhoRequestDTO) throws Exception{
+    public CarrinhoResponseDTO limpar(CarrinhoRequestDTO carrinhoRequestDTO)  {
 
         if (carrinhoRequestDTO != null) {
             ArrayList<ItemPedido> pedidos = carrinhoRequestDTO.getItens();
@@ -167,12 +168,12 @@ public class CarrinhoService {
             return carrinho;
         }
 
-        throw new Exception("Erro ao limpar o carrinho");
+        throw new RuntimeException("Erro ao limpar o carrinho");
     }
 
-    public SubPedido converterParaSubPedido(Carrinho carrinho)throws Exception{
+    public SubPedidoResponseDTO converterParaSubPedido(CarrinhoRequestDTO carrinhoRequestDTO) {
 
-        if(carrinho != null) {
+        if(carrinhoRequestDTO != null) {
 
             SubPedido subPedido = new SubPedido();
 
@@ -180,7 +181,7 @@ public class CarrinhoService {
 
         }
 
-        throw new Exception("Erro ao converter para SubPedido");
+        throw new RuntimeException("Erro ao converter para SubPedido");
 
     }
 

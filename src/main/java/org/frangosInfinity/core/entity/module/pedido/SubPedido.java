@@ -1,5 +1,6 @@
 package org.frangosInfinity.core.entity.module.pedido;
 
+import org.frangosInfinity.application.module.pedido.response.SubPedidoResponseDTO;
 import org.frangosInfinity.core.enums.StatusPedido;
 
 import java.sql.Date;
