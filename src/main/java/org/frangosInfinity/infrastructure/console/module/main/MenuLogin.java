@@ -36,7 +36,7 @@ public class MenuLogin
             }
 
             if(NivelAcesso.ATENDENTE.equals(response.getNivelAcesso())) {
-                MenuAtendente.menuInicial(response.getId(), response.getNivelAcesso());
+                MenuAtendente.menuInicial(response.getId());
                 Front.limpaTerminal();
             }
 
