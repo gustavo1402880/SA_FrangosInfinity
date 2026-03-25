@@ -18,6 +18,6 @@ public class ValidarConvite
         Long id = (long) Front.lInteiro();
 
         // nao sei oque esta dando de errado aqui, tenho que passar o pedido
-        controller.validarConvite(id);
+        //controller.validarConvite(id);
     }
 }

@@ -19,7 +19,7 @@ public class MenuLogin
         String senhaLogin = Front.lString();
 
         Front.limpaTerminal();
-        Front.ProcessamentoDeDados.main();
+        //Front.ProcessamentoDeDados.main();
 
         UsuarioResponseDTO response = Main.usuarioController.processarLogin(email, senhaLogin);
         if(response.getSucesso())

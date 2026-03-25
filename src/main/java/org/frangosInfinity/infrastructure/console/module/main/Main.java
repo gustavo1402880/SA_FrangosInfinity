@@ -27,33 +27,6 @@ import org.frangosInfinity.infrastructure.util.Front;
 
 public class Main
 {
-    private static PontosFidelidadeService pontosFidelidadeService = new PontosFidelidadeService();
-    private static RegrasFidelidadeService regrasFidelidadeService = new RegrasFidelidadeService();
-
-    private static IoTConfigService ioTConfigService = new IoTConfigService();
-    private static MesaService mesaService = new MesaService();
-    private static QRCodeService qrCodeService = new QRCodeService();
-
-    private static EmailService emailService = new EmailService();
-    private static NotificacaoService notificacaoService = new NotificacaoService();
-
-    private static ComprovanteService comprovanteService = new ComprovanteService();
-    private static PagamentoService pagamentoService = new PagamentoService();
-    private static TransacaoPIXService transacaoPIXService = new TransacaoPIXService();
-
-    private static CarrinhoService carrinhoService = new CarrinhoService();
-    private static ItemPedidoService itemPedidoService = new ItemPedidoService();
-    private static PedidoService pedidoService = new PedidoService();
-    private static SubPedidoService subPedidoService = new SubPedidoService();
-
-    private static CardapioService cardapioService = new CardapioService();
-    private static CategoriaService categoriaService = new CategoriaService();
-    private static EstoqueService estoqueService = new EstoqueService();
-    private static Produtoservice produtoservice = new Produtoservice();
-
-    //private static RelatorioVendasService relatorioVendasService = new RelatorioVendasService();
-
-    private static UsuarioService usuarioService = new UsuarioService();
 
     public static UsuarioController usuarioController = new UsuarioController();
 
