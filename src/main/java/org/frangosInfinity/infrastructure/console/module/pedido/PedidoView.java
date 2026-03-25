@@ -32,7 +32,7 @@ public class PedidoView
         switch (opcao)
         {
             case 1 :
-                VizualizarCardapio.VizualizarCardapioo();
+                VizualizarCardapio.Vizualizarsubpedido();
                 break;
             case 2 :
                 FazerPedido.fazerPedido();

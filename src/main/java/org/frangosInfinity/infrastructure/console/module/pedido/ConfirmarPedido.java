@@ -1,5 +1,6 @@
 package org.frangosInfinity.infrastructure.console.module.pedido;
 
+import org.frangosInfinity.infrastructure.console.module.pedido.controller.SubPedidoController;
 import org.frangosInfinity.infrastructure.util.Front;
 
 import java.sql.SQLOutput;
@@ -10,7 +11,7 @@ public class ConfirmarPedido
 
     private Scanner sc = new Scanner(System.in);
 
-
+    private static SubPedidoController controller;
     public static void confirmarPedido()
     {
         System.out.println("╔════════════════════════════════════════╗");
@@ -21,6 +22,6 @@ public class ConfirmarPedido
 
         Long id = (long) Front.lInteiro();
 
-
+        controller.confirmarSubpedido(id);
     }
 }
