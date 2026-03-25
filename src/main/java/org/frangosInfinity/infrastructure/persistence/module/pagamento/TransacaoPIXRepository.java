@@ -16,7 +16,7 @@ public interface TransacaoPIXRepository extends JpaRepository<TransacaoPIX, Long
 {
     Optional<TransacaoPIX> findByPagamentoId(Long pagamentoId);
 
-    @Query("SELECT t FROM TransacaoPÌX t WHERE t.dataExpiracao < :now")
+    @Query("SELECT t FROM TransacaoPIX t WHERE t.dataExpiracao < :now")
     List<TransacaoPIX> findExpirados(@Param("now")LocalDateTime now);
 
     @Query("SELECT t FROM TransacaoPIX t WHERE t.dataExpiracao > :now")

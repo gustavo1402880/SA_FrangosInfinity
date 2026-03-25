@@ -257,6 +257,7 @@ public class Carrinho implements Serializable
         {
             ItemPedido item = new ItemPedido(
                     itemCarrinho.getProdutoId(),
+                    itemCarrinho.getNome(),
                     itemCarrinho.getQuantidade(),
                     itemCarrinho.getPrecoUnitario(),
                     itemCarrinho.getTempoPreparoEstimado()

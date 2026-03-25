@@ -17,16 +17,12 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long>
 {
     Optional<Pedido> findByNumeroPedido(String numeroPedido);
 
-    List<Pedido> findByStatus(StatusPedido statusPedido);
-
-    List<Pedido> findByMesaIdAndStatus(Long mesaId, StatusPedido statusPedido);
+    @Query("SELECT DISTINCT p FROM Pedido p JOIN p.subPedidos s WHERE s.status = :status")
+    List<Pedido> findByStatus(@Param("status") StatusPedido statusPedido);
 
     @Query("SELECT p FROM Pedido p WHERE p.dataHora BETWEEN :inicio AND :fim ORDER BY p.dataHora DESC")
     List<Pedido> findByPeriodo(@Param("inicio")LocalDateTime inicio, @Param("fim") LocalDateTime fim);
 
-    @Query("SELECT COUNT(p) FROM Pedido p WHERE p.status = :status")
-    Long countByStatus(@Param("status") StatusPedido status);
-
-    @Query("SELECT p FROM Pedido p WHERE p.mesaId = :mesaId AND p.statusId != 6 ORDER BY p.dataHora DESC")
+    @Query("SELECT p FROM Pedido p WHERE p.mesaId = :mesaId AND EXISTS (SELECT s FROM SubPedido s WHERE s.pedido = p AND  s.status NOT IN ('ENTREGUE', 'CANCELADO') ORDER BY p.dataHora DESC)")
     List<Pedido> findAtivosPorMesa(@Param("mesaId") Long mesaId);
 }

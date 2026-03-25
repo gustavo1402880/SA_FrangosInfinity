@@ -26,7 +26,7 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long>
     @Query("SELECT p FROM Produto p WHERE p.disponivel = true AND p.estoque.quantidadeAtual > 0")
     List<Produto> findDisponivelComEstoque();
 
-    @Query("SELECT p FROM Produto p ORDER BY p.vendasUltimos30Dias DESC")
+    @Query("SELECT p FROM Produto p ORDER BY p.vendasUltimos30dias DESC")
     List<Produto> findMaisVendidos();
 
     @Query("SELECT p FROM Produto p WHERE p.precoPendenteAprovacao IS NOT NULL")
@@ -35,6 +35,6 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long>
     Boolean existsByCodigo(String codigo);
 
     @Modifying
-    @Query("UPDATE Produto p SET p.vendasUltimos30Dias = 0")
+    @Query("UPDATE Produto p SET p.vendasUltimos30dias = 0")
     void resetarVendasMensais();
 }

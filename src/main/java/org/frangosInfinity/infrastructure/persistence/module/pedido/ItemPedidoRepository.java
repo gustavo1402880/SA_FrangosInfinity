@@ -19,7 +19,4 @@ public interface ItemPedidoRepository extends JpaRepository<ItemPedido, Long>
     @Query("SELECT i.produtoId, COUNT(i) as quantidade FROM ItemPedido i GROUP BY i.produtoId ORDER BY quantidade DESC")
     List<Object[]> findProdutosMaisVendidos();
 
-    @Modifying
-    @Query("UPDATE ItemPedido i SET i.observacao = :observacao WHERE i.id = :id")
-    void atualizarObservacao(@Param("id") Long id, @Param("observacao") String observacao);
 }

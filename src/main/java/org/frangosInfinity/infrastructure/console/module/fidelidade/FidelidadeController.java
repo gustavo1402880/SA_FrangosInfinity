@@ -118,20 +118,6 @@ public class FidelidadeController
         return ResponseEntity.ok(lista);
     }
 
-    @GetMapping("/contas/cliente/{clienteId}")
-    @Operation(summary = "Buscar pontos por ID do cliente")
-    public ResponseEntity<PontosResponseDTO> processarBuscarPontosPorClienteAdmin(@PathVariable Long clienteId)
-    {
-        PontosResponseDTO response = pontosFidelidadeService.buscarPorCliente(clienteId);
-
-        if (!response.getSucesso())
-        {
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        return ResponseEntity.notFound().build();
-    }
-
     @DeleteMapping("/contas/{id}")
     @Operation(summary = "Remover conta de fidelidade")
     public ResponseEntity<Void> processarRemoverConta(@PathVariable Long id)

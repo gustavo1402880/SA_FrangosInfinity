@@ -132,6 +132,38 @@ public class SecurityConfig
 
                         .requestMatchers(HttpMethod.GET, "/contas").hasRole("ADMINISTRADOR")
                         .requestMatchers(HttpMethod.DELETE, "/contas/{id}").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.POST, "/admin/regras").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.PUT, "/admin/regras/{id}").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.PATCH, "/admin/regras/{id}/ativar").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.PATCH, "/admin/regras/{id}/desativar").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.DELETE, "/admin/regras/{id}").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.GET, "/admin/regras").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.POST, "/admin/processar-expiracao").hasRole("ADMINISTRADOR")
+
+                        .requestMatchers(HttpMethod.GET, "/notificacoes/{destinatario}").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/notificacoes/{destinatario}/nao-lidas").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/notificacoes/{destinatario}/count").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, "/notificacoes/{destinatario}/lida").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, "/notificacoes/{destinatario}/lidas").authenticated()
+
+                        .requestMatchers(HttpMethod.POST, "/notificacoes/cozinheiro/**").hasAnyRole("ADMINISTRADOR", "COZINHEIRO")
+                        .requestMatchers(HttpMethod.POST, "/notificacoes/atendente/**").hasAnyRole("ADMINISTRADOR", "ATENDENTE")
+                        .requestMatchers(HttpMethod.POST, "/notificacoes/admin/**").hasRole("ADMINISTRADOR")
+
+                        .requestMatchers("/relatorios/**").hasRole("ADMINISTRADOR")
+
+                        .requestMatchers(HttpMethod.GET, "/usuarios").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.GET, "/usuarios/{id}").hasAnyRole("ADMINISTRADOR", "ATENDENTE")
+                        .requestMatchers(HttpMethod.GET, "/usuarios/email/{email}").hasAnyRole("ADMINISTRADOR", "ATENDENTE")
+                        .requestMatchers(HttpMethod.GET, "/usuarios/ativos").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.GET, "/usuarios/inativos").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.GET, "/usuarios/tipo/{tipo}").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.GET, "/usuarios/nivel-acesso/{nivel}").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.PUT, "/usuarios/{id}").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, "/usuarios/email").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, "/usuarios/senha").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, "/usuarios/{id}/desativar").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.PATCH, "/usuarios/{id}/ativar").hasRole("ADMINISTRADOR")
 
                         .anyRequest().authenticated()
                 )

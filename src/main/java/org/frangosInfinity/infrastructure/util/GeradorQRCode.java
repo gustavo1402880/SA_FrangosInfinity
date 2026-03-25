@@ -7,6 +7,7 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -17,7 +18,6 @@ import java.nio.file.Paths;
 @Component
 public class GeradorQRCode
 {
-    @Autowired
     private QRCodeWriter qrCodeWriter;
 
     @Value("${qr.code.diretorio:./qrcodes/}")

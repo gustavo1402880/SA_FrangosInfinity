@@ -21,7 +21,6 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class CarrinhoService
 {
-    @Autowired
     private RedisTemplate<String, Carrinho> redisTemplate;
 
     @Autowired
