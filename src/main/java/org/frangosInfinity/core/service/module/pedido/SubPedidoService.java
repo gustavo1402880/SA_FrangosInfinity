@@ -117,6 +117,16 @@ public class SubPedidoService
     }
 
     @Transactional(readOnly = true)
+    public List<SubPedidoResponseDTO> listarPorStatus(StatusPedido status)
+    {
+        List<SubPedido> subPedidos = subPedidoRepository.findByStatus(status);
+
+        return subPedidos.stream()
+                .map(SubPedidoResponseDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public SubPedidoResponseDTO atualizarStatus(Long id, StatusPedido statusPedido)
     {
         SubPedido subPedido = subPedidoRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("SubPedido não encontrado"));

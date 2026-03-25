@@ -13,6 +13,7 @@ import org.frangosInfinity.application.module.pedido.response.PedidoResponseDTO;
 import org.frangosInfinity.application.module.pedido.response.SubPedidoResponseDTO;
 import org.frangosInfinity.application.module.produto.response.CategoriaResponseDTO;
 import org.frangosInfinity.application.module.produto.response.ProdutoRespondeDTO;
+import org.frangosInfinity.core.enums.StatusPedido;
 import org.frangosInfinity.core.service.module.pedido.CarrinhoService;
 import org.frangosInfinity.core.service.module.pedido.PedidoService;
 import org.frangosInfinity.core.service.module.pedido.SubPedidoService;
@@ -251,6 +252,20 @@ public class PedidoController
                 .filter(sp -> sp.getClienteID().equals(clienteId))
                 .findFirst()
                 .orElse(null);
+
+        if (response == null)
+        {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/subpedidos/status/{status}")
+    @Operation(summary = "Listar subpedidos por status")
+    public ResponseEntity<List<SubPedidoResponseDTO>> processarListarSubPedidosPorStatus(@RequestParam StatusPedido status)
+    {
+        List<SubPedidoResponseDTO> response = subPedidoService.listarPorStatus(status);
 
         if (response == null)
         {

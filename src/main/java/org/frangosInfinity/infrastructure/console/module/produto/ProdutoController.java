@@ -45,7 +45,7 @@ public class ProdutoController
         return response.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(response);
     }
 
-    @GetMapping("/categoria/ativas")
+    @GetMapping("/categorias/ativas")
     @Operation(summary = "Listar categorias ativas")
     public ResponseEntity<List<CategoriaResponseDTO>> processarListarCategoriasAtivas()
     {
@@ -54,7 +54,7 @@ public class ProdutoController
         return response.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(response);
     }
 
-    @GetMapping("/categoria/{id}")
+    @GetMapping("/categorias/{id}")
     @Operation(summary = "Buscar cetegoria por ID")
     public ResponseEntity<CategoriaResponseDTO> processarBuscarCategoriaPorId(@PathVariable Long id)
     {
@@ -72,7 +72,7 @@ public class ProdutoController
         return ResponseEntity.ok(response);
     }
 
-    @PatchMapping("/categoria/{id}/ativar")
+    @PatchMapping("/categorias/{id}/ativar")
     @Operation(summary = "ativar categoria")
     public ResponseEntity<CategoriaResponseDTO> processarAtivarCategoria(@PathVariable Long id)
     {
@@ -81,7 +81,7 @@ public class ProdutoController
         return ResponseEntity.ok(response);
     }
 
-    @PatchMapping("/categoria/{id}/desativar")
+    @PatchMapping("/categorias/{id}/desativar")
     @Operation(summary = "Desativar categoria")
     public ResponseEntity<CategoriaResponseDTO> processarDesativarCategoria(@PathVariable Long id)
     {
@@ -117,7 +117,7 @@ public class ProdutoController
         return response.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(response);
     }
 
-    @GetMapping("/categoria/{categoriaId}")
+    @GetMapping("/categorias/{categoriaId}")
     @Operation(summary = "Listar produtos por categoria")
     public ResponseEntity<List<ProdutoRespondeDTO>> processarListarProdutosPorCategoria(@PathVariable Long categoriaId)
     {
