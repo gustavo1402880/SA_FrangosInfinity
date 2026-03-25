@@ -25,8 +25,8 @@ public class RegistrarPedidoManual
         System.out.println("║           REGISTRAR PEDIDO             ║");
         System.out.println("╚════════════════════════════════════════╝");
 
-        System.out.println("║ Qual o Id do pedido deseja escolher: ");
-        Long id = (long) Front.lInteiro();
+        System.out.println("║ Qual o Número do pedido deseja escolher: ");
+        String id = Front.lString();
         System.out.println("╚════════════════════════════════════════╝");
 
         System.out.println(" Qual o Id do da mesa que você esta sentado: ");
@@ -35,7 +35,7 @@ public class RegistrarPedidoManual
 
         Date dataHora = Date.valueOf(LocalDate.now());
 
-        Pedido pedido = new Pedido(null, dataHora, StatusPedido.CONFIMADO, mesaID, idAtendente, "INDIVIDUAL");
+        Pedido pedido = new Pedido(id, dataHora, StatusPedido.CONFIMADO, mesaID, idAtendente, "INDIVIDUAL");
 
         controller.registrarPedidoManual(pedido);
 
