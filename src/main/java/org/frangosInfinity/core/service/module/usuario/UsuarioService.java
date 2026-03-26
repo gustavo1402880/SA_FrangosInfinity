@@ -36,8 +36,9 @@ public class UsuarioService
         return email != null && email.matches("^[A-Za-z0-9+_.-]+@(.+)$");
     }
 
-    private Boolean validarTelefone(String telefone) {
-        return telefone != null && telefone.matches("^[1-9]{2}9\\d{8}$");
+    private Boolean validarTelefone(String telefone)
+    {
+        return telefone != null;
     }
 
     private Boolean validarSenha(String senha) {
@@ -45,7 +46,7 @@ public class UsuarioService
     }
 
     private Boolean validarIdSessao(String idSessao) {
-        return idSessao != null && !idSessao.trim().isEmpty();
+        return idSessao != null;
     }
 
     private Boolean validarMatricula(String matricula) {
@@ -98,7 +99,7 @@ public class UsuarioService
 
         if (request.getTipoUsuario() == TipoUsuario.CLIENTE)
         {
-            if (!validarIdSessao(request.getIdSessao()) || usuarioRepository.existsClienteByIdSessao(request.getIdSessao()))
+            if (usuarioRepository.existsClienteByIdSessao(request.getIdSessao()))
             {
                 return UsuarioResponseDTO.erro("ID de sessão inválido ou já existente");
             }

@@ -13,6 +13,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 import java.security.Security;
 
@@ -31,7 +33,7 @@ public class SecurityConfig
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/login", "/css/**", "/js/**", "/images/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/usuarios/clientes").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/usuarios/funcionarios").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/usuarios/funcionarios").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 
                         .requestMatchers("/auth/me", "auth/status", "/dashboard").authenticated()
@@ -41,8 +43,8 @@ public class SecurityConfig
                         .requestMatchers(HttpMethod.GET, "/produtos/categoria/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/produtos/mais-vendidos").authenticated()
 
-                        .requestMatchers(HttpMethod.GET, "/mesas").hasAnyRole("ADMINISTRADOR", "ATENDENTE", "CAIXA")
-                        .requestMatchers(HttpMethod.GET, "/mesas/disponiveis").hasAnyRole("ADMINISTRADOR", "ATENDENTE", "CAIXA")
+                        .requestMatchers(HttpMethod.GET, "/mesas").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/mesas/disponiveis").authenticated()
                         .requestMatchers(HttpMethod.GET, "/mesas/{id}").hasAnyRole("ADMINISTRADOR", "ATENDENTE", "CAIXA")
                         .requestMatchers(HttpMethod.GET, "/mesas/numero/{numero}").hasAnyRole("ADMINISTRADOR", "ATENDENTE", "CAIXA")
 
@@ -55,7 +57,7 @@ public class SecurityConfig
                         .requestMatchers(HttpMethod.POST, "/mesas/qrcode/limpar-expirados").hasRole("ADMINISTRADOR")
                         .requestMatchers(HttpMethod.GET, "/mesas/qrcodes/ativos").hasAnyRole("ADMINISTRADOR", "ATENDENTE")
 
-                        .requestMatchers(HttpMethod.POST, "/mesas/qrcode/{id}/validar").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/mesas/qrcode/{id}/validar").permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/mesas/iot").hasRole("ADMINISTRADOR")
                         .requestMatchers(HttpMethod.GET,"/mesas/iot/online").hasRole("ADMINISTRADOR")
@@ -172,8 +174,8 @@ public class SecurityConfig
                         .loginProcessingUrl("/login")
                         .usernameParameter("email")
                         .passwordParameter("senha")
-                        .defaultSuccessUrl("/dashboard", true)
-                        .failureUrl("/login?error=true")
+                        .successHandler(authenticationSuccessHandler())
+                        .failureHandler(authenticationFailureHandler())
                         .permitAll()
                 )
                 .logout(logout -> logout
@@ -205,5 +207,25 @@ public class SecurityConfig
                 .userDetailsService(userDetailsService)
                 .passwordEncoder(passwordEncoder());
         return authenticationManagerBuilder.build();
+    }
+
+    @Bean
+    public AuthenticationSuccessHandler authenticationSuccessHandler()
+    {
+        return (request, response, authentication) -> {
+            response.setStatus(200);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"success\":true,\"message\":\"Login realizado com sucesso\"}");
+        };
+    }
+
+    @Bean
+    public AuthenticationFailureHandler authenticationFailureHandler()
+    {
+        return (request, response, exception) -> {
+            response.setStatus(401);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"success\":false,\"message\":\"Email ou senha inválidos\"}");
+        };
     }
 }
