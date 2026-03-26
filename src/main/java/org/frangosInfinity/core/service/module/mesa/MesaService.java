@@ -54,10 +54,10 @@ public class MesaService {
         Mesa mesaSalva = mesaRepository.save(mesa);
 
         IotConfig iotConfig = ioTConfigService.criarConfiguracaoPadrao(mesaSalva);
-        mesa.setIotConfig(iotConfig);
-        mesaRepository.save(mesaSalva);
+        mesaSalva.setIotConfig(iotConfig);
+        Mesa mesaComIot = mesaRepository.save(mesaSalva);
 
-        return MesaResponseDTO.fromEntity(mesa);
+        return MesaResponseDTO.fromEntity(mesaComIot);
     }
 
     @Transactional(readOnly = true)

@@ -18,13 +18,18 @@ import java.nio.file.Paths;
 @Component
 public class GeradorQRCode
 {
-    private QRCodeWriter qrCodeWriter;
+    private final QRCodeWriter qrCodeWriter;
 
     @Value("${qr.code.diretorio:./qrcodes/}")
     private String diretorioBase;
 
     @Value("${qr.code.tamanho:300}")
     private Integer tamanhoPadrao;
+
+    public GeradorQRCode()
+    {
+        this.qrCodeWriter = new QRCodeWriter();
+    }
 
     public String gerarQRCode(String conteudo, String nomeArquivo)
     {
