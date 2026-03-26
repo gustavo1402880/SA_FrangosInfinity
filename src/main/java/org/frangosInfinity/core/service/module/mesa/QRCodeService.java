@@ -81,7 +81,8 @@ public class QRCodeService {
 
         qrCode.setDataExpiracao(qrCode.getDataCriacao().plusSeconds(tempoExpiracao));
 
-        String url = String.format("%s/auth/mesa/%d/%s", baseUrl, mesa.getId(), qrCode.getTokenSessao());
+        // Por enquanto não vou usar o baseUrl já que acabei de implementar o front, caso eu decida atualizar então farei isso
+        String url = String.format("%s/validar-qrcode?mesa=%d&token=%s", "http://localhost:8080", mesa.getId(), qrCode.getTokenSessao());
         qrCode.setUrlAutenticacao(url);
 
         String nomeArquivo = String.format("mesa_%d_%s.png", mesa.getNumero(), qrCode.getCodigo());
@@ -104,7 +105,7 @@ public class QRCodeService {
     {
         QRCode qrCode = qrCodeRepository.findByTokenSessao(tokenSessao).orElseThrow(() -> new BusinessException("Token não encontrado"));
 
-        if (qrCode.getIdMesa().getId().equals(idMesa))
+        if (!qrCode.getIdMesa().getId().equals(idMesa))
         {
             return false;
         }

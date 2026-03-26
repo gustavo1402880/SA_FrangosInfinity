@@ -25,7 +25,7 @@ public class TransacaoPIX
     @Column(name = "tempo_expiracao_segundos", nullable = false)
     private Integer tempoExpiracaoSegundos;
 
-    @Column(name = "chave_pix", length = 50)
+    @Column(name = "data_expiracao", length = 50)
     private LocalDateTime dataExpiracao;
 
     public TransacaoPIX() {}

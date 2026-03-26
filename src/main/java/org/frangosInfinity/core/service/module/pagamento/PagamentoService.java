@@ -84,19 +84,6 @@ public class PagamentoService
 
         Pagamento pagamentoSalvo = pagamentoRepository.save(pagamento);
 
-        if (request.getTipo() == TipoPagamento.PIX)
-        {
-            TransacaoPIX pix = new TransacaoPIX();
-            pix.setPagamento(pagamentoSalvo);
-            pix.setQrCode("QR_"+UUID.randomUUID().toString().substring(0,8).toUpperCase());
-            pix.setCodigoCopiaCola(gerarCodigoPix(pagamento.getValor()));
-            pix.setTempoExpiracaoSegundos(600);
-            pix.setDataExpiracao(LocalDateTime.now().plusSeconds(600));
-
-            TransacaoPIX pixSalvo = pixRepository.save(pix);
-            pagamentoSalvo.setTransacaoPIX(pixSalvo);
-        }
-
         Comprovante comprovante = gerarComprovante(pagamentoSalvo);
         comprovanteRepository.save(comprovante);
 
@@ -216,7 +203,7 @@ public class PagamentoService
             throw new BusinessException("Apenas pagamentos pendentes podem ser reembolsados");
         }
 
-        pagamento.setStatusPagamento(StatusPagamento.ESTORNADO);
+        pagamento.setStatusPagamento(StatusPagamento.REEMBOLSADO);
         pagamentoRepository.save(pagamento);
 
         return PagamentoResponseDTO.fromEntity(pagamento);
@@ -236,13 +223,6 @@ public class PagamentoService
         comprovante.setDataHora(LocalDateTime.now());
 
         return comprovante;
-    }
-
-    private String gerarCodigoPix(Double valor)
-    {
-        String chave = UUID.randomUUID().toString().replace("-","").substring(0,20);
-
-        return String.format("00020126580014br.gov.bcb.pix0136%s520400005303986540%.2f5802BR5903WEG6014JARAGUA DO SUL62290525%s6304", chave, valor, chave.substring(0,10));
     }
 
     private PagamentoResponseDTO criarRespostaErro(String mensagem)

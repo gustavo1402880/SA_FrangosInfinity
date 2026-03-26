@@ -22,7 +22,8 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
-public class TransacaoPIXService {
+public class TransacaoPIXService
+{
     @Autowired
     private TransacaoPIXRepository pixRepository;
 
@@ -32,7 +33,7 @@ public class TransacaoPIXService {
     @Autowired
     private GeradorQRCode geradorQRCode;
 
-    @Value("${app.baseUrl:http://localhost:8082}")
+    @Value("${app.baseUrl:http://localhost:8080")
     private String baseUrl;
 
     private Boolean validarId(Long id) {
@@ -78,7 +79,7 @@ public class TransacaoPIXService {
         pix.setTempoExpiracaoSegundos(tempoExpiracao);
         pix.setDataExpiracao(LocalDateTime.now().plusSeconds(tempoExpiracao));
 
-        String qrCodeUrl = baseUrl + "/pagamentos/pix/ " + pagamento.getId_Pagamento() + "/confimar";
+        String qrCodeUrl = baseUrl + "/pagamentos/pix/" + pagamento.getId_Pagamento() + "/confimar";
 
         String nomeArquivo = String.format("pix_pagamento_%d.png", pagamento.getId_Pagamento());
 

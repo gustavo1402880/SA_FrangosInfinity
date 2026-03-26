@@ -30,9 +30,6 @@ public class EmailService
     {
         Properties properties = new Properties();
 
-        final String usuario = properties.getProperty("email.user");
-        final String senha = properties.getProperty("email.password");
-
         properties.put("mail.smtp.auth", "true");
         properties.put("mail.smtp.starttls.enable", "true");
         properties.put("mail.smtp.host", host);
@@ -107,7 +104,7 @@ public class EmailService
         String message = String.format("""
                 <html>
                 <body style="font-family: Arial, sans-serif;">
-                     <h2 style="color: #28a745;">Seu pedido está pronto!</h2>
+                     <h2 style="color: #28a745;">Seu pedido esta sendo preparado!</h2>
                      <p><strong>Número do pedido:</strong> %s</p>
                      <p>Seu pedido está sendo preparado</p>
                      <p>Agradecemos pela preferência!</p>

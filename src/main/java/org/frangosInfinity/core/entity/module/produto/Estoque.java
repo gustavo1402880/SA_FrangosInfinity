@@ -113,13 +113,13 @@ public class Estoque
         return quantidadeAtual >= quantidadeRequisitada;
     }
 
-    public void baixarEstoque(Integer quantidadade)
+    public void baixarEstoque(Integer quantidade)
     {
-        if (!temEstoque(quantidadade))
+        if (!temEstoque(quantidade))
         {
             throw new BusinessException("Estoque insuficiente!");
         }
-        this.quantidadeAtual -= quantidadade;
+        this.quantidadeAtual -= quantidade;
         this.dataAtualizacao = LocalDateTime.now();
     }
 

@@ -108,7 +108,7 @@ public class ProdutoController
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping("/diponiveis")
+    @GetMapping("/disponiveis")
     @Operation(summary = "Listar produtos disponíveis")
     public ResponseEntity<List<ProdutoRespondeDTO>> processarListarProdutosDisponiveis()
     {

@@ -140,7 +140,7 @@ public class PedidoController
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PostMapping("/pedidoId/entrar")
+    @PostMapping("/{pedidoId}/entrar")
     @Operation(summary = "Cliente entra em um pedido existente (após compartilhamento de link)")
     public ResponseEntity<SubPedidoResponseDTO> processarEntrarNoPedido(@PathVariable Long pedidoId, HttpSession session, @RequestParam Long clienteId)
     {

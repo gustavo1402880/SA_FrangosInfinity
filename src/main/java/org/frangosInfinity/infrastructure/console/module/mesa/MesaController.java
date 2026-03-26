@@ -73,12 +73,8 @@ public class MesaController
     {
         List<MesaResponseDTO> mesas = mesaService.listarDisponiveis();
 
-        if (mesas.isEmpty())
-        {
-            return ResponseEntity.badRequest().body(mesas);
-        }
 
-        return ResponseEntity.ok(mesas);
+        return mesas.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(mesas);
     }
 
     @GetMapping("/{id}")

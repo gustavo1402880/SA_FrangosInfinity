@@ -32,6 +32,7 @@ public class ProdutoService
         return id != null && id > 0;
     }
 
+    @Transactional
     public ProdutoRespondeDTO criarProduto(ProdutoRequestDTO request)
     {
         if (produtoRepository.existsByCodigo(request.getCodigo()))

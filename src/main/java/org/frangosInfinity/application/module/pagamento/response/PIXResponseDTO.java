@@ -21,7 +21,7 @@ public class PIXResponseDTO
     {
         PIXResponseDTO response = new PIXResponseDTO();
         response.setId(pix.getId());
-        response.setId(pix.getPagamento().getId_Pagamento());
+        response.setPagamentoId(pix.getPagamento().getId_Pagamento());
         response.setQrCode(pix.getQrCode());
         response.setCodigoCopiaCola(pix.getCodigoCopiaCola());
         response.setDataEspiracao(pix.getDataExpiracao().toString());
