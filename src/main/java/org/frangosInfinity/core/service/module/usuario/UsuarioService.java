@@ -7,6 +7,7 @@ import org.frangosInfinity.core.entity.exception.ResourceNotFoundException;
 import org.frangosInfinity.core.entity.module.usuario.*;
 import org.frangosInfinity.core.enums.NivelAcesso;
 import org.frangosInfinity.core.enums.TipoUsuario;
+import org.frangosInfinity.core.service.module.fidelidade.PontosFidelidadeService;
 import org.frangosInfinity.infrastructure.persistence.module.usuario.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;

@@ -135,8 +135,7 @@ public class SubPedido
     {
         this.valorTotal = itens.stream()
                 .mapToDouble(ItemPedido::getSubTotal)
-                .max()
-                .orElse(0);
+                .sum();
     }
 
     public void recalcularTempoPreparo()

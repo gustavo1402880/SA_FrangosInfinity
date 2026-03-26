@@ -5,7 +5,8 @@ public enum StatusPagamento
     PENDENTE(1),
     CONFIRMADO(2),
     CANCELADO(3),
-    ESTORNADO(4);
+    ESTORNADO(4),
+    REEMBOLSADO(5);
 
     private int codigo;
 
