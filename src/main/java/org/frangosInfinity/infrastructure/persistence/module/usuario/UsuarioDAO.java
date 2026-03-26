@@ -29,13 +29,13 @@ public class UsuarioDAO {
                 " values (?,?,?,?,?,?,?)";
 
         try (PreparedStatement stmt = connection.prepareStatement(querySQL, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setLong(1, usuario.getId());
-            stmt.setString(2, usuario.getNome());
-            stmt.setString(3, usuario.getEmail());
-            stmt.setString(4, usuario.getSenha());
-            stmt.setString(5, usuario.getTelefone());
-            stmt.setTimestamp(6, Timestamp.valueOf(usuario.getDataCadastro()));
-            stmt.setBoolean(7, usuario.isAtivo());
+            stmt.setString(1, usuario.getNome());
+            stmt.setString(2, usuario.getEmail());
+            stmt.setString(3, usuario.getSenha());
+            stmt.setString(4, usuario.getTelefone());
+            stmt.setTimestamp(5, Timestamp.valueOf(usuario.getDataCadastro()));
+            stmt.setBoolean(6, usuario.isAtivo());
+            stmt.setInt(7, usuario.getUsuario().getCodigo());
 
             stmt.executeUpdate();
 
@@ -56,7 +56,7 @@ public class UsuarioDAO {
     }
 
     private void salvarFuncioario(Funcionario funcionario) throws SQLException {
-        String sql = "INSERT INTO funcionario (id, matricula, data_contratacao, turno, nivel_acesso_id, salario) VALUES (?,?,?,?,?,?)";
+        String sql = "INSERT INTO funcionario (id, matricula, data_contratacao, turno, nivel_acesso_id) VALUES (?,?,?,?,?)";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setLong(1, funcionario.getId());
@@ -64,7 +64,6 @@ public class UsuarioDAO {
             stmt.setTimestamp(3, Timestamp.valueOf(funcionario.getDataContratacao()));
             stmt.setString(4, funcionario.getTurno());
             stmt.setInt(5, funcionario.getNivelAcesso().getCodigo());
-            stmt.setDouble(6, funcionario.getSalario());
 
             stmt.executeUpdate();
         }

@@ -32,7 +32,7 @@ public class UsuarioService
 
     private Boolean validarSenha(String senha)
     {
-        return senha != null && senha.matches("^(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%^&+=!])");
+        return senha != null && senha.matches("^(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%^&+=!]).{8,}$");
     }
 
     private Boolean validarIdSessao(String idSessao)
@@ -43,11 +43,6 @@ public class UsuarioService
     private Boolean validarMatricula(String matricula)
     {
         return matricula != null && !matricula.trim().isEmpty();
-    }
-
-    private Boolean validarSalario(Double salario)
-    {
-        return salario != null && salario >= 2500.00;
     }
 
     private Boolean validarNome(String nome){return nome != null && nome.length() > 4;}
@@ -114,14 +109,12 @@ public class UsuarioService
             }
             else if (request.getTipoUsuario() == TipoUsuario.FUNCIONARIO)
             {
+                System.out.println("MATRICULA: " + request.getMatricula());
+                System.out.println("VALIDA: " + validarMatricula(request.getMatricula()));
+                System.out.println("EXISTE: " + usuarioDAO.existeMatricula(request.getMatricula()));
                 if (!validarMatricula(request.getMatricula()) || usuarioDAO.existeMatricula(request.getMatricula()))
                 {
                     return UsuarioResponseDTO.erro("Matrícula inválida ou já existente");
-                }
-
-                if (!validarSalario(request.getSalario()))
-                {
-                    return UsuarioResponseDTO.erro("Salário inválido ou abaixo de R$2500,00");
                 }
 
                 if (request.getNivelAcesso() == null)
@@ -173,7 +166,6 @@ public class UsuarioService
                 }
                 usuario.setTelefone(request.getTelefone());
                 ((Funcionario) usuario).setTurno(request.getTurno());
-                ((Funcionario) usuario).setSalario(request.getSalario());
             }
             else
             {

@@ -14,12 +14,8 @@ public class UsuarioRequestDTO
     private String matricula;
     private NivelAcesso nivelAcesso;
     private String turno;
-    private Double salario;
 
     public UsuarioRequestDTO() {}
-
-    public UsuarioRequestDTO(String cpf, String senhaLogin) {
-    }
 
     public String getNome() {
         return nome;
@@ -91,14 +87,6 @@ public class UsuarioRequestDTO
 
     public void setTurno(String turno) {
         this.turno = turno;
-    }
-
-    public Double getSalario() {
-        return salario;
-    }
-
-    public void setSalario(Double salario) {
-        this.salario = salario;
     }
 
     public Boolean isValid()
