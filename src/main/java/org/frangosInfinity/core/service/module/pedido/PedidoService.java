@@ -25,11 +25,8 @@ public class PedidoService {
         }
     }
 
-    public PedidoResponseDTO registrarPedidoManual(PedidoRequestDTO pedidoRequestDTO){
+    public PedidoResponseDTO registrarPedidoManual(SubPedido subPedido){
 
-        Pedido pedido = new Pedido(pedidoRequestDTO.getNumeroPedido(),pedidoRequestDTO.getDataHora(),pedidoRequestDTO.getStatus(),pedidoRequestDTO.getMesa_id(),pedidoRequestDTO.getAtendente_id(),pedidoRequestDTO.getTipo());
-
-        pedidoDAO.adicionarPedido(pedido);
 
         return new PedidoResponseDTO(pedido.getId(),pedido.getNumeroPedido(),pedido.getDataHora(),pedido.getStatus(),pedido.getMesa_id(),pedido.getAtendente_id(),pedido.getTipo());
 
@@ -58,9 +55,7 @@ public class PedidoService {
 
     }
 
-    public PedidoResponseDTO criarPedidoHub(PedidoRequestDTO pedidoRequestDTO){
-
-        Pedido pedido = new Pedido(pedidoRequestDTO.getNumeroPedido(),pedidoRequestDTO.getDataHora(),pedidoRequestDTO.getStatus(),pedidoRequestDTO.getMesa_id(),pedidoRequestDTO.getAtendente_id(),pedidoRequestDTO.getTipo());
+    public PedidoResponseDTO criarPedidoHub(Pedido pedido){
 
         pedidoDAO.adicionarPedido(pedido);
 
