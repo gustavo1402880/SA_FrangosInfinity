@@ -99,7 +99,7 @@ public class NotificacaoController
     }
 
     @PostMapping("/admin/estoque-baixo")
-    public ResponseEntity<Notificacao> processarNotificarAdminEstoqueBaixo(@RequestParam String produtoNome, @RequestParam Integer quantidadeAtual)
+    public ResponseEntity<Void> processarNotificarAdminEstoqueBaixo(@RequestParam String produtoNome, @RequestParam Integer quantidadeAtual)
     {
         notificacaoService.alertarEstoqueBaixo("ADMINISTRADOR",produtoNome, quantidadeAtual);
 

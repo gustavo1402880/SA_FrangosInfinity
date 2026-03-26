@@ -77,16 +77,18 @@ public class NotificacaoService
     public void notificarBoasVindas(String email, String nome)
     {
         emailService.enviarEmailBoasVindas(email, nome);
+
+        criarNotificacao(TipoNotificacao.INFO_PEDIDO, "Bem-vindo ao Frango's Infinity, " + nome + "!", email);
     }
 
     public void notificarPedidoConfirmado(String email, String numeroPedido, Double valor)
     {
-        emailService.enviarEmailPedidoConfirmado(email, numeroPedido, valor);
+        criarNotificacao(TipoNotificacao.PEDIDO_CONFIRMADO, "Pedido #" + numeroPedido + " confirmado! Valor: R$ " + String.format("%.2f", valor), email);
     }
 
     public void notificarPedidoPronto(String email, String numeroPedido)
     {
-        emailService.enviarEmailPedidoPronto(email, numeroPedido);
+        criarNotificacao(TipoNotificacao.PEDIDO_CONFIRMADO, "Pedido #" + numeroPedido + " pronto !", email);
     }
 
     public void notificarPedidoPreparando(String email, String numeroPedido)
@@ -97,6 +99,8 @@ public class NotificacaoService
     public void notificarPagamentoConfirmado(String email, String numeroPedido)
     {
         emailService.enviarEmailPagamentoConfirmado(email, numeroPedido);
+
+        criarNotificacao(TipoNotificacao.PAGAMENTO_CONFIRMADO, "Pagamento do pedido #" + numeroPedido + " confirmado!", email);
     }
 
     public void alertarDemora(String destinatario, Long pedidoId)
