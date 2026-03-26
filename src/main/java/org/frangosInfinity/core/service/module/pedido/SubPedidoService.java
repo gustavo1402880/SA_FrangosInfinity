@@ -38,6 +38,11 @@ public class SubPedidoService {
     public boolean confirmarSubPedido(Long id){
 
         if(id >= 1) {
+
+            SubPedido subPedido = subPedidoDAO.buscarPorId(id);
+
+            if(subPedido)
+
             subPedidoDAO.AtualizarStatusPedido(id, 1);
 
             return true;

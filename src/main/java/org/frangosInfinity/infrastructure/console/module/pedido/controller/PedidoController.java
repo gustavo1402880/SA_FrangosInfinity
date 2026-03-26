@@ -7,6 +7,7 @@ import org.frangosInfinity.core.entity.module.pedido.Pedido;
 import org.frangosInfinity.core.entity.module.pedido.SubPedido;
 import org.frangosInfinity.core.enums.StatusPedido;
 import org.frangosInfinity.core.service.module.pedido.PedidoService;
+import org.frangosInfinity.core.service.module.pedido.SubPedidoService;
 import org.frangosInfinity.infrastructure.persistence.connection.ConnectionFactory;
 import org.frangosInfinity.infrastructure.persistence.module.pedido.PedidoDAO;
 import org.frangosInfinity.infrastructure.persistence.module.pedido.SubPedidoDAO;
@@ -18,6 +19,8 @@ import java.util.Date;
 public class PedidoController {
 
     private PedidoService pedidoService;
+    private SubPedidoService subPedidoService;
+    private SubPedidoController subPedidoController;
 
     {
         try {
@@ -27,21 +30,13 @@ public class PedidoController {
         }
     }
 
-    public Pedido registrarPedidoManual(Pedido pedido){
+    public Pedido registrarPedidoManual(SubPedido subPedido){
 
-        PedidoRequestDTO pedidoRequestDTO = new PedidoRequestDTO(pedido.getNumeroPedido(),pedido.getDataHora(),
-                pedido.getStatus(),pedido.getMesa_id(),pedido.getAtendente_id(),pedido.getTipo());
+        subPedidoController.criarSubPedido(subPedido);
 
+        Pedido pedido = criarPedidoHub(subPedido);
 
-        PedidoResponseDTO pedidoResponseDTO;
-
-        pedidoResponseDTO = pedidoService.registrarPedidoManual(pedidoRequestDTO);
-
-        Pedido pedido1 = new Pedido(pedidoResponseDTO.getNumeroPedido(),pedidoResponseDTO.getDataHora(),
-                pedidoResponseDTO.getStatus(),pedidoResponseDTO.getMesa_id(),pedidoResponseDTO.getAtendente_id(),
-                pedidoResponseDTO.getTipo());
-
-        return pedido1;
+        return pedido;
 
     }
 
@@ -69,18 +64,18 @@ public class PedidoController {
 
     }
 
-    public Pedido criarPedidoHub(Pedido pedido){
+    public Pedido criarPedidoHub(SubPedido subPedido){
 
-        if(pedido == null){
+        if(subPedido == null){
             throw new RuntimeException("Erro - pedido não pode ser vazio");
         }
 
-        PedidoRequestDTO pedidoRequestDTO = new PedidoRequestDTO(pedido.getNumeroPedido(),pedido.getDataHora(),
-                pedido.getStatus(),pedido.getMesa_id(),pedido.getAtendente_id(),pedido.getTipo());
+        Pedido pedido = new Pedido(subPedido.getId().toString(),subPedido.getDate(),subPedido.getStatus(),
+                null,null,"HUB");
 
         PedidoResponseDTO pedidoResponseDTO;
 
-        pedidoResponseDTO = pedidoService.criarPedidoHub(pedidoRequestDTO);
+        pedidoResponseDTO = pedidoService.criarPedidoHub(pedido);
 
         Pedido pedido1 = new Pedido(pedidoResponseDTO.getNumeroPedido(),pedidoResponseDTO.getDataHora(),
                 pedidoResponseDTO.getStatus(),pedidoResponseDTO.getMesa_id(),pedidoResponseDTO.getAtendente_id(),
