@@ -25,13 +25,6 @@ public class PedidoService {
         }
     }
 
-    public PedidoResponseDTO registrarPedidoManual(SubPedido subPedido){
-
-
-        return new PedidoResponseDTO(pedido.getId(),pedido.getNumeroPedido(),pedido.getDataHora(),pedido.getStatus(),pedido.getMesa_id(),pedido.getAtendente_id(),pedido.getTipo());
-
-    }
-
     public boolean validarConvite(String link, Long id_hub){
 
         String urlBase = "https://FroangosInfinity.com/convite/";
