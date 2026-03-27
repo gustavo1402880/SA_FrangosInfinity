@@ -22,6 +22,7 @@ public class CacheConfig
                 "produtos",
                 "categorias",
                 "pedidos",
+                "subPedidos",
                 "mesas",
                 "iotConfigs",
                 "qrCodes",

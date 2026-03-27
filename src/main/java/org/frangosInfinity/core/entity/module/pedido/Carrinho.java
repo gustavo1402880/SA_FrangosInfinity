@@ -1,24 +1,15 @@
 package org.frangosInfinity.core.entity.module.pedido;
-import jakarta.mail.FetchProfile;
-import jakarta.persistence.Id;
-import org.frangosInfinity.core.enums.StatusPedido;
-import org.springframework.data.redis.core.RedisHash;
-import org.springframework.data.redis.core.index.Indexed;
 
 import java.io.Serializable;
-import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@RedisHash(value = "carrinho", timeToLive = 3600)
 public class Carrinho implements Serializable
 {
-    @Id
     private String id;
 
-    @Indexed
     private String sessaoId;
 
     private Long mesaId;
@@ -36,6 +27,7 @@ public class Carrinho implements Serializable
         this.id = UUID.randomUUID().toString();
         this.dataCriacao = LocalDateTime.now();
         this.dataAtualizacao = LocalDateTime.now();
+        this.itens = new ArrayList<>();
     }
 
     public Carrinho(String sessaoId, Long mesaId)

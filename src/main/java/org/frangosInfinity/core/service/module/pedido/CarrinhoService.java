@@ -7,37 +7,30 @@ import org.frangosInfinity.core.entity.module.pedido.Carrinho;
 import org.frangosInfinity.core.entity.module.pedido.ItemPedido;
 import org.frangosInfinity.core.entity.module.pedido.SubPedido;
 import org.frangosInfinity.core.entity.module.produto.Produto;
-import org.frangosInfinity.infrastructure.persistence.connection.ConnectionFactory;
-import org.frangosInfinity.infrastructure.persistence.module.pedido.ItemPedidoRepository;
 import org.frangosInfinity.infrastructure.persistence.module.produto.ProdutoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class CarrinhoService
 {
-    private RedisTemplate<String, Carrinho> redisTemplate;
+    private final Map<String, Carrinho> carrinhos = new ConcurrentHashMap<>();
 
     @Autowired
     private ProdutoRepository produtoRepository;
 
-    private static String CARRINHO_KEY = "carrinho:";
-    private static long CARRINHO_TTL = 3600;
-
     public CarrinhoResponseDTO obterCarrinho(String sessaoId)
     {
-        String key = CARRINHO_KEY + sessaoId;
-        Carrinho carrinho = redisTemplate.opsForValue().get(key);
+        Carrinho carrinho = carrinhos.get(sessaoId);
 
         if (carrinho == null)
         {
             carrinho = new Carrinho();
-            redisTemplate.opsForValue().set(key, carrinho, CARRINHO_TTL, TimeUnit.SECONDS);
+            carrinho.setSessaoId(sessaoId);
+            carrinhos.put(sessaoId, carrinho);
         }
 
         return CarrinhoResponseDTO.fromEntity(carrinho);
@@ -47,25 +40,23 @@ public class CarrinhoService
     {
         Produto produto = produtoRepository.findById(request.getProdutoId()).orElseThrow(() -> new ResourceNotFoundException("Produto "+request.getProdutoId()+" não encontrado"));
 
-        String key = CARRINHO_KEY + sessaoId;
-        Carrinho carrinho = redisTemplate.opsForValue().get(key);
+        Carrinho carrinho = carrinhos.get(sessaoId);
 
         if (carrinho == null)
         {
             carrinho = new Carrinho();
-            redisTemplate.opsForValue().set(key, carrinho, CARRINHO_TTL, TimeUnit.SECONDS);
+            carrinho.setId(sessaoId);
         }
 
         Carrinho.ItemCarrinho itemCarrinho = new Carrinho.ItemCarrinho(
                 produto.getId(),
                 produto.getNome(),
-                produto.getEstoque().getQuantidadeAtual(),
+                request.getQuantidade(),
                 produto.getPreco(),
                 produto.getTempoPreparoMinuto()
         );
 
         carrinho.adicionarItem(itemCarrinho);
-
         salvarCarrinho(sessaoId, carrinho);
 
         return CarrinhoResponseDTO.fromEntity(carrinho);
@@ -73,13 +64,11 @@ public class CarrinhoService
 
     public CarrinhoResponseDTO removerItem(String sessaoId, Integer index)
     {
-        String key = CARRINHO_KEY + sessaoId;
-        Carrinho carrinho = redisTemplate.opsForValue().get(key);
-
+        Carrinho carrinho = carrinhos.get(sessaoId);
         if (carrinho == null)
         {
             carrinho = new Carrinho();
-            redisTemplate.opsForValue().set(key, carrinho, CARRINHO_TTL, TimeUnit.SECONDS);
+            carrinho.setSessaoId(sessaoId);
         }
 
         carrinho.removerItem(index);
@@ -89,12 +78,11 @@ public class CarrinhoService
 
     public CarrinhoResponseDTO atualizarQuantidade(String sessaoId, Integer index, Integer quantidade)
     {
-        String key = CARRINHO_KEY + sessaoId;
-        Carrinho carrinho = redisTemplate.opsForValue().get(key);
-
+        Carrinho carrinho = carrinhos.get(sessaoId);
         if (carrinho == null)
         {
             carrinho = new Carrinho();
+            carrinho.setSessaoId(sessaoId);
         }
 
         carrinho.atualizarQuantidade(index, quantidade);
@@ -104,12 +92,11 @@ public class CarrinhoService
 
     public CarrinhoResponseDTO limparCarrinho(String sessaoId)
     {
-        String key = CARRINHO_KEY + sessaoId;
-        Carrinho carrinho = redisTemplate.opsForValue().get(key);
-
+        Carrinho carrinho = carrinhos.get(sessaoId);
         if (carrinho == null)
         {
             carrinho = new Carrinho();
+            carrinho.setSessaoId(sessaoId);
         }
 
         carrinho.limpar();
@@ -119,12 +106,11 @@ public class CarrinhoService
 
     public void definirMesa(String sessaoId, Long mesaId)
     {
-        String key = CARRINHO_KEY + sessaoId;
-        Carrinho carrinho = redisTemplate.opsForValue().get(key);
-
+        Carrinho carrinho = carrinhos.get(sessaoId);
         if (carrinho == null)
         {
             carrinho = new Carrinho();
+            carrinho.setSessaoId(sessaoId);
         }
 
         carrinho.setMesaId(mesaId);
@@ -133,7 +119,6 @@ public class CarrinhoService
 
     public void salvarCarrinho(String sessaoId, Carrinho carrinho)
     {
-        String key = CARRINHO_KEY + sessaoId;
-        redisTemplate.opsForValue().set(key, carrinho);
+        carrinhos.put(sessaoId,carrinho);
     }
 }

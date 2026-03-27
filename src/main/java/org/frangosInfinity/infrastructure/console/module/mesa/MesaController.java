@@ -110,7 +110,7 @@ public class MesaController
         return ResponseEntity.ok(mesa);
     }
 
-    @PatchMapping("/{id}/status")
+    @PatchMapping("/{idMesa}/status")
     @Operation(summary = "Atualizar status da mesa")
     public ResponseEntity<MesaResponseDTO> processarAtualizarStatusMesa(@PathVariable Long idMesa, @RequestParam String acao)
     {
@@ -124,7 +124,7 @@ public class MesaController
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{idMesa}")
     @Operation(summary = "Remover mesa")
     @ApiResponses(value ={
             @ApiResponse(responseCode = "204", description = "Mesa removida com sucesso"),
@@ -154,7 +154,7 @@ public class MesaController
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/{id}/qrcode/validar")
+    @PostMapping("/{idMesa}/qrcode/validar")
     @Operation(summary = "Validar QR Code de uma mesa")
     public ResponseEntity<Boolean> processarValidarQRCode(@PathVariable Long idMesa, @RequestParam String tokenSessao)
     {

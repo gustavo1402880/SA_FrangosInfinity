@@ -41,18 +41,28 @@
             return;
         }
 
+        const url = `/api/mesas/${mesaId}/qrcode/validar?tokenSessao=${token}`;
+        console.log('Chamando URL:', url);
+
         try {
             // Validar QR Code
-            const response = await fetch(`/mesas/${mesaId}/qrcode/validar?tokenSessao=${token}`, {
+            const response = await fetch(`/api/mesas/${mesaId}/qrcode/validar?tokenSessao=${token}`, {
                 method: 'POST',
-                credentials: 'include'
+                credentials: 'include',
+                headers:
+                    {
+                        'Content-Type': 'application/json'
+                    }
             });
+
+            console.log('Response status:', response.status);
+            console.log('Response OK?', response.ok);
 
             const valido = await response.json();
 
             if (valido) {
                 // Criar pedido
-                const pedidoResponse = await fetch('/pedidos', {
+                const pedidoResponse = await fetch('/api/pedidos', {
                     method: 'POST',
                     credentials: 'include',
                     headers: { 'Content-Type': 'application/json' },

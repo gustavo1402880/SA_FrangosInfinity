@@ -12,6 +12,7 @@ public class QRCodeResponseDTO
     private LocalDateTime dataCriacao;
     private LocalDateTime dataExpiracao;
     private Long idMesa;
+    private String tokenSessao;
     private String mensagem;
     private Boolean sucesso;
 
@@ -97,6 +98,14 @@ public class QRCodeResponseDTO
         this.sucesso = sucesso;
     }
 
+    public String getTokenSessao() {
+        return tokenSessao;
+    }
+
+    public void setTokenSessao(String tokenSessao) {
+        this.tokenSessao = tokenSessao;
+    }
+
     public static QRCodeResponseDTO fromEntity(QRCode qrCode)
     {
         QRCodeResponseDTO dto = new QRCodeResponseDTO();
@@ -106,6 +115,7 @@ public class QRCodeResponseDTO
         dto.setDataCriacao(qrCode.getDataCriacao());
         dto.setDataExpiracao(qrCode.getDataExpiracao());
         dto.setIdMesa(qrCode.getIdMesa().getId());
+        dto.setTokenSessao(qrCode.getTokenSessao());
         dto.setSucesso(true);
         dto.setMensagem("QR Code gerado com sucesso!");
         return dto;

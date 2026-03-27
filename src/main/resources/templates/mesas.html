@@ -104,7 +104,7 @@
                 document.getElementById('qrMesaNumero').textContent = mesaNumero;
                 document.getElementById('qrExpiracao').textContent = new Date(qrData.dataExpiracao).toLocaleTimeString();
 
-                const validacaoUrl = `/api/validar-qrcode?mesa=${mesaId}&token=${qrData.tokenSessao}`;
+                const validacaoUrl = `/validar-qrcode?mesa=${mesaId}&token=${qrData.tokenSessao}`;
                 qrCodeUrl = validacaoUrl;
 
                 document.getElementById('qrCodeImage').innerHTML = `

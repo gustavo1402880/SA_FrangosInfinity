@@ -61,7 +61,7 @@ public class SecurityConfig
                         .requestMatchers(HttpMethod.POST, "/mesas/qrcode/limpar-expirados").hasRole("ADMINISTRADOR")
                         .requestMatchers(HttpMethod.GET, "/mesas/qrcodes/ativos").hasAnyRole("ADMINISTRADOR", "ATENDENTE")
 
-                        .requestMatchers(HttpMethod.POST, "/mesas/qrcode/{id}/validar").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/mesas/qrcode/{id}/validar").permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/mesas/iot").hasRole("ADMINISTRADOR")
                         .requestMatchers(HttpMethod.GET,"/mesas/iot/online").hasRole("ADMINISTRADOR")

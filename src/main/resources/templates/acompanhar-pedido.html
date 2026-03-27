@@ -15,7 +15,7 @@
             <span class="font-bold text-xl">Frango's Infinity</span>
         </div>
         <div class="flex items-center space-x-4">
-            <span th:text="${#authentication.name}" class="font-medium"></span>
+            <span th:text="${usuarioNome}" class="font-medium"></span>
             <form th:action="@{/logout}" method="post" class="inline">
                 <button type="submit" class="bg-orange-700 hover:bg-orange-800 px-3 py-1 rounded transition">Sair</button>
             </form>
@@ -72,7 +72,7 @@
         }
 
         try {
-            const response = await fetch(`/pedidos/subpedidos/${subPedidoId}`, { credentials: 'include' });
+            const response = await fetch(`/api/pedidos/subpedidos/${subPedidoId}`, { credentials: 'include' });
             const pedido = await response.json();
 
             const container = document.getElementById('pedido-container');

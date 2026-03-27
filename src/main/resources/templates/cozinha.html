@@ -15,7 +15,7 @@
             <span class="font-bold text-xl">Frango's Infinity</span>
         </div>
         <div class="flex items-center space-x-4">
-            <span th:text="${#authentication.name}" class="font-medium"></span>
+            <span th:text="${usuarioNome}" class="font-medium"></span>
             <form th:action="@{/logout}" method="post" class="inline">
                 <button type="submit" class="bg-orange-700 hover:bg-orange-800 px-3 py-1 rounded transition">Sair</button>
             </form>
@@ -51,11 +51,11 @@
     async function carregarPedidos() {
         try {
             // Carregar pedidos confirmados
-            const confirmadosResp = await fetch('/pedidos/subpedidos/status?status=CONFIMADO', { credentials: 'include' });
+            const confirmadosResp = await fetch('/api/pedidos/subpedidos/status?status=CONFIMADO', { credentials: 'include' });
             const confirmados = await confirmadosResp.json();
 
             // Carregar pedidos em preparo
-            const preparoResp = await fetch('/pedidos/subpedidos/status?status=EM_PREPARO', { credentials: 'include' });
+            const preparoResp = await fetch('/api/pedidos/subpedidos/status?status=EM_PREPARO', { credentials: 'include' });
             const preparo = await preparoResp.json();
 
             document.getElementById('confirmados-count').textContent = `(${confirmados.length})`;
@@ -119,7 +119,7 @@
 
     async function iniciarPreparo(id) {
         try {
-            const response = await fetch(`/pedidos/subpedidos/${id}/preparar`, {
+            const response = await fetch(`/api/pedidos/subpedidos/${id}/preparar`, {
                 method: 'PATCH',
                 credentials: 'include'
             });
@@ -135,7 +135,7 @@
 
     async function marcarPronto(id) {
         try {
-            const response = await fetch(`/pedidos/subpedidos/${id}/pronto`, {
+            const response = await fetch(`/api/pedidos/subpedidos/${id}/pronto`, {
                 method: 'PATCH',
                 credentials: 'include'
             });

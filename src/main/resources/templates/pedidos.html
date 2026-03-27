@@ -15,7 +15,7 @@
             <span class="font-bold text-xl">Frango's Infinity</span>
         </div>
         <div class="flex items-center space-x-4">
-            <span th:text="${#authentication.name}" class="font-medium"></span>
+            <span th:text="${usuarioNome}" class="font-medium"></span>
             <form th:action="@{/logout}" method="post" class="inline">
                 <button type="submit" class="bg-orange-700 hover:bg-orange-800 px-3 py-1 rounded transition">Sair</button>
             </form>
@@ -60,7 +60,7 @@
         container.innerHTML = '<div class="col-span-full text-center py-8"><div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div><p class="mt-2 text-gray-600">Carregando pedidos...</p></div>';
 
         try {
-            const response = await fetch(`/pedidos/subpedidos/status?status=${status}`, { credentials: 'include' });
+            const response = await fetch(`/api/pedidos/subpedidos/status?status=${status}`, { credentials: 'include' });
             const pedidos = await response.json();
 
             if (pedidos.length === 0) {
@@ -108,7 +108,7 @@
 
     async function confirmarPedido(id) {
         try {
-            await fetch(`/pedidos/subpedidos/${id}/confirmar`, { method: 'PATCH', credentials: 'include' });
+            await fetch(`/api/pedidos/subpedidos/${id}/confirmar`, { method: 'PATCH', credentials: 'include' });
             carregarPorStatus(statusAtual);
         } catch (error) {
             alert('Erro ao confirmar pedido');
@@ -118,7 +118,7 @@
     async function cancelarPedido(id) {
         if (confirm('Tem certeza que deseja cancelar este pedido?')) {
             try {
-                await fetch(`/pedidos/subpedidos/${id}/cancelar`, { method: 'PATCH', credentials: 'include' });
+                await fetch(`/api/pedidos/subpedidos/${id}/cancelar`, { method: 'PATCH', credentials: 'include' });
                 carregarPorStatus(statusAtual);
             } catch (error) {
                 alert('Erro ao cancelar pedido');
@@ -128,7 +128,7 @@
 
     async function entregarPedido(id) {
         try {
-            await fetch(`/pedidos/subpedidos/${id}/entregar`, { method: 'PATCH', credentials: 'include' });
+            await fetch(`/api/pedidos/subpedidos/${id}/entregar`, { method: 'PATCH', credentials: 'include' });
             carregarPorStatus(statusAtual);
         } catch (error) {
             alert('Erro ao entregar pedido');

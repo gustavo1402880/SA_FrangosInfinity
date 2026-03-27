@@ -15,7 +15,7 @@
             <span class="font-bold text-xl">Frango's Infinity</span>
         </div>
         <div class="flex items-center space-x-4">
-            <span th:text="${#authentication.name}" class="font-medium"></span>
+            <span th:text="${usuarioNome}" class="font-medium"></span>
             <button onclick="abrirCarrinho()" class="relative bg-orange-700 hover:bg-orange-800 px-3 py-1 rounded transition">
                 🛒 Carrinho
                 <span id="carrinho-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
@@ -76,7 +76,7 @@
 
     async function carregarCategorias() {
         try {
-            const response = await fetch('/pedidos/cardapio/categorias', { credentials: 'include' });
+            const response = await fetch('/api/pedidos/cardapio/categorias', { credentials: 'include' });
             categorias = await response.json();
 
             const container = document.getElementById('categorias');
@@ -94,9 +94,9 @@
 
     async function carregarProdutos(categoriaId = null) {
         try {
-            let url = '/pedidos/cardapio/produtos';
+            let url = '/api/pedidos/cardapio/produtos';
             if (categoriaId) {
-                url = `/pedidos/cardapio/categoria/${categoriaId}`;
+                url = `/api/pedidos/cardapio/categoria/${categoriaId}`;
             }
 
             const response = await fetch(url, { credentials: 'include' });
@@ -202,7 +202,7 @@
         try {
             // Adicionar itens ao carrinho no backend
             for (const item of carrinho) {
-                await fetch('/pedidos/carrinho/itens', {
+                await fetch('/api/pedidos/carrinho/itens', {
                     method: 'POST',
                     credentials: 'include',
                     headers: { 'Content-Type': 'application/json' },
@@ -215,7 +215,7 @@
             }
 
             // Criar subpedido
-            const response = await fetch(`/pedidos/${pedidoId}/subpedidos`, {
+            const response = await fetch(`/api/pedidos/${pedidoId}/subpedidos`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
