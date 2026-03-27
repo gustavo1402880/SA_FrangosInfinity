@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acompanhar Pedido - Frango's Infinity</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-gray-100">
+<nav class="bg-orange-600 text-white shadow-lg">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+            <span class="text-2xl">🍗</span>
+            <span class="font-bold text-xl">Frango's Infinity</span>
+        </div>
+        <div class="flex items-center space-x-4">
+            <span th:text="${#authentication.name}" class="font-medium"></span>
+            <form th:action="@{/logout}" method="post" class="inline">
+                <button type="submit" class="bg-orange-700 hover:bg-orange-800 px-3 py-1 rounded transition">Sair</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">Acompanhar Pedido</h1>
+
+    <div id="pedido-container" class="bg-white rounded-lg shadow p-6">
+        <div class="text-center py-8">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+            <p class="mt-2 text-gray-600">Carregando pedido...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    const statusOrdem = {
+        'PENDENTE': 0,
+        'CONFIMADO': 1,
+        'EM_PREPARO': 2,
+        'PRONTO': 3,
+        'ENTREGUE': 4,
+        'CANCELADO': 5
+    };
+
+    const statusTexto = {
+        'PENDENTE': 'Aguardando confirmação',
+        'CONFIMADO': 'Pedido confirmado',
+        'EM_PREPARO': 'Em preparo',
+        'PRONTO': 'Pronto para retirada',
+        'ENTREGUE': 'Entregue',
+        'CANCELADO': 'Cancelado'
+    };
+
+    const statusCor = {
+        'PENDENTE': 'bg-yellow-500',
+        'CONFIMADO': 'bg-blue-500',
+        'EM_PREPARO': 'bg-orange-500',
+        'PRONTO': 'bg-green-500',
+        'ENTREGUE': 'bg-gray-500',
+        'CANCELADO': 'bg-red-500'
+    };
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const subPedidoId = urlParams.get('id');
+
+    async function carregarPedido() {
+        if (!subPedidoId) {
+            document.getElementById('pedido-container').innerHTML = '<p class="text-red-500 text-center">Pedido não encontrado</p>';
+            return;
+        }
+
+        try {
+            const response = await fetch(`/pedidos/subpedidos/${subPedidoId}`, { credentials: 'include' });
+            const pedido = await response.json();
+
+            const container = document.getElementById('pedido-container');
+            const progresso = (statusOrdem[pedido.status] / 4) * 100;
+
+            container.innerHTML = `
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-2">
+                            <h2 class="text-xl font-bold">Pedido #${pedido.numeroPedido || pedido.id}</h2>
+                            <span class="px-3 py-1 rounded-full text-white text-sm ${statusCor[pedido.status] || 'bg-gray-500'}">${statusTexto[pedido.status] || pedido.status}</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-orange-600 h-2 rounded-full transition-all" style="width: ${progresso}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="border-t pt-4">
+                        <h3 class="font-bold mb-2">Itens do Pedido</h3>
+                        ${pedido.itens && pedido.itens.length > 0 ? pedido.itens.map(item => `
+                            <div class="flex justify-between py-2 border-b">
+                                <div>
+                                    <p class="font-medium">${item.quantidade}x ${item.nomeProduto}</p>
+                                    <p class="text-sm text-gray-500">${item.observacao || ''}</p>
+                                </div>
+                                <p class="font-medium">R$ ${item.subTotal?.toFixed(2) || (item.precoUnitario * item.quantidade).toFixed(2)}</p>
+                            </div>
+                        `).join('') : '<p class="text-gray-500">Carregando itens...</p>'}
+
+                        <div class="flex justify-between mt-4 pt-2 border-t">
+                            <span class="font-bold">Total:</span>
+                            <span class="font-bold text-orange-600">R$ ${pedido.valorTotal?.toFixed(2) || '0,00'}</span>
+                        </div>
+
+                        <p class="text-sm text-gray-500 mt-4">Tempo estimado: ${pedido.tempoPreparoMinutos || 0} minutos</p>
+                    </div>
+
+                    <div class="mt-6">
+                        <a href="/cardapio?mesaId=${pedido.mesaId}&pedidoId=${pedido.pedidoId}" class="text-orange-600 hover:underline">Fazer novo pedido</a>
+                    </div>
+                `;
+
+        } catch (error) {
+            console.error('Erro:', error);
+            document.getElementById('pedido-container').innerHTML = '<p class="text-red-500 text-center">Erro ao carregar pedido</p>';
+        }
+    }
+
+    setInterval(carregarPedido, 10000);
+    carregarPedido();
+</script>
+</body>
+</html>

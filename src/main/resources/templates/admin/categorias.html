@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Categorias - Frango's Infinity</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+<nav class="navbar">
+    <div class="navbar-container">
+        <div class="navbar-logo">
+            <span>🍗</span>
+            <span>Frango's Infinity</span>
+        </div>
+        <div class="navbar-user">
+            <span th:text="${usuarioNome}" class="font-medium"></span>
+            <form th:action="@{/logout}" method="post">
+                <button type="submit">Sair</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="flex justify-between items-center mb-6">
+        <h1>Gerenciar Categorias</h1>
+        <button onclick="abrirModalCriar()" class="btn btn-primary">+ Nova Categoria</button>
+    </div>
+
+    <div id="categorias-container">
+        <div class="loading">Carregando categorias...</div>
+    </div>
+</div>
+
+<!-- Modal Criar/Editar Categoria -->
+<div id="categoriaModal" class="modal-overlay" style="display: none;">
+    <div class="modal" style="max-width: 400px;">
+        <div class="modal-header">
+            <h3 id="modalTitle">Nova Categoria</h3>
+            <button onclick="fecharModal()" class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="categoriaForm">
+                <input type="hidden" id="categoriaId">
+                <div class="form-group">
+                    <label class="form-label">Nome</label>
+                    <input type="text" id="nome" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descrição</label>
+                    <textarea id="descricao" class="form-input" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Ordem de Exibição</label>
+                    <input type="number" id="ordemExibicao" class="form-input" value="0">
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button onclick="fecharModal()" class="btn btn-secondary">Cancelar</button>
+            <button onclick="salvarCategoria()" class="btn btn-primary">Salvar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function carregarCategorias() {
+        const container = document.getElementById('categorias-container');
+        container.innerHTML = '<div class="loading">Carregando categorias...</div>';
+
+        try {
+            const response = await fetch('/api/produtos/categorias', { credentials: 'include' });
+            const categorias = await response.json();
+
+            if (categorias.length === 0) {
+                container.innerHTML = '<div class="text-center py-8 text-gray-500">Nenhuma categoria cadastrada</div>';
+                return;
+            }
+
+            container.innerHTML = `
+                    <table class="table">
+                        <thead>
+                            <tr><th>ID</th><th>Nome</th><th>Descrição</th><th>Ordem</th><th>Status</th><th>Produtos</th><th>Ações</th></tr>
+                        </thead>
+                        <tbody>
+                            ${categorias.map(c => `
+                                <tr>
+                                    <td>${c.id}</td>
+                                    <td>${c.nome}</td>
+                                    <td>${c.descricao || '-'}</td>
+                                    <td>${c.ordemExibicao}</td>
+                                    <td>
+                                        <span class="badge ${c.ativa ? 'badge-success' : 'badge-danger'}">
+                                            ${c.ativa ? 'Ativa' : 'Inativa'}
+                                        </span>
+                                    </td>
+                                    <td>${c.quantidadeProdutos || 0}</td>
+                                    <td>
+                                        <button onclick="editarCategoria(${c.id})" class="btn btn-sm btn-primary">Editar</button>
+                                        <button onclick="alternarStatus(${c.id}, ${!c.ativa})" class="btn btn-sm btn-secondary">
+                                            ${c.ativa ? 'Desativar' : 'Ativar'}
+                                        </button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+        } catch (error) {
+            container.innerHTML = '<div class="text-center py-8 text-red-500">Erro ao carregar categorias</div>';
+        }
+    }
+
+    function abrirModalCriar() {
+        document.getElementById('modalTitle').textContent = 'Nova Categoria';
+        document.getElementById('categoriaForm').reset();
+        document.getElementById('categoriaId').value = '';
+        document.getElementById('categoriaModal').style.display = 'flex';
+    }
+
+    async function editarCategoria(id) {
+        try {
+            const response = await fetch(`/api/produtos/categorias/${id}`, { credentials: 'include' });
+            const c = await response.json();
+            document.getElementById('modalTitle').textContent = 'Editar Categoria';
+            document.getElementById('categoriaId').value = c.id;
+            document.getElementById('nome').value = c.nome;
+            document.getElementById('descricao').value = c.descricao || '';
+            document.getElementById('ordemExibicao').value = c.ordemExibicao;
+            document.getElementById('categoriaModal').style.display = 'flex';
+        } catch (error) {
+            alert('Erro ao carregar categoria');
+        }
+    }
+
+    async function salvarCategoria() {
+        const id = document.getElementById('categoriaId').value;
+        const data = {
+            nome: document.getElementById('nome').value,
+            descricao: document.getElementById('descricao').value,
+            ordemExibicao: parseInt(document.getElementById('ordemExibicao').value) || 0
+        };
+
+        try {
+            const url = id ? `/api/produtos/categorias/${id}` : '/api/produtos/categorias';
+            const method = id ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method: method,
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                fecharModal();
+                carregarCategorias();
+            } else {
+                alert('Erro ao salvar categoria');
+            }
+        } catch (error) {
+            alert('Erro ao salvar categoria');
+        }
+    }
+
+    async function alternarStatus(id, ativa) {
+        const endpoint = ativa ? 'ativar' : 'desativar';
+        try {
+            await fetch(`/api/produtos/categorias/${id}/${endpoint}`, {
+                method: 'PATCH',
+                credentials: 'include'
+            });
+            carregarCategorias();
+        } catch (error) {
+            alert('Erro ao alterar status');
+        }
+    }
+
+    function fecharModal() {
+        document.getElementById('categoriaModal').style.display = 'none';
+    }
+
+    carregarCategorias();
+</script>
+</body>
+</html>

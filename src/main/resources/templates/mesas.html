@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mesas - Frango's Infinity</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-gray-100">
+<nav class="bg-orange-600 text-white shadow-lg">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+            <span class="text-2xl">🍗</span>
+            <span class="font-bold text-xl">Frango's Infinity</span>
+        </div>
+        <div class="flex items-center space-x-4">
+            <span th:text="${#usuarioNome}" class="font-medium"></span>
+            <form th:action="@{/logout}" method="post" class="inline">
+                <button type="submit" class="bg-orange-700 hover:bg-orange-800 px-3 py-1 rounded transition">Sair</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">Selecione uma Mesa</h1>
+
+    <div id="mesas-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div class="col-span-full text-center py-8">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+            <p class="mt-2 text-gray-600">Carregando mesas...</p>
+        </div>
+    </div>
+</div>
+
+<!-- Modal QR Code -->
+<div id="qrModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full">
+        <div class="text-center">
+            <h2 class="text-xl font-bold mb-4">QR Code - Mesa <span id="qrMesaNumero"></span></h2>
+            <div id="qrCodeImage" class="flex justify-center mb-4"></div>
+            <p class="text-sm text-gray-500 mb-2">Escaneie o QR Code para iniciar o pedido</p>
+            <p class="text-xs text-gray-400">Expira em: <span id="qrExpiracao"></span></p>
+            <div class="mt-4 flex gap-2">
+                <button onclick="fecharModal()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 rounded">Fechar</button>
+                <button onclick="copiarLink()" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded">Copiar Link</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let qrCodeUrl = '';
+    let currentMesaId = null;
+
+    async function carregarMesas() {
+        try {
+            const response = await fetch('/api/mesas/disponiveis', { credentials: 'include' });
+            const mesas = await response.json();
+
+            const container = document.getElementById('mesas-container');
+
+            if (mesas.length === 0) {
+                container.innerHTML = '<div class="col-span-full text-center py-8 text-gray-500">Nenhuma mesa disponível</div>';
+                return;
+            }
+
+            container.innerHTML = mesas.map(mesa => `
+                    <div class="bg-white rounded-lg shadow p-4 border border-gray-200 hover:shadow-md transition cursor-pointer" onclick="selecionarMesa(${mesa.id}, ${mesa.numero})">
+                        <div class="text-center">
+                            <h3 class="text-lg font-bold text-gray-800">Mesa ${mesa.numero}</h3>
+                            <p class="text-sm text-gray-600">Capacidade: ${mesa.capacidade} pessoas</p>
+                            <p class="text-xs text-gray-500">${mesa.localizacao || ''}</p>
+                            <span class="inline-block mt-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Disponível</span>
+                        </div>
+                    </div>
+                `).join('');
+
+        } catch (error) {
+            console.error('Erro:', error);
+            document.getElementById('mesas-container').innerHTML = '<div class="col-span-full text-center py-8 text-red-500">Erro ao carregar mesas</div>';
+        }
+    }
+
+    async function selecionarMesa(mesaId, mesaNumero) {
+        currentMesaId = mesaId;
+
+        try {
+            // Gerar QR Code
+            const qrResponse = await fetch(`/api/mesas/${mesaId}/qrcode`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tokenAcesso: 'cliente-' + Date.now(),
+                    tempoExpiracaoSgundos: 120
+                })
+            });
+
+            const qrData = await qrResponse.json();
+
+            if (qrData.sucesso) {
+                document.getElementById('qrMesaNumero').textContent = mesaNumero;
+                document.getElementById('qrExpiracao').textContent = new Date(qrData.dataExpiracao).toLocaleTimeString();
+
+                const validacaoUrl = `/api/validar-qrcode?mesa=${mesaId}&token=${qrData.tokenSessao}`;
+                qrCodeUrl = validacaoUrl;
+
+                document.getElementById('qrCodeImage').innerHTML = `
+                        <div class="bg-white p-4 rounded border">
+                            <img src="${qrData.urlAutenticacao}" class="w-48 h-48 mx-auto" alt="QR Code" />
+                            <p class="text-xs text-gray-500 mt-2 break-all">${validacaoUrl}</p>
+                        </div>
+                    `;
+
+                document.getElementById('qrModal').classList.remove('hidden');
+            } else {
+                alert('Erro ao gerar QR Code: ' + qrData.mensagem);
+            }
+
+        } catch (error) {
+            console.error('Erro:', error);
+            alert('Erro ao gerar QR Code');
+        }
+    }
+
+    function fecharModal() {
+        document.getElementById('qrModal').classList.add('hidden');
+    }
+
+    function copiarLink() {
+        navigator.clipboard.writeText(qrCodeUrl);
+        alert('Link copiado!');
+    }
+
+    carregarMesas();
+</script>
+</body>
+</html>

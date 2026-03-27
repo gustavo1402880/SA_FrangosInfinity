@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("/relatorios")
+@RequestMapping("/api/relatorios")
 public class RelatorioController
 {
     @Autowired

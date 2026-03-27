@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Frango's Infinity</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Buscar dados do usuário logado
+        async function carregarUsuario() {
+            try {
+                const response = await fetch('/auth/me', { credentials: 'include' });
+                const user = await response.json();
+
+                if (user.sucesso) {
+                    document.getElementById('userName').textContent = user.nome?.split(' ')[0] || user.nome;
+
+                    const role = user.nivelAcesso || (user.tipoUsuario === 'CLIENTE' ? 'CLIENTE' : '');
+
+                    // Mostrar painel conforme perfil
+                    if (role === 'CLIENTE') {
+                        document.getElementById('clientePanel').classList.remove('hidden');
+                        carregarPontos(user.id);
+                    } else if (role === 'ADMINISTRADOR') {
+                        document.getElementById('adminPanel').classList.remove('hidden');
+                    } else if (role === 'ATENDENTE') {
+                        document.getElementById('atendentePanel').classList.remove('hidden');
+                    } else if (role === 'COZINHEIRO') {
+                        document.getElementById('cozinheiroPanel').classList.remove('hidden');
+                    } else if (role === 'CAIXA') {
+                        document.getElementById('caixaPanel').classList.remove('hidden');
+                    }
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+            }
+        }
+
+        async function carregarPontos(userId) {
+            try {
+                const response = await fetch(`/contas/cliente/${userId}`, { credentials: 'include' });
+                const data = await response.json();
+
+                if (data.sucesso) {
+                    document.getElementById('pontosSaldo').textContent = data.saldo || 0;
+                }
+            } catch (error) {
+                console.error('Erro ao carregar pontos:', error);
+            }
+        }
+
+        carregarUsuario();
+    </script>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-gray-100">
+<nav class="bg-orange-600 text-white shadow-lg">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+            <span class="text-2xl">🍗</span>
+            <span class="font-bold text-xl">Frango's Infinity</span>
+        </div>
+        <div class="flex items-center space-x-4">
+            <span id="userName" class="font-medium"></span>
+            <form th:action="@{/logout}" method="post" class="inline">
+                <button type="submit" class="bg-orange-700 hover:bg-orange-800 px-3 py-1 rounded transition">Sair</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">Olá, <span id="userNameDisplay"></span>! 👋</h1>
+
+    <!-- Painel do Cliente -->
+    <div id="clientePanel" class="hidden">
+        <div class="grid gap-4 md:grid-cols-2">
+            <div class="bg-white rounded-lg shadow p-8 text-center">
+                <h2 class="text-xl font-bold mb-4">Fazer um Pedido</h2>
+                <p class="text-gray-600 mb-4">Escolha a mesa, gere o QR Code e faça seu pedido</p>
+                <a href="/mesas" class="inline-block bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg transition">
+                    Novo Pedido
+                </a>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-bold mb-4">🎁 Programa de Fidelidade</h3>
+                <div class="text-center">
+                    <p class="text-sm text-gray-500">Pontos Atuais</p>
+                    <p id="pontosSaldo" class="text-3xl font-bold text-orange-600">0</p>
+                    <p class="text-xs text-gray-400 mt-2">Acumule 1 ponto a cada R$ 4,00</p>
+                    <p class="text-xs text-gray-400">20 pontos = R$ 5,00 de desconto</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Painel do Administrador -->
+    <div id="adminPanel" class="hidden">
+        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <a href="/admin/produtos" class="bg-white rounded-lg shadow p-6 text-center hover:shadow-md transition">
+                <div class="text-3xl mb-2">📦</div>
+                <h3 class="font-bold">Produtos</h3>
+                <p class="text-sm text-gray-500">Gerenciar produtos</p>
+            </a>
+            <a href="/admin/categorias" class="bg-white rounded-lg shadow p-6 text-center hover:shadow-md transition">
+                <div class="text-3xl mb-2">📁</div>
+                <h3 class="font-bold">Categorias</h3>
+                <p class="text-sm text-gray-500">Gerenciar categorias</p>
+            </a>
+            <a href="/admin/usuarios" class="bg-white rounded-lg shadow p-6 text-center hover:shadow-md transition">
+                <div class="text-3xl mb-2">👥</div>
+                <h3 class="font-bold">Usuários</h3>
+                <p class="text-sm text-gray-500">Gerenciar funcionários</p>
+            </a>
+            <a href="/admin/relatorios" class="bg-white rounded-lg shadow p-6 text-center hover:shadow-md transition">
+                <div class="text-3xl mb-2">📊</div>
+                <h3 class="font-bold">Relatórios</h3>
+                <p class="text-sm text-gray-500">Vendas e estatísticas</p>
+            </a>
+            <a href="/admin/fidelidade" class="bg-white rounded-lg shadow p-6 text-center hover:shadow-md transition">
+                <div class="text-3xl mb-2">⭐</div>
+                <h3 class="font-bold">Fidelidade</h3>
+                <p class="text-sm text-gray-500">Configurar programa</p>
+            </a>
+            <a href="/mesas" class="bg-white rounded-lg shadow p-6 text-center hover:shadow-md transition">
+                <div class="text-3xl mb-2">🍽️</div>
+                <h3 class="font-bold">Mesas</h3>
+                <p class="text-sm text-gray-500">Gerenciar mesas</p>
+            </a>
+            <a href="/pedidos" class="bg-white rounded-lg shadow p-6 text-center hover:shadow-md transition">
+                <div class="text-3xl mb-2">📋</div>
+                <h3 class="font-bold">Pedidos</h3>
+                <p class="text-sm text-gray-500">Gerenciar pedidos</p>
+            </a>
+        </div>
+    </div>
+
+    <!-- Painel do Atendente -->
+    <div id="atendentePanel" class="hidden">
+        <div class="grid gap-4 md:grid-cols-2">
+            <a href="/pedidos" class="bg-white rounded-lg shadow p-6 text-center hover:shadow-md transition">
+                <div class="text-3xl mb-2">📋</div>
+                <h3 class="font-bold">Gerenciar Pedidos</h3>
+                <p class="text-sm text-gray-500">Confirmar e entregar pedidos</p>
+            </a>
+            <a href="/mesas" class="bg-white rounded-lg shadow p-6 text-center hover:shadow-md transition">
+                <div class="text-3xl mb-2">🍽️</div>
+                <h3 class="font-bold">Mesas</h3>
+                <p class="text-sm text-gray-500">Visualizar mesas</p>
+            </a>
+        </div>
+    </div>
+
+    <!-- Painel do Cozinheiro -->
+    <div id="cozinheiroPanel" class="hidden">
+        <a href="/cozinha" class="block bg-white rounded-lg shadow p-8 text-center hover:shadow-md transition">
+            <div class="text-4xl mb-3">👨‍🍳</div>
+            <h3 class="text-xl font-bold">Painel da Cozinha</h3>
+            <p class="text-gray-500 mt-2">Visualizar pedidos e atualizar status</p>
+        </a>
+    </div>
+
+    <!-- Painel do Caixa -->
+    <div id="caixaPanel" class="hidden">
+        <a href="/pagamentos" class="block bg-white rounded-lg shadow p-8 text-center hover:shadow-md transition">
+            <div class="text-4xl mb-3">💰</div>
+            <h3 class="text-xl font-bold">Caixa</h3>
+            <p class="text-gray-500 mt-2">Processar pagamentos</p>
+        </a>
+    </div>
+</div>
+
+<script>
+    document.getElementById('userNameDisplay').textContent = document.getElementById('userName').textContent;
+</script>
+</body>
+</html>

@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/pedidos")
+@RequestMapping("/api/pedidos")
 @Tag(name = "Pedidos", description = "Gerenciamento de pedidos")
 public class PedidoController
 {

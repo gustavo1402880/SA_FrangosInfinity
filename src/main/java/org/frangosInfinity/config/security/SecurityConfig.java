@@ -38,6 +38,10 @@ public class SecurityConfig
 
                         .requestMatchers("/auth/me", "auth/status", "/dashboard").authenticated()
 
+                        .requestMatchers("/dashboard", "/mesas", "/validar-qrcode", "/cardapio", "/acompanhar-pedido").authenticated()
+
+
+
                         .requestMatchers(HttpMethod.GET, "/pedidos/cardapio/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/produtos/diponiveis").authenticated()
                         .requestMatchers(HttpMethod.GET, "/produtos/categoria/**").authenticated()
@@ -45,7 +49,7 @@ public class SecurityConfig
 
                         .requestMatchers(HttpMethod.GET, "/mesas").authenticated()
                         .requestMatchers(HttpMethod.GET, "/mesas/disponiveis").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/mesas/{id}").hasAnyRole("ADMINISTRADOR", "ATENDENTE", "CAIXA")
+                        .requestMatchers(HttpMethod.GET, "/mesas/{id}").authenticated()
                         .requestMatchers(HttpMethod.GET, "/mesas/numero/{numero}").hasAnyRole("ADMINISTRADOR", "ATENDENTE", "CAIXA")
 
                         .requestMatchers(HttpMethod.POST, "/mesas").hasRole("ADMINISTRADOR")
@@ -53,11 +57,11 @@ public class SecurityConfig
                         .requestMatchers(HttpMethod.DELETE, "/mesas/**").hasRole("ADMINISTRADOR")
                         .requestMatchers(HttpMethod.PATCH, "/mesas/{id}/status").hasAnyRole("ADMINISTRADOR", "ATENDENTE", "CAIXA")
 
-                        .requestMatchers(HttpMethod.POST, "/mesas/{id}/qrcode").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.POST, "/mesas/{id}/qrcode").authenticated()
                         .requestMatchers(HttpMethod.POST, "/mesas/qrcode/limpar-expirados").hasRole("ADMINISTRADOR")
                         .requestMatchers(HttpMethod.GET, "/mesas/qrcodes/ativos").hasAnyRole("ADMINISTRADOR", "ATENDENTE")
 
-                        .requestMatchers(HttpMethod.POST, "/mesas/qrcode/{id}/validar").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/mesas/qrcode/{id}/validar").authenticated()
 
                         .requestMatchers(HttpMethod.GET, "/mesas/iot").hasRole("ADMINISTRADOR")
                         .requestMatchers(HttpMethod.GET,"/mesas/iot/online").hasRole("ADMINISTRADOR")
@@ -174,8 +178,8 @@ public class SecurityConfig
                         .loginProcessingUrl("/login")
                         .usernameParameter("email")
                         .passwordParameter("senha")
-                        .successHandler(authenticationSuccessHandler())
-                        .failureHandler(authenticationFailureHandler())
+                        .defaultSuccessUrl("/dashboard", true)
+                        .failureUrl("/login?error=true")
                         .permitAll()
                 )
                 .logout(logout -> logout
@@ -207,25 +211,5 @@ public class SecurityConfig
                 .userDetailsService(userDetailsService)
                 .passwordEncoder(passwordEncoder());
         return authenticationManagerBuilder.build();
-    }
-
-    @Bean
-    public AuthenticationSuccessHandler authenticationSuccessHandler()
-    {
-        return (request, response, authentication) -> {
-            response.setStatus(200);
-            response.setContentType("application/json");
-            response.getWriter().write("{\"success\":true,\"message\":\"Login realizado com sucesso\"}");
-        };
-    }
-
-    @Bean
-    public AuthenticationFailureHandler authenticationFailureHandler()
-    {
-        return (request, response, exception) -> {
-            response.setStatus(401);
-            response.setContentType("application/json");
-            response.getWriter().write("{\"success\":false,\"message\":\"Email ou senha inválidos\"}");
-        };
     }
 }

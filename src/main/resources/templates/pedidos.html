@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Pedidos - Frango's Infinity</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-gray-100">
+<nav class="bg-orange-600 text-white shadow-lg">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+            <span class="text-2xl">🍗</span>
+            <span class="font-bold text-xl">Frango's Infinity</span>
+        </div>
+        <div class="flex items-center space-x-4">
+            <span th:text="${#authentication.name}" class="font-medium"></span>
+            <form th:action="@{/logout}" method="post" class="inline">
+                <button type="submit" class="bg-orange-700 hover:bg-orange-800 px-3 py-1 rounded transition">Sair</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">📋 Gerenciar Pedidos</h1>
+
+    <div class="flex flex-wrap gap-2 mb-6">
+        <button onclick="carregarPorStatus('PENDENTE')" class="tab-btn px-4 py-2 rounded-full bg-orange-600 text-white">Pendentes</button>
+        <button onclick="carregarPorStatus('CONFIMADO')" class="tab-btn px-4 py-2 rounded-full bg-gray-200 text-gray-700">Confirmados</button>
+        <button onclick="carregarPorStatus('EM_PREPARO')" class="tab-btn px-4 py-2 rounded-full bg-gray-200 text-gray-700">Em Preparo</button>
+        <button onclick="carregarPorStatus('PRONTO')" class="tab-btn px-4 py-2 rounded-full bg-gray-200 text-gray-700">Prontos</button>
+        <button onclick="carregarPorStatus('ENTREGUE')" class="tab-btn px-4 py-2 rounded-full bg-gray-200 text-gray-700">Entregues</button>
+    </div>
+
+    <div id="pedidos-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="col-span-full text-center py-8">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+            <p class="mt-2 text-gray-600">Carregando pedidos...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    let statusAtual = 'PENDENTE';
+
+    async function carregarPorStatus(status) {
+        statusAtual = status;
+
+        // Atualizar estilo das tabs
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('bg-orange-600', 'text-white');
+            btn.classList.add('bg-gray-200', 'text-gray-700');
+        });
+        event.target.classList.remove('bg-gray-200', 'text-gray-700');
+        event.target.classList.add('bg-orange-600', 'text-white');
+
+        const container = document.getElementById('pedidos-container');
+        container.innerHTML = '<div class="col-span-full text-center py-8"><div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div><p class="mt-2 text-gray-600">Carregando pedidos...</p></div>';
+
+        try {
+            const response = await fetch(`/pedidos/subpedidos/status?status=${status}`, { credentials: 'include' });
+            const pedidos = await response.json();
+
+            if (pedidos.length === 0) {
+                container.innerHTML = '<div class="col-span-full text-center py-8 text-gray-500">Nenhum pedido encontrado</div>';
+                return;
+            }
+
+            container.innerHTML = pedidos.map(pedido => `
+                    <div class="bg-white rounded-lg shadow p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-bold text-lg">Pedido #${pedido.numeroPedido || pedido.id}</h3>
+                            <span class="text-xs text-gray-500">${formatarTempo(pedido.dataHora)}</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-2">Mesa: ${pedido.mesaId || pedido.pedidoId}</p>
+                        ${pedido.itens?.map(item => `
+                            <p class="text-sm">${item.quantidade}x ${item.nomeProduto}</p>
+                        `).join('') || '<p class="text-sm">Carregando...</p>'}
+                        <p class="text-sm font-bold mt-2">Total: R$ ${pedido.valorTotal?.toFixed(2) || '0,00'}</p>
+                        <div class="flex gap-2 mt-3">
+                            ${status === 'PENDENTE' ? `
+                                <button onclick="confirmarPedido(${pedido.id})" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-1 rounded text-sm">Confirmar</button>
+                                <button onclick="cancelarPedido(${pedido.id})" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-1 rounded text-sm">Cancelar</button>
+                            ` : ''}
+                            ${status === 'PRONTO' ? `
+                                <button onclick="entregarPedido(${pedido.id})" class="w-full bg-green-500 hover:bg-green-600 text-white py-1 rounded text-sm">Entregar</button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `).join('');
+
+        } catch (error) {
+            console.error('Erro:', error);
+            container.innerHTML = '<div class="col-span-full text-center py-8 text-red-500">Erro ao carregar pedidos</div>';
+        }
+    }
+
+    function formatarTempo(dataHora) {
+        const criacao = new Date(dataHora);
+        const agora = new Date();
+        const diffMs = agora - criacao;
+        const minutos = Math.floor(diffMs / 60000);
+        if (minutos < 60) return `${minutos} min`;
+        return `${Math.floor(minutos / 60)}h ${minutos % 60}min`;
+    }
+
+    async function confirmarPedido(id) {
+        try {
+            await fetch(`/pedidos/subpedidos/${id}/confirmar`, { method: 'PATCH', credentials: 'include' });
+            carregarPorStatus(statusAtual);
+        } catch (error) {
+            alert('Erro ao confirmar pedido');
+        }
+    }
+
+    async function cancelarPedido(id) {
+        if (confirm('Tem certeza que deseja cancelar este pedido?')) {
+            try {
+                await fetch(`/pedidos/subpedidos/${id}/cancelar`, { method: 'PATCH', credentials: 'include' });
+                carregarPorStatus(statusAtual);
+            } catch (error) {
+                alert('Erro ao cancelar pedido');
+            }
+        }
+    }
+
+    async function entregarPedido(id) {
+        try {
+            await fetch(`/pedidos/subpedidos/${id}/entregar`, { method: 'PATCH', credentials: 'include' });
+            carregarPorStatus(statusAtual);
+        } catch (error) {
+            alert('Erro ao entregar pedido');
+        }
+    }
+
+    carregarPorStatus('PENDENTE');
+</script>
+</body>
+</html>

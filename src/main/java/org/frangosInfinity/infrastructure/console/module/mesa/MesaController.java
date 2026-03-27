@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/mesas")
+@RequestMapping("/api/mesas")
 @Tag(name = "Mesas", description = "Endpoints para gerenciamento de mesas")
 public class MesaController
 {

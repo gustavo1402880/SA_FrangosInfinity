@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Fidelidade - Frango's Infinity</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+<nav class="navbar">
+    <div class="navbar-container">
+        <div class="navbar-logo">
+            <span>🍗</span>
+            <span>Frango's Infinity</span>
+        </div>
+        <div class="navbar-user">
+            <span th:text="${usuarioNome}" class="font-medium"></span>
+            <form th:action="@{/logout}" method="post">
+                <button type="submit">Sair</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <h1 class="mb-6">Programa de Fidelidade</h1>
+
+    <div class="card mb-6">
+        <div class="card-header">
+            <h3>Regras Atuais</h3>
+        </div>
+        <div class="card-content" id="regras-container">
+            <div class="loading">Carregando regras...</div>
+        </div>
+    </div>
+
+    <div class="card mb-6">
+        <div class="card-header">
+            <h3>Configurar Regras</h3>
+        </div>
+        <div class="card-content">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="form-group">
+                    <label class="form-label">Pontos por Real (R$)</label>
+                    <input type="number" id="pontosPorReal" class="form-input" step="0.01" value="0.25">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Dias para Expiração</label>
+                    <input type="number" id="diasExpiracao" class="form-input" value="90">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Pontos Mínimos para Resgate</label>
+                    <input type="number" id="pontosMinimos" class="form-input" value="20">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Desconto por Bloco (R$)</label>
+                    <input type="number" id="descontoBloco" class="form-input" step="0.01" value="5.00">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Pontos por Bloco</label>
+                    <input type="number" id="pontosBloco" class="form-input" value="20">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Valor Mínimo Produto</label>
+                    <input type="number" id="valorMinimo" class="form-input" step="0.01" value="5.00">
+                </div>
+            </div>
+            <button onclick="salvarRegras()" class="btn btn-primary mt-4">Salvar Regras</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3>Contas de Fidelidade</h3>
+        </div>
+        <div class="card-content" id="contas-container">
+            <div class="loading">Carregando contas...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let regrasId = null;
+
+    async function carregarRegras() {
+        try {
+            const response = await fetch('/api/regras/ativas', { credentials: 'include' });
+            const regras = await response.json();
+
+            if (regras && regras.sucesso !== false) {
+                regrasId = regras.id;
+                document.getElementById('pontosPorReal').value = regras.pontosPorReal;
+                document.getElementById('diasExpiracao').value = regras.diasExpiracao;
+                document.getElementById('pontosMinimos').value = regras.pontosMinimosResgate;
+                document.getElementById('descontoBloco').value = regras.valorDescontoPorBloco;
+                document.getElementById('pontosBloco').value = regras.pontosPorBloco;
+                document.getElementById('valorMinimo').value = regras.valorMinimoProdutoDesconto;
+
+                document.getElementById('regras-container').innerHTML = `
+                        <div class="grid grid-cols-2 gap-4">
+                            <p><strong>Pontos por R$ 1,00:</strong> ${regras.pontosPorReal}</p>
+                            <p><strong>Expiração:</strong> ${regras.diasExpiracao} dias</p>
+                            <p><strong>Mínimo para resgate:</strong> ${regras.pontosMinimosResgate} pontos</p>
+                            <p><strong>Desconto:</strong> R$ ${regras.valorDescontoPorBloco} a cada ${regras.pontosPorBloco} pontos</p>
+                            <p><strong>Valor mínimo produto:</strong> R$ ${regras.valorMinimoProdutoDesconto}</p>
+                            <p><strong>Status:</strong> <span class="badge ${regras.ativo ? 'badge-success' : 'badge-danger'}">${regras.ativo ? 'Ativo' : 'Inativo'}</span></p>
+                        </div>
+                    `;
+            } else {
+                document.getElementById('regras-container').innerHTML = '<p>Nenhuma regra configurada</p>';
+            }
+        } catch (error) {
+            document.getElementById('regras-container').innerHTML = '<p>Erro ao carregar regras</p>';
+        }
+    }
+
+    async function salvarRegras() {
+        const data = {
+            pontosPorReal: parseFloat(document.getElementById('pontosPorReal').value),
+            diasExpiracao: parseInt(document.getElementById('diasExpiracao').value),
+            pontosMinimosResgate: parseInt(document.getElementById('pontosMinimos').value),
+            valorDescontoPorBloco: parseFloat(document.getElementById('descontoBloco').value),
+            pontosPorBloco: parseInt(document.getElementById('pontosBloco').value),
+            valorMinimoProdutoDesconto: parseFloat(document.getElementById('valorMinimo').value),
+            ativo: true
+        };
+
+        try {
+            let response;
+            if (regrasId) {
+                response = await fetch(`/api/admin/regras/${regrasId}`, {
+                    method: 'PUT',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+            } else {
+                response = await fetch('/api/admin/regras', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+            }
+
+            if (response.ok) {
+                alert('Regras salvas com sucesso!');
+                carregarRegras();
+            } else {
+                alert('Erro ao salvar regras');
+            }
+        } catch (error) {
+            alert('Erro ao salvar regras');
+        }
+    }
+
+    async function carregarContas() {
+        const container = document.getElementById('contas-container');
+        container.innerHTML = '<div class="loading">Carregando contas...</div>';
+
+        try {
+            const response = await fetch('/api/contas', { credentials: 'include' });
+            const contas = await response.json();
+
+            if (contas.length === 0) {
+                container.innerHTML = '<div class="text-center py-8 text-gray-500">Nenhuma conta de fidelidade</div>';
+                return;
+            }
+
+            container.innerHTML = `
+                    <table class="table">
+                        <thead>
+                            <tr><th>Cliente ID</th><th>Saldo</th><th>Validade</th><th>Ações</th>\
+                        </thead>
+                        <tbody>
+                            ${contas.map(c => `
+                                <tr>
+                                    <td>${c.clienteId}</td>
+                                    <td>${c.saldo}</td>
+                                    <td>${new Date(c.dataValidade).toLocaleDateString()}</td>
+                                    <td>
+                                        <button onclick="excluirConta(${c.id})" class="btn btn-sm btn-danger">Excluir</button>
+                                    </td>
+                                 </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+        } catch (error) {
+            container.innerHTML = '<div class="text-center py-8 text-red-500">Erro ao carregar contas</div>';
+        }
+    }
+
+    async function excluirConta(id) {
+        if (confirm('Tem certeza que deseja excluir esta conta de fidelidade?')) {
+            try {
+                await fetch(`/api/contas/${id}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+                carregarContas();
+            } catch (error) {
+                alert('Erro ao excluir conta');
+            }
+        }
+    }
+
+    carregarRegras();
+    carregarContas();
+</script>
+</body>
+</html>

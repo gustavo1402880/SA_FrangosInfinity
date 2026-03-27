@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/pagamentos")
+@RequestMapping("/api/pagamentos")
 @Tag(name = "Pagamentos", description = "Gerenciamento de pagamentos e PIX")
 public class PagamentoController
 {

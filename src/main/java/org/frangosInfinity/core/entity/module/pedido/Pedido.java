@@ -24,7 +24,7 @@ public class Pedido {
     @Column(name = "mesa_id", nullable = false)
     private Long mesaId;
 
-    @Column(name = "atendente_id", nullable = false)
+    @Column(name = "atendente_id", nullable = true)
     private Long atendenteId;
 
     @Column(nullable = false)
@@ -37,6 +37,7 @@ public class Pedido {
     {
         this.numeroPedido = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         this.dataHora = LocalDateTime.now();
+        this.subPedidos = new ArrayList<>();
     }
 
     public Pedido(String tipo, Long mesaId, Long atendenteId) {

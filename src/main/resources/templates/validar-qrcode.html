@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validando QR Code - Frango's Infinity</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+<div class="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
+    <div id="loading">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mb-4"></div>
+        <p class="text-gray-600">Validando QR Code...</p>
+    </div>
+
+    <div id="sucesso" class="hidden">
+        <div class="text-green-500 text-5xl mb-4">✓</div>
+        <h2 class="text-xl font-bold text-gray-800 mb-2">QR Code Válido!</h2>
+        <p class="text-gray-600 mb-4">Redirecionando para o cardápio...</p>
+    </div>
+
+    <div id="erro" class="hidden">
+        <div class="text-red-500 text-5xl mb-4">✗</div>
+        <h2 class="text-xl font-bold text-gray-800 mb-2">QR Code Inválido</h2>
+        <p id="erro-mensagem" class="text-gray-600 mb-4"></p>
+        <a href="/mesas" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded inline-block">
+            Voltar para Mesas
+        </a>
+    </div>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const mesaId = urlParams.get('mesa');
+    const token = urlParams.get('token');
+
+    async function validarQRCode() {
+        if (!mesaId || !token) {
+            mostrarErro('Link do pedido inválido. Parâmetros ausentes.');
+            return;
+        }
+
+        try {
+            // Validar QR Code
+            const response = await fetch(`/mesas/${mesaId}/qrcode/validar?tokenSessao=${token}`, {
+                method: 'POST',
+                credentials: 'include'
+            });
+
+            const valido = await response.json();
+
+            if (valido) {
+                // Criar pedido
+                const pedidoResponse = await fetch('/pedidos', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mesaId: parseInt(mesaId), tipo: 'MESA', atendenteId: null })
+                });
+
+                const pedido = await pedidoResponse.json();
+
+                if (pedido.sucesso) {
+                    mostrarSucesso();
+                    setTimeout(() => {
+                        window.location.href = `/cardapio?mesaId=${mesaId}&pedidoId=${pedido.id}`;
+                    }, 2000);
+                } else {
+                    mostrarErro('Erro ao criar pedido: ' + pedido.mensagem);
+                }
+            } else {
+                mostrarErro('QR Code inválido ou já utilizado.');
+            }
+
+        } catch (error) {
+            console.error('Erro:', error);
+            mostrarErro('Erro ao validar QR Code. Tente novamente.');
+        }
+    }
+
+    function mostrarSucesso() {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('sucesso').classList.remove('hidden');
+    }
+
+    function mostrarErro(mensagem) {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('erro').classList.remove('hidden');
+        document.getElementById('erro-mensagem').textContent = mensagem;
+    }
+
+    validarQRCode();
+</script>
+</body>
+</html>

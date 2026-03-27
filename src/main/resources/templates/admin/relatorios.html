@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Relatórios - Frango's Infinity</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+<nav class="navbar">
+    <div class="navbar-container">
+        <div class="navbar-logo">
+            <span>🍗</span>
+            <span>Frango's Infinity</span>
+        </div>
+        <div class="navbar-user">
+            <span th:text="${usuarioNome}" class="font-medium"></span>
+            <form th:action="@{/logout}" method="post">
+                <button type="submit">Sair</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <h1 class="mb-6">Relatórios</h1>
+
+    <div class="card mb-6">
+        <div class="card-header">
+            <h3>Gerar Relatório de Vendas</h3>
+        </div>
+        <div class="card-content">
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="form-group">
+                    <label class="form-label">Data Início</label>
+                    <input type="date" id="dataInicio" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Data Fim</label>
+                    <input type="date" id="dataFim" class="form-input">
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="gerarRelatorio()" class="btn btn-primary">Gerar PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="relatorios-container">
+        <div class="loading">Carregando relatórios...</div>
+    </div>
+</div>
+
+<script>
+    async function carregarRelatorios() {
+        const container = document.getElementById('relatorios-container');
+        container.innerHTML = '<div class="loading">Carregando relatórios...</div>';
+
+        try {
+            const response = await fetch('/api/relatorios', { credentials: 'include' });
+            const relatorios = await response.json();
+
+            if (relatorios.length === 0) {
+                container.innerHTML = '<div class="text-center py-8 text-gray-500">Nenhum relatório gerado</div>';
+                return;
+            }
+
+            container.innerHTML = `
+                    <table class="table">
+                        <thead>
+                            <tr><th>Data Geração</th><th>Período</th><th>Total Vendas</th><th>Ticket Médio</th><th>Ações</th></tr>
+                        </thead>
+                        <tbody>
+                            ${relatorios.map(r => `
+                                <tr>
+                                    <td>${new Date(r.dataGeracao).toLocaleDateString()}</td>
+                                    <td>${new Date(r.periodoInicio).toLocaleDateString()} - ${new Date(r.periodoFim).toLocaleDateString()}</td>
+                                    <td>R$ ${r.totalVendas?.toFixed(2) || '0,00'}</td>
+                                    <td>R$ ${r.ticketMedio?.toFixed(2) || '0,00'}</td>
+                                    <td>
+                                        <a href="/api/relatorios/${r.id}/pdf" target="_blank" class="btn btn-sm btn-primary">Download PDF</a>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+        } catch (error) {
+            container.innerHTML = '<div class="text-center py-8 text-red-500">Erro ao carregar relatórios</div>';
+        }
+    }
+
+    async function gerarRelatorio() {
+        const inicio = document.getElementById('dataInicio').value;
+        const fim = document.getElementById('dataFim').value;
+
+        if (!inicio || !fim) {
+            alert('Selecione as datas de início e fim');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/relatorios', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    periodoInicio: new Date(inicio).toISOString(),
+                    periodoFim: new Date(fim).toISOString(),
+                    totalVendas: 0,
+                    totalPedidos: 0,
+                    ticketMedio: 0
+                })
+            });
+
+            if (response.ok) {
+                alert('Relatório gerado com sucesso!');
+                carregarRelatorios();
+            } else {
+                alert('Erro ao gerar relatório');
+            }
+        } catch (error) {
+            alert('Erro ao gerar relatório');
+        }
+    }
+
+    carregarRelatorios();
+</script>
+</body>
+</html>

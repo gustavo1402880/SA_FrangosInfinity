@@ -82,7 +82,7 @@ public class QRCodeService {
         qrCode.setDataExpiracao(qrCode.getDataCriacao().plusSeconds(tempoExpiracao));
 
         // Por enquanto não vou usar o baseUrl já que acabei de implementar o front, caso eu decida atualizar então farei isso
-        String url = String.format("%s/validar-qrcode?mesa=%d&token=%s", "http://localhost:8080", mesa.getId(), qrCode.getTokenSessao());
+        String url = String.format("%s/api/validar-qrcode?mesa=%d&token=%s", "http://localhost:8082", mesa.getId(), qrCode.getTokenSessao());
         qrCode.setUrlAutenticacao(url);
 
         String nomeArquivo = String.format("mesa_%d_%s.png", mesa.getNumero(), qrCode.getCodigo());

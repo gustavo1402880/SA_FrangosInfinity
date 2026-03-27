@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cardápio - Frango's Infinity</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-gray-100">
+<nav class="bg-orange-600 text-white shadow-lg sticky top-0 z-10">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+            <span class="text-2xl">🍗</span>
+            <span class="font-bold text-xl">Frango's Infinity</span>
+        </div>
+        <div class="flex items-center space-x-4">
+            <span th:text="${#authentication.name}" class="font-medium"></span>
+            <button onclick="abrirCarrinho()" class="relative bg-orange-700 hover:bg-orange-800 px-3 py-1 rounded transition">
+                🛒 Carrinho
+                <span id="carrinho-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
+            </button>
+            <form th:action="@{/logout}" method="post" class="inline">
+                <button type="submit" class="bg-orange-700 hover:bg-orange-800 px-3 py-1 rounded transition">Sair</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">Cardápio Digital</h1>
+
+    <div id="categorias" class="flex flex-wrap gap-2 mb-6">
+        <button onclick="filtrarPorCategoria(null)" class="categoria-btn active px-4 py-2 rounded-full bg-orange-600 text-white">Todos</button>
+    </div>
+
+    <div id="produtos" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div class="col-span-full text-center py-8">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+            <p class="mt-2 text-gray-600">Carregando produtos...</p>
+        </div>
+    </div>
+</div>
+
+<!-- Carrinho Sidebar -->
+<div id="carrinho-sidebar" class="fixed top-0 right-0 w-96 h-full bg-white shadow-lg transform translate-x-full transition-transform z-20">
+    <div class="p-4 border-b flex justify-between items-center">
+        <h2 class="text-xl font-bold">Seu Carrinho</h2>
+        <button onclick="fecharCarrinho()" class="text-gray-500 hover:text-gray-700">✕</button>
+    </div>
+    <div id="carrinho-itens" class="flex-1 overflow-y-auto p-4">
+        <p class="text-gray-500 text-center">Carrinho vazio</p>
+    </div>
+    <div class="border-t p-4">
+        <div class="flex justify-between mb-2">
+            <span class="font-bold">Total:</span>
+            <span id="carrinho-total" class="font-bold text-orange-600">R$ 0,00</span>
+        </div>
+        <button onclick="finalizarPedido()" class="w-full bg-orange-600 hover:bg-orange-700 text-white py-2 rounded transition">
+            Finalizar Pedido
+        </button>
+    </div>
+</div>
+
+<script>
+    let produtos = [];
+    let categorias = [];
+    let carrinho = [];
+    let pedidoId = null;
+    let mesaId = null;
+
+    // Pegar parâmetros da URL
+    const urlParams = new URLSearchParams(window.location.search);
+    mesaId = urlParams.get('mesaId');
+    pedidoId = urlParams.get('pedidoId');
+
+    async function carregarCategorias() {
+        try {
+            const response = await fetch('/pedidos/cardapio/categorias', { credentials: 'include' });
+            categorias = await response.json();
+
+            const container = document.getElementById('categorias');
+            categorias.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.textContent = cat.nome;
+                btn.onclick = () => filtrarPorCategoria(cat.id);
+                btn.className = 'px-4 py-2 rounded-full bg-gray-200 text-gray-700 hover:bg-orange-600 hover:text-white transition';
+                container.appendChild(btn);
+            });
+        } catch (error) {
+            console.error('Erro:', error);
+        }
+    }
+
+    async function carregarProdutos(categoriaId = null) {
+        try {
+            let url = '/pedidos/cardapio/produtos';
+            if (categoriaId) {
+                url = `/pedidos/cardapio/categoria/${categoriaId}`;
+            }
+
+            const response = await fetch(url, { credentials: 'include' });
+            produtos = await response.json();
+
+            const container = document.getElementById('produtos');
+            container.innerHTML = produtos.map(produto => `
+                    <div class="bg-white rounded-lg shadow p-4 border border-gray-200">
+                        <h3 class="font-bold text-gray-800">${produto.nome}</h3>
+                        <p class="text-sm text-gray-500 mt-1">${produto.descricao || ''}</p>
+                        <p class="text-orange-600 font-bold mt-2">R$ ${produto.preco.toFixed(2)}</p>
+                        <p class="text-xs text-gray-400">Tempo: ${produto.tempoPreparoMinuto || 0} min</p>
+                        <button onclick="adicionarAoCarrinho(${produto.id}, '${produto.nome}', ${produto.preco})"
+                                class="mt-2 w-full bg-orange-600 hover:bg-orange-700 text-white px-3 py-1 rounded text-sm">
+                            Adicionar
+                        </button>
+                    </div>
+                `).join('');
+
+        } catch (error) {
+            console.error('Erro:', error);
+        }
+    }
+
+    function filtrarPorCategoria(categoriaId) {
+        carregarProdutos(categoriaId);
+    }
+
+    function adicionarAoCarrinho(id, nome, preco) {
+        const itemExistente = carrinho.find(item => item.id === id);
+        if (itemExistente) {
+            itemExistente.quantidade++;
+        } else {
+            carrinho.push({ id, nome, preco, quantidade: 1 });
+        }
+        atualizarCarrinhoUI();
+    }
+
+    function removerDoCarrinho(index) {
+        carrinho.splice(index, 1);
+        atualizarCarrinhoUI();
+    }
+
+    function atualizarQuantidade(index, novaQuantidade) {
+        if (novaQuantidade <= 0) {
+            removerDoCarrinho(index);
+        } else {
+            carrinho[index].quantidade = novaQuantidade;
+            atualizarCarrinhoUI();
+        }
+    }
+
+    function atualizarCarrinhoUI() {
+        const container = document.getElementById('carrinho-itens');
+        const total = carrinho.reduce((sum, item) => sum + (item.preco * item.quantidade), 0);
+        const totalItens = carrinho.reduce((sum, item) => sum + item.quantidade, 0);
+
+        document.getElementById('carrinho-total').textContent = `R$ ${total.toFixed(2)}`;
+        document.getElementById('carrinho-count').textContent = totalItens;
+
+        if (carrinho.length === 0) {
+            container.innerHTML = '<p class="text-gray-500 text-center">Carrinho vazio</p>';
+            return;
+        }
+
+        container.innerHTML = carrinho.map((item, index) => `
+                <div class="flex justify-between items-center mb-3 pb-2 border-b">
+                    <div class="flex-1">
+                        <p class="font-medium">${item.nome}</p>
+                        <p class="text-sm text-gray-600">R$ ${item.preco.toFixed(2)}</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="atualizarQuantidade(${index}, ${item.quantidade - 1})"
+                                class="w-6 h-6 bg-gray-200 rounded-full">-</button>
+                        <span class="w-8 text-center">${item.quantidade}</span>
+                        <button onclick="atualizarQuantidade(${index}, ${item.quantidade + 1})"
+                                class="w-6 h-6 bg-gray-200 rounded-full">+</button>
+                    </div>
+                </div>
+            `).join('');
+    }
+
+    function abrirCarrinho() {
+        document.getElementById('carrinho-sidebar').classList.remove('translate-x-full');
+    }
+
+    function fecharCarrinho() {
+        document.getElementById('carrinho-sidebar').classList.add('translate-x-full');
+    }
+
+    async function finalizarPedido() {
+        if (carrinho.length === 0) {
+            alert('Carrinho vazio!');
+            return;
+        }
+
+        if (!pedidoId) {
+            alert('Pedido não encontrado. Volte e selecione uma mesa.');
+            window.location.href = '/mesas';
+            return;
+        }
+
+        try {
+            // Adicionar itens ao carrinho no backend
+            for (const item of carrinho) {
+                await fetch('/pedidos/carrinho/itens', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        produtoId: item.id,
+                        quantidade: item.quantidade,
+                        observacao: ''
+                    })
+                });
+            }
+
+            // Criar subpedido
+            const response = await fetch(`/pedidos/${pedidoId}/subpedidos`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ itens: [] })
+            });
+
+            const subPedido = await response.json();
+
+            if (subPedido && subPedido.id) {
+                alert('Pedido realizado com sucesso!');
+                window.location.href = `/acompanhar-pedido?id=${subPedido.id}`;
+            } else {
+                alert('Erro ao finalizar pedido');
+            }
+
+        } catch (error) {
+            console.error('Erro:', error);
+            alert('Erro ao finalizar pedido');
+        }
+    }
+
+    carregarCategorias();
+    carregarProdutos();
+</script>
+</body>
+</html>
