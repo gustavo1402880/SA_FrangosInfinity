@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping
+@RequestMapping("/api")
 @Tag(name = "Fidelidade", description = "Endpoints para gerenciamento do programa de fidelidades")
 public class FidelidadeController
 {

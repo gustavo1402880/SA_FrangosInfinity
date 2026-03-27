@@ -1,19 +1,21 @@
 package org.frangosInfinity.core.service.module.pedido;
+import lombok.extern.slf4j.Slf4j;
 import org.frangosInfinity.application.module.pedido.request.CarrinhoRequestDTO;
 import org.frangosInfinity.application.module.pedido.request.ItemPedidoRequestDTO;
 import org.frangosInfinity.application.module.pedido.response.CarrinhoResponseDTO;
+import org.frangosInfinity.core.entity.exception.BusinessException;
 import org.frangosInfinity.core.entity.exception.ResourceNotFoundException;
 import org.frangosInfinity.core.entity.module.pedido.Carrinho;
-import org.frangosInfinity.core.entity.module.pedido.ItemPedido;
-import org.frangosInfinity.core.entity.module.pedido.SubPedido;
 import org.frangosInfinity.core.entity.module.produto.Produto;
 import org.frangosInfinity.infrastructure.persistence.module.produto.ProdutoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 @Service
 public class CarrinhoService
 {
@@ -38,14 +40,29 @@ public class CarrinhoService
 
     public CarrinhoResponseDTO adicionarItem(String sessaoId, CarrinhoRequestDTO request)
     {
-        Produto produto = produtoRepository.findById(request.getProdutoId()).orElseThrow(() -> new ResourceNotFoundException("Produto "+request.getProdutoId()+" não encontrado"));
+
+        if (request.getProdutoId() == null)
+        {
+            throw new BusinessException("Produto ID não pode ser nulo");
+        }
+
+        Produto produto = produtoRepository.findById(request.getProdutoId())
+                .orElseThrow(() -> new ResourceNotFoundException("Produto " + request.getProdutoId() + " não encontrado"));
+
+        log.info("Produto encontrado: {} - ID: {}", produto.getNome(), produto.getId());
 
         Carrinho carrinho = carrinhos.get(sessaoId);
 
         if (carrinho == null)
         {
             carrinho = new Carrinho();
-            carrinho.setId(sessaoId);
+            carrinho.setSessaoId(sessaoId);
+            carrinhos.put(sessaoId, carrinho);
+        }
+
+        if (carrinho.getItens() == null)
+        {
+            carrinho.setItens(new ArrayList<>());
         }
 
         Carrinho.ItemCarrinho itemCarrinho = new Carrinho.ItemCarrinho(

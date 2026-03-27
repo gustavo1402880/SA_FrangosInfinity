@@ -1,5 +1,6 @@
 package org.frangosInfinity.core.service.module.pedido;
 
+import lombok.extern.slf4j.Slf4j;
 import org.frangosInfinity.application.module.pedido.request.ItemPedidoRequestDTO;
 import org.frangosInfinity.application.module.pedido.request.SubPedidoRequestDTO;
 import org.frangosInfinity.application.module.pedido.response.PedidoResponseDTO;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class SubPedidoService
 {
@@ -63,6 +65,7 @@ public class SubPedidoService
                 throw new BusinessException("Estoque insuficiente");
             }
 
+
             ItemPedido itemPedido = new ItemPedido(
                     produto.getId(),
                     produto.getNome(),
@@ -71,6 +74,8 @@ public class SubPedidoService
                     produto.getTempoPreparoMinuto()
             );
             itemPedido.setObservacao(itemRequest.getObservacao());
+            itemPedido.setSubPedido(subPedido);
+            itemPedido.setSubTotal(produto.getPreco() * itemRequest.getQuantidade());
 
             subPedido.adicionarItem(itemPedido);
 
@@ -78,6 +83,9 @@ public class SubPedidoService
             {
                 produto.getEstoque().baixarEstoque(itemRequest.getQuantidade());
             }
+
+            subPedido.recalcularValorTotal();
+            subPedido.recalcularTempoPreparo();
 
             produtoRepository.save(produto);
         }
@@ -99,6 +107,15 @@ public class SubPedidoService
         SubPedido subPedido = subPedidoRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("SubPedido não encontrado"));
 
         return SubPedidoResponseDTO.fromEntity(subPedido);
+    }
+
+    @Transactional
+    @CacheEvict(value = "subPedidos")
+    public List<SubPedidoResponseDTO> buscarPorClienteId(String clienteId)
+    {
+        return subPedidoRepository.findByClienteID(clienteId).stream()
+                .map(SubPedidoResponseDTO::fromEntity)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -126,7 +143,8 @@ public class SubPedidoService
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
+    @CacheEvict(value = "subPedidos")
     public SubPedidoResponseDTO atualizarStatus(Long id, StatusPedido statusPedido)
     {
         SubPedido subPedido = subPedidoRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("SubPedido não encontrado"));
@@ -134,40 +152,41 @@ public class SubPedidoService
         subPedido.setStatus(statusPedido);
 
         subPedidoRepository.save(subPedido);
+
         return SubPedidoResponseDTO.fromEntity(subPedido);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public SubPedidoResponseDTO finalizarSubPedido(Long id)
     {
         return atualizarStatus(id, StatusPedido.PENDENTE);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public SubPedidoResponseDTO confimarSubPedido(Long id)
     {
         return atualizarStatus(id, StatusPedido.CONFIMADO);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public SubPedidoResponseDTO prepararSubPedido(Long id)
     {
         return atualizarStatus(id, StatusPedido.EM_PREPARO);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public SubPedidoResponseDTO marcarProntoSubPedido(Long id)
     {
         return atualizarStatus(id, StatusPedido.PRONTO);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public SubPedidoResponseDTO entregarSubPedido(Long id)
     {
         return atualizarStatus(id, StatusPedido.ENTREGUE);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public SubPedidoResponseDTO cancelarSubPedido(Long id)
     {
         return atualizarStatus(id, StatusPedido.CANCELADO);

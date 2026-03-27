@@ -5,52 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Frango's Infinity</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        // Buscar dados do usuário logado
-        async function carregarUsuario() {
-            try {
-                const response = await fetch('/auth/me', { credentials: 'include' });
-                const user = await response.json();
-
-                if (user.sucesso) {
-                    document.getElementById('userName').textContent = user.nome?.split(' ')[0] || user.nome;
-
-                    const role = user.nivelAcesso || (user.tipoUsuario === 'CLIENTE' ? 'CLIENTE' : '');
-
-                    // Mostrar painel conforme perfil
-                    if (role === 'CLIENTE') {
-                        document.getElementById('clientePanel').classList.remove('hidden');
-                        carregarPontos(user.id);
-                    } else if (role === 'ADMINISTRADOR') {
-                        document.getElementById('adminPanel').classList.remove('hidden');
-                    } else if (role === 'ATENDENTE') {
-                        document.getElementById('atendentePanel').classList.remove('hidden');
-                    } else if (role === 'COZINHEIRO') {
-                        document.getElementById('cozinheiroPanel').classList.remove('hidden');
-                    } else if (role === 'CAIXA') {
-                        document.getElementById('caixaPanel').classList.remove('hidden');
-                    }
-                }
-            } catch (error) {
-                console.error('Erro:', error);
-            }
-        }
-
-        async function carregarPontos(userId) {
-            try {
-                const response = await fetch(`/contas/cliente/${userId}`, { credentials: 'include' });
-                const data = await response.json();
-
-                if (data.sucesso) {
-                    document.getElementById('pontosSaldo').textContent = data.saldo || 0;
-                }
-            } catch (error) {
-                console.error('Erro ao carregar pontos:', error);
-            }
-        }
-
-        carregarUsuario();
-    </script>
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body class="bg-gray-100">
@@ -74,9 +28,10 @@
 
     <!-- Painel do Cliente -->
     <div id="clientePanel" class="hidden">
-        <div class="grid gap-4 md:grid-cols-2">
+        <!-- Cards de Ação Rápida -->
+        <div class="grid gap-4 md:grid-cols-2 mb-8">
             <div class="bg-white rounded-lg shadow p-8 text-center">
-                <h2 class="text-xl font-bold mb-4">Fazer um Pedido</h2>
+                <h2 class="text-xl font-bold mb-4">🍽️ Fazer um Pedido</h2>
                 <p class="text-gray-600 mb-4">Escolha a mesa, gere o QR Code e faça seu pedido</p>
                 <a href="/mesas" class="inline-block bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg transition">
                     Novo Pedido
@@ -93,9 +48,33 @@
                 </div>
             </div>
         </div>
+
+        <!-- Meus Pedidos Recentes -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-bold mb-4">📋 Meus Pedidos Recentes</h3>
+            <div id="meus-pedidos-container" class="space-y-3">
+                <div class="text-center py-4 text-gray-500">Carregando pedidos...</div>
+            </div>
+            <div class="mt-4 text-center">
+                <button onclick="carregarTodosPedidos()" class="text-orange-600 hover:underline text-sm">Ver todos os pedidos</button>
+            </div>
+        </div>
     </div>
 
-    <!-- Painel do Administrador -->
+    <!-- Modal de Detalhes do Pedido -->
+    <div id="pedidoModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="modalPedidoNumero" class="text-xl font-bold">Pedido #</h2>
+                <button onclick="fecharModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+            <div id="modalPedidoConteudo">
+                <div class="text-center py-4">Carregando...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resto dos painéis (Admin, Atendente, etc) -->
     <div id="adminPanel" class="hidden">
         <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <a href="/admin/produtos" class="bg-white rounded-lg shadow p-6 text-center hover:shadow-md transition">
@@ -136,7 +115,6 @@
         </div>
     </div>
 
-    <!-- Painel do Atendente -->
     <div id="atendentePanel" class="hidden">
         <div class="grid gap-4 md:grid-cols-2">
             <a href="/pedidos" class="bg-white rounded-lg shadow p-6 text-center hover:shadow-md transition">
@@ -152,7 +130,6 @@
         </div>
     </div>
 
-    <!-- Painel do Cozinheiro -->
     <div id="cozinheiroPanel" class="hidden">
         <a href="/cozinha" class="block bg-white rounded-lg shadow p-8 text-center hover:shadow-md transition">
             <div class="text-4xl mb-3">👨‍🍳</div>
@@ -161,7 +138,6 @@
         </a>
     </div>
 
-    <!-- Painel do Caixa -->
     <div id="caixaPanel" class="hidden">
         <a href="/pagamentos" class="block bg-white rounded-lg shadow p-8 text-center hover:shadow-md transition">
             <div class="text-4xl mb-3">💰</div>
@@ -172,7 +148,248 @@
 </div>
 
 <script>
+    let userId = null;
+
+    async function carregarUsuario() {
+        try {
+            const response = await fetch('/auth/me', { credentials: 'include' });
+            const user = await response.json();
+
+            if (user.sucesso) {
+                document.getElementById('userName').textContent = user.nome?.split(' ')[0] || user.nome;
+                userId = user.id;
+
+                const role = user.nivelAcesso || (user.tipoUsuario === 'CLIENTE' ? 'CLIENTE' : '');
+
+                if (role === 'CLIENTE') {
+                    document.getElementById('clientePanel').classList.remove('hidden');
+                    carregarPontos(user.id);
+                    carregarMeusPedidos();
+                } else if (role === 'ADMINISTRADOR') {
+                    document.getElementById('adminPanel').classList.remove('hidden');
+                } else if (role === 'ATENDENTE') {
+                    document.getElementById('atendentePanel').classList.remove('hidden');
+                } else if (role === 'COZINHEIRO') {
+                    document.getElementById('cozinheiroPanel').classList.remove('hidden');
+                } else if (role === 'CAIXA') {
+                    document.getElementById('caixaPanel').classList.remove('hidden');
+                }
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+        }
+    }
+
+    async function carregarPontos(userId) {
+        try {
+            const response = await fetch(`/api/contas/cliente/${userId}`, { credentials: 'include' });
+            const data = await response.json();
+            if (data.sucesso) {
+                document.getElementById('pontosSaldo').textContent = data.saldo || 0;
+            }
+        } catch (error) {
+            console.error('Erro ao carregar pontos:', error);
+        }
+    }
+
+    async function carregarMeusPedidos() {
+        const container = document.getElementById('meus-pedidos-container');
+        container.innerHTML = '<div class="text-center py-4 text-gray-500">Carregando pedidos...</div>';
+
+        try {
+            const response = await fetch('/api/pedidos/subpedidos/cliente', { credentials: 'include' });
+            const pedidos = await response.json();
+
+            if (!pedidos || pedidos.length === 0) {
+                container.innerHTML = '<div class="text-center py-4 text-gray-500">Você ainda não fez nenhum pedido</div>';
+                return;
+            }
+
+            const ultimos = pedidos.slice(0, 5);
+            container.innerHTML = ultimos.map(pedido => `
+                <div class="border rounded-lg p-3 hover:shadow-md transition cursor-pointer" onclick="verDetalhesPedido(${pedido.id})">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="font-medium">Pedido #${pedido.numeroPedido || pedido.id}</p>
+                            <p class="text-sm text-gray-500">${new Date(pedido.dataHora).toLocaleString()}</p>
+                            <p class="text-sm font-bold text-orange-600">R$ ${pedido.valorTotal?.toFixed(2)}</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="inline-block px-2 py-1 rounded-full text-xs font-medium ${getStatusClass(pedido.status)}">
+                                ${getStatusText(pedido.status)}
+                            </span>
+                            ${pedido.status === 'PRONTO' ? `
+                                <button onclick="event.stopPropagation(); pagarPedido(${pedido.id}, ${pedido.valorTotal})" class="mt-2 block w-full bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
+                                    Pagar Agora
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+        } catch (error) {
+            console.error('Erro:', error);
+            container.innerHTML = '<div class="text-center py-4 text-red-500">Erro ao carregar pedidos</div>';
+        }
+    }
+
+    async function carregarTodosPedidos() {
+        try {
+            const response = await fetch('/api/pedidos/subpedidos/cliente', { credentials: 'include' });
+            const pedidos = await response.json();
+
+            if (pedidos.length === 0) {
+                alert('Você ainda não fez nenhum pedido');
+                return;
+            }
+
+            const modalConteudo = document.getElementById('modalPedidoConteudo');
+            modalConteudo.innerHTML = `
+                <div class="space-y-3 max-h-96 overflow-y-auto">
+                    ${pedidos.map(pedido => `
+                        <div class="border rounded-lg p-3 cursor-pointer hover:bg-gray-50" onclick="verDetalhesPedido(${pedido.id})">
+                            <div class="flex justify-between">
+                                <div>
+                                    <p class="font-medium">Pedido #${pedido.numeroPedido || pedido.id}</p>
+                                    <p class="text-sm text-gray-500">${new Date(pedido.dataHora).toLocaleDateString()}</p>
+                                    <p class="text-sm">R$ ${pedido.valorTotal?.toFixed(2)}</p>
+                                </div>
+                                <div>
+                                    <span class="inline-block px-2 py-1 rounded-full text-xs font-medium ${getStatusClass(pedido.status)}">
+                                        ${getStatusText(pedido.status)}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            document.getElementById('pedidoModal').classList.remove('hidden');
+            document.getElementById('modalPedidoNumero').textContent = 'Meus Pedidos';
+        } catch (error) {
+            alert('Erro ao carregar pedidos');
+        }
+    }
+
+    async function verDetalhesPedido(subPedidoId) {
+        try {
+            const response = await fetch(`/api/pedidos/subpedidos/${subPedidoId}`, { credentials: 'include' });
+            const pedido = await response.json();
+
+            const modalConteudo = document.getElementById('modalPedidoConteudo');
+            modalConteudo.innerHTML = `
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <p class="text-sm text-gray-500">Data: ${new Date(pedido.dataHora).toLocaleString()}</p>
+                        <span class="inline-block px-3 py-1 rounded-full text-sm font-medium ${getStatusClass(pedido.status)}">
+                            ${getStatusText(pedido.status)}
+                        </span>
+                    </div>
+
+                    <div class="border-t pt-3">
+                        <h4 class="font-bold mb-2">Itens do Pedido</h4>
+                        ${pedido.itens?.map(item => `
+                            <div class="flex justify-between py-2 border-b">
+                                <div>
+                                    <p class="font-medium">${item.quantidade}x ${item.nomeProduto}</p>
+                                    <p class="text-xs text-gray-500">${item.observacao || ''}</p>
+                                </div>
+                                <p class="font-medium">R$ ${(item.precoUnitario * item.quantidade).toFixed(2)}</p>
+                            </div>
+                        `).join('') || '<p>Carregando itens...</p>'}
+
+                        <div class="flex justify-between mt-4 pt-2 font-bold text-lg">
+                            <span>Total</span>
+                            <span class="text-orange-600">R$ ${pedido.valorTotal?.toFixed(2)}</span>
+                        </div>
+                    </div>
+
+                    ${pedido.status === 'PRONTO' ? `
+                        <div class="border-t pt-4">
+                            <button onclick="fecharModal(); pagarPedido(${pedido.id}, ${pedido.valorTotal})" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-medium">
+                                💳 Realizar Pagamento
+                            </button>
+                        </div>
+                    ` : ''}
+
+                    <div class="border-t pt-4">
+                        <button onclick="fecharModal()" class="w-full bg-gray-500 hover:bg-gray-600 text-white py-2 rounded-lg font-medium">
+                            Fechar
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('modalPedidoNumero').textContent = `Pedido #${pedido.numeroPedido || pedido.id}`;
+            document.getElementById('pedidoModal').classList.remove('hidden');
+        } catch (error) {
+            alert('Erro ao carregar detalhes do pedido');
+        }
+    }
+
+    async function pagarPedido(subPedidoId, valor) {
+        if (confirm(`Confirmar pagamento de R$ ${valor.toFixed(2)}?`)) {
+            try {
+                const pagamentoResponse = await fetch('/api/pagamentos', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        subPedidoId: subPedidoId,
+                        valor: valor,
+                        tipo: 'PIX'
+                    })
+                });
+
+                const pagamento = await pagamentoResponse.json();
+
+                if (pagamento.id) {
+                    await fetch(`/api/pagamentos/${pagamento.id}/confirmar`, {
+                        method: 'PATCH',
+                        credentials: 'include'
+                    });
+
+                    alert('Pagamento realizado com sucesso!');
+                    carregarMeusPedidos();
+                } else {
+                    alert('Erro ao processar pagamento');
+                }
+            } catch (error) {
+                alert('Erro ao processar pagamento');
+            }
+        }
+    }
+
+    function getStatusClass(status) {
+        const classes = {
+            'PENDENTE': 'bg-yellow-100 text-yellow-800',
+            'CONFIMADO': 'bg-blue-100 text-blue-800',
+            'EM_PREPARO': 'bg-orange-100 text-orange-800',
+            'PRONTO': 'bg-green-100 text-green-800',
+            'ENTREGUE': 'bg-gray-100 text-gray-800',
+            'CANCELADO': 'bg-red-100 text-red-800'
+        };
+        return classes[status] || 'bg-gray-100 text-gray-800';
+    }
+
+    function getStatusText(status) {
+        const textos = {
+            'PENDENTE': 'Aguardando',
+            'CONFIMADO': 'Confirmado',
+            'EM_PREPARO': 'Em Preparo',
+            'PRONTO': 'Pronto',
+            'ENTREGUE': 'Entregue',
+            'CANCELADO': 'Cancelado'
+        };
+        return textos[status] || status;
+    }
+
+    function fecharModal() {
+        document.getElementById('pedidoModal').classList.add('hidden');
+    }
+
     document.getElementById('userNameDisplay').textContent = document.getElementById('userName').textContent;
+    carregarUsuario();
 </script>
 </body>
 </html>

@@ -13,7 +13,10 @@ import org.frangosInfinity.application.module.pedido.response.PedidoResponseDTO;
 import org.frangosInfinity.application.module.pedido.response.SubPedidoResponseDTO;
 import org.frangosInfinity.application.module.produto.response.CategoriaResponseDTO;
 import org.frangosInfinity.application.module.produto.response.ProdutoRespondeDTO;
+import org.frangosInfinity.config.security.UserDetailsImpl;
+import org.frangosInfinity.core.entity.module.usuario.Usuario;
 import org.frangosInfinity.core.enums.StatusPedido;
+import org.frangosInfinity.core.enums.TipoUsuario;
 import org.frangosInfinity.core.service.module.pedido.CarrinhoService;
 import org.frangosInfinity.core.service.module.pedido.PedidoService;
 import org.frangosInfinity.core.service.module.pedido.SubPedidoService;
@@ -23,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -115,6 +119,8 @@ public class PedidoController
     {
         String sessaoId = session.getId();
         String clienteId = sessaoId;
+        request.setClienteId(clienteId);
+        request.setPedidoId(pedidoId);
 
         CarrinhoResponseDTO carrinho = carrinhoService.obterCarrinho(sessaoId);
 
@@ -168,7 +174,7 @@ public class PedidoController
 
         SubPedidoRequestDTO request = new SubPedidoRequestDTO();
         request.setPedidoId(pedidoId);
-        request.setClienteId(clienteId);
+        request.setClienteId(sessaoId);
         request.setItens(new ArrayList<>());
 
         SubPedidoResponseDTO response = subPedidoService.criarSubPedido(request);
@@ -242,26 +248,18 @@ public class PedidoController
         return response.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(response);
     }
 
-    @GetMapping("/subpedidos/cliente/{clienteId}")
+    @GetMapping("/subpedidos/cliente")
     @Operation(summary = "Buscar subpedido por cliente ID")
-    public ResponseEntity<SubPedidoResponseDTO> processarBuscarSubPedidoPorCliente(@PathVariable Long clienteId, @RequestParam Long pedidoId)
+    public ResponseEntity<List<SubPedidoResponseDTO>> processarBuscarSubPedidoPorCliente(HttpSession session)
     {
-        List<SubPedidoResponseDTO> subPedidos = subPedidoService.listarPorPedidoId(pedidoId);
+        String sessaoId = session.getId();
 
-        SubPedidoResponseDTO response = subPedidos.stream()
-                .filter(sp -> sp.getClienteID().equals(clienteId))
-                .findFirst()
-                .orElse(null);
-
-        if (response == null)
-        {
-            return ResponseEntity.notFound().build();
-        }
+        List<SubPedidoResponseDTO> response = subPedidoService.buscarPorClienteId(String.valueOf(sessaoId));
 
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/subpedidos/status/{status}")
+    @GetMapping("/subpedidos/status")
     @Operation(summary = "Listar subpedidos por status")
     public ResponseEntity<List<SubPedidoResponseDTO>> processarListarSubPedidosPorStatus(@RequestParam StatusPedido status)
     {

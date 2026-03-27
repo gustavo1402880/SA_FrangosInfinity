@@ -79,7 +79,7 @@ public class RelatorioVendasService
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(cacheManager = "relatorios")
+    @Cacheable(value = "relatorios")
     public List<RelatorioResponseDTO> listarTodos()
     {
         return relatorioRepository.findAll().stream()

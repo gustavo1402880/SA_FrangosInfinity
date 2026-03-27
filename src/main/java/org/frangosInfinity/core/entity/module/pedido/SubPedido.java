@@ -5,6 +5,7 @@ import org.frangosInfinity.core.enums.StatusPedido;
 
 import java.sql.Date;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -20,7 +21,7 @@ public class SubPedido
     private Pedido pedido;
 
     @Column(name = "cliente_id", nullable = false)
-    private Long clienteID;
+    private String clienteID;
 
     @Column(name = "data_hora", nullable = false)
     private LocalDateTime dataHora;
@@ -45,9 +46,12 @@ public class SubPedido
     {
         this.dataHora = LocalDateTime.now();
         this.status = StatusPedido.PENDENTE;
+        this.itens = new ArrayList<>();
+        this.valorTotal = 0.0;
+        this.tempo_em_minutos = 0;
     }
 
-    public SubPedido(Pedido pedidoHub, Long clienteID)
+    public SubPedido(Pedido pedidoHub, String clienteID)
     {
         this();
         this.pedido = pedidoHub;
@@ -86,11 +90,11 @@ public class SubPedido
         this.pedido = pedido;
     }
 
-    public Long getClienteID() {
+    public String getClienteID() {
         return clienteID;
     }
 
-    public void setClienteID(Long clienteID) {
+    public void setClienteID(String clienteID) {
         this.clienteID = clienteID;
     }
 

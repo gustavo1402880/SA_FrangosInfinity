@@ -14,7 +14,7 @@ public class SubPedidoResponseDTO
     private Long id;
     private Long pedidoId;
     private String numeroPedido;
-    private Long clienteID;
+    private String clienteID;
     private LocalDateTime dataHora;
     private StatusPedido status;
     private Double valorTotal;
@@ -71,11 +71,11 @@ public class SubPedidoResponseDTO
         this.numeroPedido = numeroPedido;
     }
 
-    public Long getClienteID() {
+    public String getClienteID() {
         return clienteID;
     }
 
-    public void setClienteID(Long clienteID) {
+    public void setClienteID(String clienteID) {
         this.clienteID = clienteID;
     }
 

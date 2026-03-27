@@ -88,20 +88,20 @@
             }
 
             container.innerHTML = pedidos.map(pedido => `
-                    <div class="bg-white rounded-lg shadow p-4">
-                        <div class="flex justify-between items-start mb-2">
-                            <h3 class="font-bold text-lg">Pedido #${pedido.numeroPedido || pedido.id}</h3>
-                            <span class="text-xs text-gray-500">${formatarTempo(pedido.dataHora)}</span>
-                        </div>
-                        ${pedido.itens?.map(item => `
-                            <p class="text-sm">${item.quantidade}x ${item.nomeProduto}</p>
-                        `).join('') || '<p class="text-sm">Carregando...</p>'}
-                        <p class="text-sm font-bold mt-2">Total: R$ ${pedido.valorTotal?.toFixed(2) || '0,00'}</p>
-                        <button onclick="abrirModal(${pedido.id})" class="mt-3 w-full bg-orange-600 hover:bg-orange-700 text-white py-1 rounded text-sm">
-                            Processar Pagamento
-                        </button>
+                <div class="bg-white rounded-lg shadow p-4">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="font-bold text-lg">Pedido #${pedido.numeroPedido || pedido.id}</h3>
+                        <span class="text-xs text-gray-500">${formatarTempo(pedido.dataHora)}</span>
                     </div>
-                `).join('');
+                    ${pedido.itens?.map(item => `
+                        <p class="text-sm">${item.quantidade}x ${item.nomeProduto}</p>
+                    `).join('') || '<p class="text-sm">Carregando...</p>'}
+                    <p class="text-sm font-bold mt-2">Total: R$ ${pedido.valorTotal?.toFixed(2) || '0,00'}</p>
+                    <button onclick="abrirModal(${pedido.id})" class="mt-3 w-full bg-orange-600 hover:bg-orange-700 text-white py-1 rounded text-sm">
+                        Processar Pagamento
+                    </button>
+                </div>
+            `).join('');
 
         } catch (error) {
             console.error('Erro:', error);
@@ -154,7 +154,6 @@
 
     async function gerarPix() {
         try {
-            // Primeiro criar pagamento
             const pagamentoResp = await fetch('/api/pagamentos', {
                 method: 'POST',
                 credentials: 'include',
@@ -167,7 +166,6 @@
             });
             const pagamento = await pagamentoResp.json();
 
-            // Depois gerar PIX
             const pixResp = await fetch('/api/pagamentos/pix', {
                 method: 'POST',
                 credentials: 'include',
@@ -195,7 +193,6 @@
         }
 
         try {
-            // Criar pagamento
             const pagamentoResp = await fetch('/api/pagamentos', {
                 method: 'POST',
                 credentials: 'include',
@@ -208,19 +205,12 @@
             });
             const pagamento = await pagamentoResp.json();
 
-            // Confirmar pagamento
             await fetch(`/api/pagamentos/${pagamento.id}/confirmar`, {
                 method: 'PATCH',
                 credentials: 'include'
             });
 
-            // Buscar comprovante
-            const comprovanteResp = await fetch(`/api/pagamentos/comprovantes/pagamento/${pagamento.id}`, {
-                credentials: 'include'
-            });
-            const comprovante = await comprovanteResp.json();
-
-            alert(`Pagamento realizado com sucesso!\n\n${comprovante.texto || 'Comprovante gerado'}`);
+            alert('Pagamento realizado com sucesso!');
             fecharModal();
             carregarPedidos();
 

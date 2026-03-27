@@ -26,7 +26,8 @@ public class CacheConfig
                 "mesas",
                 "iotConfigs",
                 "qrCodes",
-                "fidelidade"
+                "fidelidade",
+                "relatorios"
         ));
         return cacheManager;
     }

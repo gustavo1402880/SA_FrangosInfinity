@@ -9,7 +9,7 @@ import java.util.List;
 public class SubPedidoRequestDTO
 {
     private Long pedidoId;
-    private Long clienteId;
+    private String clienteId;
     private List<ItemPedidoRequestDTO> itens;
 
     public SubPedidoRequestDTO() {}
@@ -24,12 +24,12 @@ public class SubPedidoRequestDTO
         this.pedidoId = pedidoId;
     }
 
-    public Long getClienteId()
+    public String getClienteId()
     {
         return clienteId;
     }
 
-    public void setClienteId(Long clienteId)
+    public void setClienteId(String clienteId)
     {
         this.clienteId = clienteId;
     }

@@ -240,7 +240,7 @@ public class Carrinho implements Serializable
                 .sum();
     }
 
-    public SubPedido converterParaSubPedido(Pedido pedido, Long clienteId)
+    public SubPedido converterParaSubPedido(Pedido pedido, String clienteId)
     {
         SubPedido subPedido = new SubPedido(pedido, clienteId);
         subPedido.setObsevacoes("Pedido via autoatendimento");

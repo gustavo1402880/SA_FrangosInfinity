@@ -14,7 +14,7 @@ public interface SubPedidoRepository extends JpaRepository<SubPedido, Long>
 {
     List<SubPedido> findByPedidoId(Long pedidoId);
 
-    List<SubPedido> findByClienteID(Long clienteID);
+    List<SubPedido> findByClienteID(String clienteID);
 
     List<SubPedido> findByStatus(StatusPedido status);
 
